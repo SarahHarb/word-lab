@@ -1,7 +1,7 @@
 /* ================= Learning layer: units, coach, quizzes ================= */
 const PKEY='wordlab-guide-v2';
 let P={};try{P=JSON.parse(localStorage.getItem(PKEY)||'{}')}catch(e){}
-const saveP=()=>{try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}};
+const saveP=(noCloud)=>{try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){};if(!noCloud&&window.cloudSave)cloudSave()};
 const UP=id=>P[id]=P[id]||{p:{},cmp:{},mis:{},task:{}};
 
 /* ---------- step builders (used by content.js) ---------- */
@@ -31,6 +31,7 @@ const DRAW=(say)=>({el:()=>pages()[0]?.querySelector('.pg-body'),say:say||'اس�
 function fitZoom(){const {w}=pageDims();return Math.min(100,Math.floor((canvas.clientWidth-60)/(w*CM)*100))}
 function applySetup(su={}){
   try{closeDialog();closeMenus();hideCtx();clearObjSel();cancelDraw()}catch(e){}
+  S.selCells=[];S.curCell=null;S.obj=null;S.pen=null;
   $('#readmode').hidden=true;Object.assign(S,{view:'print',multi:false,nav:false,marks:false,ruler:true,grid:false,theme:0,themeColor:null,themeFont:null,cmts:true,activeC:null,painter:null,clip:null,hfMode:false});doc.classList.remove('hfmode','selobj','vgrid','drawing');doc.style.cursor='';renderNav();
   S.page={size:'A4',orient:'portrait',margin:'normal',cols:'1',lineNums:'none',color:'',border:null,wm:'',paraSp:8};
   $('#startmenu').classList.remove('open');$('#splash').classList.remove('show');$('#ribbon').classList.remove('collapsed');
@@ -103,25 +104,28 @@ function renderNav2(){
   const all=allUnits();let d=0,t=0;all.forEach(u=>L(u).forEach(l=>{t++;if(isDone(u,l))d++}));
   $('#sprog').innerHTML=`<div class="pt"><span>تقدّمك</span><b>${d} / ${t}</b></div><div class="bar"><i style="width:${t?d/t*100:0}%"></i></div>`;
   const tag=l=>l.kind==='do'?'<em class="tag do">نفّذ</em>':l.problem?'<em class="tag pr">مشكلة</em>':'';
-  $('#topics').innerHTML=all.map(u=>{const ls=L(u),dn=ls.filter(l=>isDone(u,l)).length,op=u===openTopic;
+  const wsBtn=`<button class="wsbtn ${CO.ws?'on':''}" id="wsBtn"><span class="tic">${icon('pen',22)}</span><span class="tt"><b>مساحتي الحرة</b><small>جرّب أي شيء على Word بحرية</small></span></button>`;
+  $('#topics').innerHTML=wsBtn+all.map(u=>{if(!isUnlocked(u))return `<div class="topic locked"><div class="th"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>لم يُفتح بعد</small></span><span class="lock">🔒</span></div></div>`;const ls=L(u),dn=ls.filter(l=>isDone(u,l)).length,op=u===openTopic;
     const sec=(k,title,arr)=>{if(!arr.length)return '';const id=u.id+k;const has=arr.includes(CO.item)&&CO.unit===u;if(secOpen[id]==null)secOpen[id]=has||k==='l';const o=secOpen[id];const sd=arr.filter(l=>isDone(u,l)).length;
-      return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map(l=>{const i=ls.indexOf(l);return `<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
+      return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map((l,k)=>{const i=ls.indexOf(l);const gh=l.g&&(k===0||arr[k-1].g!==l.g)?`<div class="lg">${l.g}</div>`:'';return gh+`<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
     return `<div class="topic ${op?'open':''} ${CO.unit===u?'cur':''}"><button class="th" data-t="${u.id}"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>${u.sub}</small></span><span class="tc">${dn}/${ls.length}</span><span class="chev">‹</span></button>
       ${op?`<div class="tbody">${sec('l','تعلّم',ls.filter(l=>l.kind==='learn'))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.kind!=='learn'))}</div>`:''}</div>`}).join('');
+  $('#wsBtn').onclick=()=>{openWorkspace();document.body.classList.remove('drawer')};
   $$('#topics [data-t]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.t);openTopic=openTopic===u?null:u;renderNav2()});
   $$('#topics [data-s]').forEach(b=>b.onclick=()=>{secOpen[b.dataset.s]=!secOpen[b.dataset.s];renderNav2()});
   $$('#topics [data-i]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.u);openLesson(u,+b.dataset.i);document.body.classList.remove('drawer')});
   const on=$('#topics .lrow.on');if(on)on.scrollIntoView({block:'nearest'});
 }
 function renderHead(){
+  if(CO.ws){$('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button><div class="lt"><div class="crumb">مساحتي الحرة</div><h1>اعمل ما تريد على Word</h1><p>بلا قيود ولا تقييم — يُحفظ عملك تلقائيًا على هذا الجهاز.</p></div><div class="la"><button class="b" id="wsNew">📄 مستند جديد</button></div>`;$('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');$('#wsNew').onclick=()=>{if(confirmWs()){localStorage.removeItem(PKEY+'-ws');openWorkspace()}};fitSim();return}
   const u=CO.unit,l=CO.item;if(!u||!l)return;const ls=L(u),i=ls.indexOf(l);
   const sec=l.kind==='learn'?'تعلّم':'تحدَّ نفسك';
   $('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button>
    <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}</div>
-   <div class="la">${l.kind==='do'?`<div class="reqs" id="reqs"></div><button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b blue" id="hw">${CO.mode==='demo'?'⏹ إيقاف':'▶ شاهد'}</button><button class="b green" id="ht">✋ جرّب</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
+   <div class="la">${l.kind==='do'?`<div class="reqs" id="reqs"></div><button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
   $('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');
   $('#hr').onclick=()=>startItem();$('#hn').onclick=()=>nextLesson();
-  if(l.kind==='do'){$('#verify').onclick=verify;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();$('#ht').onclick=()=>tryItem();renderDots(CO.mode==='won'?99:-1)}
+  if(l.kind==='do'){$('#verify').onclick=verify;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
   fitSim();
 }
 function renderReqs(){const b=$('#reqs');if(!b||!CO.item.reqs)return;const h=CO.item.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}return `<span class="rq ${ok?'ok':CO.bad===i?'bad':''}" data-r="${i}">${ok?'✓':CO.bad===i?'✗':i+1} ${r.t}</span>`}).join('');if(b.innerHTML!==h){b.innerHTML=h;b.querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>showReqHint(+x.dataset.r))}}
@@ -133,12 +137,12 @@ function verify(){const rs=CO.item.reqs;const bad=rs.findIndex(r=>{try{return !r
 setInterval(()=>{if(CO.mode==='do'&&CO.exEl){if(vis(CO.exEl))placeCoach(CO.exEl,CO.exHtml);else hideCoach()}},250);
 document.addEventListener('mousedown',e=>{if(CO.mode==='do'&&CO.exEl&&!e.target.closest('#reqs,#verify')){CO.exEl=null;hideCoach()}},true);
 function renderDots(i){const d=$('#dots');if(!d||!CO.item||!CO.item.steps)return;d.innerHTML=CO.item.steps.map((_,k)=>`<i class="${k<i||i===99?'d':k===i?'c':''}"></i>`).join('')}
-function openLesson(u,i){CO.mode='idle';CO.exEl=null;hideCoach();clearHints();hideTip();cur().style.display='none';const ls=L(u);CO.unit=u;CO.itemI=i;CO.item=ls[i]||ls[0];CO.lastI=null;CO.hit=false;CO.bad=null;openTopic=u;
+function openLesson(u,i){CO.ws=false;CO.mode='idle';CO.exEl=null;hideCoach();clearHints();hideTip();cur().style.display='none';const ls=L(u);CO.unit=u;CO.itemI=i;CO.item=ls[i]||ls[0];CO.lastI=null;CO.hit=false;CO.bad=null;openTopic=u;
   try{localStorage.setItem(PKEY+'-last',u.id+':'+CO.item.key)}catch(e){}
-  applySetup(CO.item.setup||{});renderNav2();renderHead();showSimCard('start')}
+  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
 function startItem(){openLesson(CO.unit,L(CO.unit).indexOf(CO.item))}
 function tryItem(){hideSimCard();applySetup(CO.item.setup||{});CO.lastI=null;CO.hit=false;setTimeout(()=>{CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try'},90)}
-function stopDemo(){if(CO.mode!=='demo')return;CO.mode='idle';hideCoach();hideTip();cur().style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');renderHead();showSimCard('start')}
+function stopDemo(){if(CO.mode!=='demo')return;CO.mode='idle';hideCoach();hideTip();cur().style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');tryItem();renderHead()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CO.mode==='demo')stopDemo()},true);
 async function watchItem(){
   hideSimCard();applySetup(CO.item.setup||{});await wait(120);CO.hit=false;CO.mode='demo';$('#blocker').style.display='block';$('#stopDemo').style.display='flex';document.body.classList.add('demo');renderHead();
@@ -149,9 +153,9 @@ async function watchItem(){
     renderDots(i);placeCoach(el,s.say,i+1);await moveCursorTo(el);if(el.closest('#ribbon')&&!el.closest('.dd')){showTip(el.closest('.rb,.rck,.rnum,.rsel,.gi')||el);await wait(1100);hideTip()}if(s.pre){s.pre();await wait(400)}await clickFx();
     try{await (s.act&&s.act())}catch(e){console.error(e)}await wait(900);}
   hideCoach();c.style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');
-  if(CO.mode==='demo'){CO.mode='idle';renderHead();showSimCard('turn')}
+  if(CO.mode==='demo'){CO.mode='idle';tryItem();setTimeout(renderHead,120);simToast('الآن دورك! ✋')}
 }
-function nextLesson(){const all=allUnits();let u=CO.unit,ls=L(u),i=ls.indexOf(CO.item)+1;if(i>=ls.length){u=all[(all.indexOf(u)+1)%all.length];i=0}openLesson(u,i)}
+function nextLesson(){const all=allUnits().filter(isUnlocked);let u=CO.unit,ls=L(u),i=ls.indexOf(CO.item)+1;if(i>=ls.length){u=all[(all.indexOf(u)+1)%all.length];i=0}openLesson(u,i)}
 function showSimCard(kind){const it=CO.item,o=$('#simcard');if(!it)return;const u=CO.unit;const doT=it.kind==='do';
   if(kind==='start')o.innerHTML=`<div class="ocard"><div class="big">${icon(it.ic||u.icon,40)}</div><small class="sec">${u.title} · ${it.kind==='learn'?'تعلّم':'تحدَّ نفسك'}</small><h2>${it.t}</h2>${it.hint?`<div class="after">💡 ${it.hint}</div>`:''}
     ${doT?`<ul class="rl">${it.reqs.map(r=>`<li>${r.t}</li>`).join('')}</ul><p class="sm">نفّذ بنفسك بلا إرشاد، ثم اضغط <b>«✔ تحقّق»</b>.</p><div class="cbtns"><button class="try" data-a="try">✍️ ابدأ التنفيذ</button></div>`:`<div class="cbtns"><button class="watch" data-a="watch">▶ شاهد كيف</button><button class="try" data-a="try">✋ جرّب بنفسك</button></div>`}</div>`;
@@ -159,7 +163,7 @@ function showSimCard(kind){const it=CO.item,o=$('#simcard');if(!it)return;const 
   if(kind==='turn')o.innerHTML=`<div class="ocard"><div class="big">👏</div><h2>الآن دورك!</h2><p>${it.t}</p><div class="cbtns"><button class="try" data-a="try">✋ ابدأ</button><button class="ghost" data-a="watch">▶ شاهد مرة أخرى</button></div></div>`;
   if(kind==='won'){o.innerHTML=`<div class="ocard"><div class="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div><h2>أحسنت!</h2><p>${it.t} ✓</p>${it.after?`<div class="after">💡 ${it.after}</div>`:''}<div class="cbtns"><button class="try" data-a="next">التالي ←</button><button class="ghost" data-a="again">↺ أعد</button><button class="ghost" data-a="free">✏️ تابع على المحاكي</button></div></div>`}
   o.className='simcard show '+kind;
-  o.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a==='watch')watchItem();if(a==='try')tryItem();if(a==='again')startItem();if(a==='free'){hideSimCard();CO.mode='free'}if(a==='next')nextLesson();if(a==='start')showSimCard('start')});
+  o.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a==='watch')watchItem();if(a==='try')tryItem();if(a==='again')startItem();if(a==='free'){hideSimCard();CO.mode='free'}if(a==='next')nextLesson();if(a==='start')tryItem()});
 }
 function hideSimCard(){$('#simcard').className='simcard'}
 /* fit simulator to any screen */
@@ -168,8 +172,16 @@ function fitSim(){const wrap=$('.simwrap'),sim=$('#sim');if(!wrap||!sim)return;c
   if(base&&base>W){const s=W/base;SIMSCALE=s;Object.assign(sim.style,{position:'absolute',top:'0',right:'0',width:base+'px',height:(H/s)+'px',transform:`scale(${s})`,transformOrigin:'top right',flex:'none'})}
   else{SIMSCALE=1;Object.assign(sim.style,{position:'',top:'',right:'',width:'',height:'',transform:'',transformOrigin:'',flex:''})}}
 addEventListener('resize',()=>{fitSim();closeMenus()});
+function confirmWs(){return true}
+let wsT;
+function openWorkspace(){CO.ws=true;CO.mode='free';CO.unit=null;CO.item=null;CO.exEl=null;hideCoach();clearHints();hideSimCard();cur().style.display='none';
+  applySetup({html:'<p><br></p>',file:'مساحتي'});try{const d=JSON.parse(localStorage.getItem(PKEY+'-ws')||'null');if(d)loadData(d)}catch(e){}
+  try{localStorage.setItem(PKEY+'-last','ws')}catch(e){}renderNav2();renderHead()}
+SIM.on('change',()=>{if(!CO.ws||S.app!=='doc')return;clearTimeout(wsT);wsT=setTimeout(()=>{try{localStorage.setItem(PKEY+'-ws',JSON.stringify(docData()))}catch(e){}},800)});
 function initApp(){
   buildTips();$('#stopDemo').onclick=stopDemo;$('#scrim').onclick=()=>document.body.classList.remove('drawer');
-  let u=TOPICS[0],i=0,fresh=true;try{const l=(localStorage.getItem(PKEY+'-last')||'').split(':');const x=TOPICS.find(v=>v.id===l[0]);if(x){fresh=false;const j=L(x).findIndex(z=>z.key===l[1]);if(j>=0){u=x;i=j}}}catch(e){}
-  fitSim();openLesson(u,i);if(fresh)showSimCard('welcome');
+  const open=TOPICS.filter(isUnlocked);if(!open.length){openWorkspace();setTimeout(()=>{$('#simcard').innerHTML=`<div class="ocard"><div class="big">🔒</div><h2>لم تُفتح دروس بعد</h2><p>ستفتح المعلّمة الدروس بعد كل محاضرة.<br>حتى ذلك الحين جرّب Word بحرية في «مساحتي الحرة».</p><div class="cbtns"><button class="try" onclick="hideSimCard()">حسنًا</button></div></div>`;$('#simcard').className='simcard show'},200);return}
+  if((localStorage.getItem(PKEY+'-last')||'')==='ws'){openWorkspace();return}
+  let u=open[0],i=0,fresh=true;try{const l=(localStorage.getItem(PKEY+'-last')||'').split(':');const x=open.find(v=>v.id===l[0]);if(x){fresh=false;const j=L(x).findIndex(z=>z.key===l[1]);if(j>=0){u=x;i=j}}}catch(e){}
+  fitSim();openLesson(u,i);if(fresh){setTimeout(()=>{CO.mode='idle';showSimCard('welcome')},150)}
 }

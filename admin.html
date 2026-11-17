@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة المعلّمة — برنامج وورد</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+body{overflow:auto;height:auto;min-height:100vh}
+.atop{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--side);color:#fff;position:sticky;top:0;z-index:5}
+.atop .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#41a5ee,#185abd);display:grid;place-items:center;font:800 20px "Segoe UI",Arial}
+.atop b{font-size:18px}.atop .sp{flex:1}.atop a,.atop button{color:#dfe6f2;border:1px solid rgba(255,255,255,.25);background:none;border-radius:9px;padding:6px 12px;font-size:13px;text-decoration:none}
+.atabs{display:flex;gap:6px;padding:12px 20px 0;max-width:1200px;margin:0 auto;flex-wrap:wrap}
+.atabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 18px;font-weight:800;font-size:14.5px;color:var(--mute)}
+.atabs button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.wrap{max-width:1200px;margin:0 auto;padding:16px 20px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.card h2{margin:0 0 12px;font-size:18px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+input,select,textarea{font:inherit;font-size:14.5px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+textarea{width:100%;min-height:120px;direction:ltr;text-align:left}
+.btn{border:0;background:var(--blue);color:#fff;border-radius:10px;padding:9px 16px;font-weight:800;font-size:14px}.btn.g{background:#eef1f6;color:var(--ink)}.btn.r{background:#fdecec;color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:right;vertical-align:middle}th{background:#f8fafc;font-size:13px;color:var(--mute);position:sticky;top:62px}
+.chip{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap}
+.c0{background:#f1f3f7;color:#98a2b3}.c1{background:#fff4d6;color:#8a6200}.c2{background:#e7f7ec;color:#137a37}
+.tgl{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.tgl b{font-size:15.5px}.sw2{position:relative;width:52px;height:28px;flex:none}.sw2 input{opacity:0;width:0;height:0}.sw2 span{position:absolute;inset:0;background:#d0d5dd;border-radius:99px;transition:.2s;cursor:pointer}.sw2 span::after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:3px;right:3px;transition:.2s}
+.sw2 input:checked+span{background:var(--ok)}.sw2 input:checked+span::after{right:27px}
+.muted{color:var(--mute);font-size:13.5px}.ltr{direction:ltr;text-align:left}
+.empty{color:var(--mute);text-align:center;padding:30px}
+.pbar{height:7px;background:#eef1f6;border-radius:9px;overflow:hidden;min-width:80px}.pbar i{display:block;height:100%;background:var(--ok)}
+.notice{background:var(--goldL);border:1px solid #f1d38a;border-radius:12px;padding:14px;line-height:1.8}
+</style>
+</head>
+<body>
+<div id="gate" hidden></div>
+<div class="atop"><span class="logo">W</span><b>لوحة المعلّمة</b><span class="sp"></span><span id="who" class="muted" style="color:#93a2ba"></span><a href="index.html">فتح الموقع</a><button id="out">خروج</button></div>
+<div class="atabs" id="atabs"><button data-v="track" class="on">📊 المتابعة</button><button data-v="unlock">🔓 فتح الدروس</button><button data-v="students">👩‍🎓 الطلاب</button><button data-v="sections">🏫 الشعب</button></div>
+<div class="wrap" id="view"></div>
+<script src="js/config.js"></script>
+<script src="js/topics-meta.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const FBV='https://www.gstatic.com/firebasejs/10.12.2/';const T=window.TOPICS_META;
+const ld=src=>new Promise((r,j)=>{const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=j;document.head.appendChild(s)});
+let db,SEC=[],STU=[],PRO={},view='track',selSec='';
+function gateMsg(h){const g=$('#gate');g.hidden=false;g.innerHTML=`<div class="gcard"><div class="glogo">W</div><h1>لوحة المعلّمة</h1>${h}</div>`}
+async function init(){
+  if(!window.FB_CONFIG){gateMsg('<div class="notice">لم يتم ربط Firebase بعد.<br>اتبعي خطوات ملف <b>FIREBASE-SETUP.md</b> ثم ضعي الإعدادات في <b>js/config.js</b>.</div>');return}
+  await ld(FBV+'firebase-app-compat.js');await ld(FBV+'firebase-auth-compat.js');await ld(FBV+'firebase-firestore-compat.js');
+  firebase.initializeApp(window.FB_CONFIG);db=firebase.firestore();
+  firebase.auth().onAuthStateChanged(async u=>{
+    if(!u){gateMsg('<p>سجّلي الدخول بحساب Google الخاص بالمعلّمة.</p><button class="gbtn" id="gi">تسجيل الدخول بحساب Google</button>');$('#gi').onclick=()=>firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(()=>firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider()));return}
+    const em=u.email.toLowerCase();if(!(window.ADMIN_EMAILS||[]).map(x=>x.toLowerCase()).includes(em)){gateMsg(`<div class="gwarn">الحساب <b dir="ltr">${em}</b> ليس حساب المعلّمة.</div><button class="gbtn alt" id="go">خروج</button>`);$('#go').onclick=()=>firebase.auth().signOut();return}
+    $('#gate').hidden=true;$('#who').textContent=em;
+    db.collection('sections').onSnapshot(q=>{SEC=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));if(!selSec&&SEC[0])selSec=SEC[0].id;render()});
+    db.collection('students').onSnapshot(q=>{STU=q.docs.map(d=>({email:d.id,...d.data()}));render()});
+    db.collection('progress').onSnapshot(q=>{PRO={};q.docs.forEach(d=>PRO[d.id]=d.data());render()});
+  });
+}
+$('#out').onclick=()=>firebase.auth().signOut();
+$('#atabs').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;view=b.dataset.v;$$('#atabs button').forEach(x=>x.classList.toggle('on',x===b));render()};
+const secSel=(id='sec',all)=>`<select id="${id}">${all?'<option value="">كل الشعب</option>':''}${SEC.map(s=>`<option value="${s.id}" ${s.id===selSec?'selected':''}>${s.name}</option>`).join('')}</select>`;
+const secName=id=>SEC.find(s=>s.id===id)?.name||'—';
+function render(){const v=$('#view');
+  if(view==='sections'){v.innerHTML=`<div class="card"><h2>الشعب</h2><div class="row"><input id="nsec" placeholder="اسم الشعبة، مثل: التاسع أ"><button class="btn" id="asec">إضافة شعبة</button></div>
+    <table><tr><th>الشعبة</th><th>عدد الطلاب</th><th>الدروس المفتوحة</th><th></th></tr>${SEC.map(s=>`<tr><td><b>${s.name}</b></td><td>${STU.filter(x=>x.section===s.id).length}</td><td>${(s.unlocked||[]).length} / ${T.length}</td><td><button class="btn r" data-del="${s.id}">حذف</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا توجد شعب بعد</td></tr>'}</table></div>`;
+    $('#asec').onclick=async()=>{const n=$('#nsec').value.trim();if(!n)return;await db.collection('sections').add({name:n,unlocked:[]})};
+    $$('[data-del]').forEach(b=>b.onclick=async()=>{if(confirm('حذف الشعبة؟ (الطلاب يبقون بلا شعبة)'))await db.collection('sections').doc(b.dataset.del).delete()});return}
+  if(!SEC.length){v.innerHTML=`<div class="card notice">ابدئي بإضافة شعبة من تبويب «🏫 الشعب».</div>`;return}
+  if(view==='students'){const list=STU.filter(s=>!selSec||s.section===selSec).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
+    v.innerHTML=`<div class="card"><h2>إضافة طلاب</h2><div class="row">الشعبة: ${secSel('sec')}</div><p class="muted">الصقي سطرًا لكل طالب: <b>الإيميل، الاسم</b> (الاسم اختياري)</p><textarea id="bulk" placeholder="student1@gmail.com, سارة أحمد&#10;student2@gmail.com, محمد علي"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="add">إضافة إلى الشعبة</button><span id="msg" class="muted"></span></div></div>
+    <div class="card"><h2>طلاب شعبة ${secName(selSec)} (${list.length})</h2><table><tr><th>الاسم</th><th>الإيميل</th><th>الشعبة</th><th></th></tr>${list.map(s=>`<tr><td>${s.name||'—'}</td><td class="ltr">${s.email}</td><td><select data-mv="${s.email}">${SEC.map(x=>`<option value="${x.id}" ${x.id===s.section?'selected':''}>${x.name}</option>`).join('')}</select></td><td><button class="btn r" data-rm="${s.email}">حذف</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا يوجد طلاب في هذه الشعبة</td></tr>'}</table></div>`;
+    $('#sec').onchange=e=>{selSec=e.target.value;render()};
+    $('#add').onclick=async()=>{const lines=$('#bulk').value.split(/\n+/).map(l=>l.trim()).filter(Boolean);let n=0;const b=db.batch();lines.forEach(l=>{const [e,...nm]=l.split(/[,،\t]/);const em=(e||'').trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(em))return;b.set(db.collection('students').doc(em),{name:nm.join(' ').trim(),section:selSec},{merge:true});n++});await b.commit();$('#msg').textContent=`تمت إضافة ${n} طالب/ة ✓`;$('#bulk').value=''};
+    $$('[data-mv]').forEach(s=>s.onchange=()=>db.collection('students').doc(s.dataset.mv).update({section:s.value}));
+    $$('[data-rm]').forEach(b=>b.onclick=async()=>{if(confirm('حذف الطالب/ة؟'))await db.collection('students').doc(b.dataset.rm).delete()});return}
+  if(view==='unlock'){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];
+    v.innerHTML=`<div class="card"><h2>فتح الدروس</h2><div class="row">الشعبة: ${secSel('sec')}<button class="btn g" id="cpy">تطبيق نفس الإعداد على كل الشعب</button></div><p class="muted">افتحي الموضوع بعد شرحه في المحاضرة. يظهر للطلاب فورًا.</p>
+     ${T.map((t,i)=>`<div class="tgl"><div><b>${i+1}. ${t.title}</b><div class="muted">${t.learn.length} درس · ${t.tasks.length} تحدٍّ</div></div><label class="sw2"><input type="checkbox" data-u="${t.id}" ${un.includes(t.id)?'checked':''}><span></span></label></div>`).join('')}</div>`;
+    $('#sec').onchange=e=>{selSec=e.target.value;render()};
+    $$('[data-u]').forEach(c=>c.onchange=()=>{const set=new Set(un);c.checked?set.add(c.dataset.u):set.delete(c.dataset.u);db.collection('sections').doc(s.id).update({unlocked:[...set]})});
+    $('#cpy').onclick=async()=>{if(!confirm('نسخ الدروس المفتوحة لهذه الشعبة إلى كل الشعب؟'))return;const b=db.batch();SEC.forEach(x=>b.update(db.collection('sections').doc(x.id),{unlocked:un}));await b.commit()};return}
+  if(view==='track'){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];const TT=T.filter(t=>un.includes(t.id));const list=STU.filter(x=>x.section===s.id).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
+    const cell=(p,t)=>{const d=(p?.done?.[t.id]?.p)||{};const lt=t.learn.filter(k=>d[k]).length,tk=t.tasks.filter(k=>d[k[0]]).length,tot=t.learn.length+t.tasks.length,dn=lt+tk;const ex=t.tasks.filter(k=>k[2]);const exd=ex.filter(k=>d[k[0]]).length;return `<td><span class="chip c${dn===0?0:dn<tot?1:2}">${dn}/${tot}</span>${ex.length?`<div class="muted" style="font-size:11.5px;margin-top:3px">نفّذ: ${exd}/${ex.length}</div>`:''}</td>`};
+    const fmt=ts=>ts&&ts.toDate?ts.toDate().toLocaleString('ar',{dateStyle:'short',timeStyle:'short'}):'لم يدخل بعد';
+    v.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">متابعة شعبة ${s.name}</h2><div class="row" style="margin:0">الشعبة: ${secSel('sec')}<button class="btn g" id="csv">نسخ الجدول (CSV)</button></div></div>
+     ${!TT.length?'<p class="notice">لم تفتحي أي موضوع لهذه الشعبة بعد — من تبويب «🔓 فتح الدروس».</p>':''}
+     <div style="overflow:auto"><table><tr><th>الطالب/ة</th><th>الإنجاز</th>${TT.map(t=>`<th>${t.title}</th>`).join('')}<th>آخر دخول</th></tr>
+     ${list.map(st=>{const p=PRO[st.email];let dn=0,tot=0;TT.forEach(t=>{const d=(p?.done?.[t.id]?.p)||{};tot+=t.learn.length+t.tasks.length;dn+=t.learn.filter(k=>d[k]).length+t.tasks.filter(k=>d[k[0]]).length});const pc=tot?Math.round(dn/tot*100):0;
+       return `<tr><td><b>${st.name||'—'}</b><div class="muted ltr" style="font-size:11.5px">${st.email}</div></td><td><div class="pbar"><i style="width:${pc}%"></i></div><small>${pc}%</small></td>${TT.map(t=>cell(p,t)).join('')}<td class="muted">${fmt(p?.last)}</td></tr>`}).join('')||`<tr><td colspan="${TT.length+3}" class="empty">لا يوجد طلاب في هذه الشعبة — أضيفيهم من تبويب «👩‍🎓 الطلاب».</td></tr>`}</table></div></div>`;
+    $('#sec').onchange=e=>{selSec=e.target.value;render()};
+    $('#csv').onclick=()=>{const rows=[['الاسم','الإيميل',...TT.map(t=>t.title)]];list.forEach(st=>{const p=PRO[st.email];rows.push([st.name||'',st.email,...TT.map(t=>{const d=(p?.done?.[t.id]?.p)||{};return t.learn.filter(k=>d[k]).length+t.tasks.filter(k=>d[k[0]]).length+'/'+(t.learn.length+t.tasks.length)})])});navigator.clipboard.writeText(rows.map(r=>r.join(',')).join('\n')).then(()=>alert('تم النسخ — الصقيه في Excel'))};}
+}
+init();
+</script>
+</body>
+</html>

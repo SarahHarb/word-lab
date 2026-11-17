@@ -10,11 +10,13 @@
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
+<div id="gate" hidden></div>
 <div class="app">
   <aside id="side">
     <div class="sbrand"><span class="logo">W</span><div><b>برنامج وورد</b><small>دليل التطبيق العملي · إعداد: سارة حرب</small></div></div>
     <div id="sprog"></div>
     <nav id="topics"></nav>
+    <div id="suser" hidden></div>
   </aside>
   <main class="main">
     <header id="lhead"></header>
@@ -35,6 +37,9 @@
 <script src="js/content.js"></script>
 <script src="js/lessons.js"></script>
 <script src="js/curriculum.js"></script>
-<script>buildSim();initApp();</script>
+<script src="js/topics-meta.js"></script>
+<script src="js/config.js"></script>
+<script src="js/cloud.js"></script>
+<script>cloudInit();</script>
 </body>
 </html>

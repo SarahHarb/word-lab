@@ -45,8 +45,8 @@ function selSteps(u,c,x){
   else if(s==='cmt')st.push(E('#doc .cmt','انقر على الكلمة المعلَّق عليها',()=>!!S.activeC,()=>{S.activeC=+doc.querySelector('.cmt').dataset.c;renderComments()}));
   return st;
 }
-function cmdLesson(u,c){
-  const x=(CX[u.id]||{})[c.t]||{};const key='c:'+c.t+(c.ctx&&c.ctx!=='doc'?':'+c.ctx:'');
+function cmdLesson(u,c,xo){
+  const x={...((CX[u.id]||{})[c.t]||{}),...(xo||{})};const key='c:'+c.t+(c.ctx&&c.ctx!=='doc'?':'+c.ctx:'');
   let setup=u.cmdSetup||u.exploreSetup||{};
   if(c.t==='sort')setup={html:'<p>رتّب الأدوات أبجديًا:</p><ul><li>مسطرة</li><li>قلم</li><li>دفتر</li></ul>'};
   if(c.ctx==='hf')setup={...setup,hfMode:'hdr',hf:{hdr:'<p>سارة حرب</p>'}};

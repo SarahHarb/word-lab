@@ -112,3 +112,26 @@ button{font-family:inherit;cursor:pointer}
 .ocard.welcome .wl{font:800 40px "Segoe UI",Arial;color:#fff;background:linear-gradient(135deg,#41a5ee,#185abd);width:100%;height:100%;display:grid;place-items:center;border-radius:18px}
 .ocard.welcome p{font-size:16px}
 body.demo #lhead{position:relative;z-index:1005}
+.lg{font-size:11.5px;font-weight:800;color:#7f8ea8;margin:8px 8px 2px;padding-top:6px;border-top:1px solid rgba(255,255,255,.07)}
+.b.red{background:#dc2626;border-color:#dc2626;color:#fff}
+/* workspace + locked */
+.wsbtn{display:flex;align-items:center;gap:10px;width:100%;border:1px dashed rgba(143,182,242,.4);background:rgba(65,165,238,.08);color:#dfe6f2;padding:9px 10px;border-radius:12px;text-align:right;margin:6px 0 8px}
+.wsbtn:hover,.wsbtn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.wsbtn .tic{width:32px;height:32px;border-radius:8px;background:#fff;display:grid;place-items:center;flex:none}
+.wsbtn .tt{display:flex;flex-direction:column}.wsbtn .tt b{font-size:15px}.wsbtn .tt small{font-size:11.5px;color:#9fb3cf}
+.topic.locked .th{opacity:.45;cursor:not-allowed}.topic.locked .lock{font-size:14px}
+/* user box */
+#suser{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+#suser[hidden]{display:none}
+#suser img{width:34px;height:34px;border-radius:50%;background:#2a3a56}
+#suser span{flex:1;display:flex;flex-direction:column;min-width:0}#suser b{font-size:13.5px;color:#fff}#suser small{font-size:11px;color:#93a2ba;overflow:hidden;text-overflow:ellipsis}
+#suser button,#suser .adm{border:1px solid rgba(255,255,255,.2);background:none;color:#dfe6f2;border-radius:8px;padding:4px 10px;font-size:12px;text-decoration:none}
+/* login gate */
+#gate{position:fixed;inset:0;z-index:3000;background:linear-gradient(135deg,#0f1d33,#185abd);display:grid;place-items:center;padding:16px}
+#gate[hidden]{display:none}
+.gcard{background:#fff;border-radius:22px;padding:34px 30px;text-align:center;max-width:400px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.glogo{width:70px;height:70px;border-radius:16px;background:linear-gradient(135deg,#41a5ee,#185abd);color:#fff;font:800 38px "Segoe UI",Arial;display:grid;place-items:center;margin:0 auto 10px}
+.gcard h1{margin:4px 0;font-size:26px}.gcard .gs{color:var(--mute);margin:0 0 18px;font-size:14px}.gcard p{color:#475467}
+.gbtn{display:inline-flex;align-items:center;gap:10px;border:1px solid #dadce0;background:#fff;border-radius:999px;padding:11px 20px;font-size:15.5px;font-weight:700;color:#3c4043;margin-top:8px}
+.gbtn:hover{background:#f8f9fa}.gbtn.alt{background:#185abd;color:#fff;border-color:#185abd}
+.gwarn{background:#fdecec;color:#b42318;border-radius:12px;padding:12px;margin:12px 0;line-height:1.7}
