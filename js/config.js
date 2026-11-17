@@ -1,3 +1,3 @@
-/* ===== إعدادات Firebase — تُعبّأ بعد إنشاء المشروع (انظر FIREBASE-SETUP.md) ===== */
-window.FB_CONFIG = null;   // مثال: {apiKey:"...",authDomain:"...",projectId:"...",appId:"..."}
-window.ADMIN_EMAILS = [];  // مثال: ["teacher@gmail.com"]
+/* ===== إعدادات Supabase — تُعبّأ بعد إنشاء المشروع (انظر SUPABASE-SETUP.md) ===== */
+window.SUPABASE_URL = null;       // مثال: "https://abcd1234.supabase.co"
+window.SUPABASE_ANON_KEY = null;  // مثال: "eyJhbGciOi..."  (anon / public key)
