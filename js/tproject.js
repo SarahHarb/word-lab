@@ -175,24 +175,31 @@ const hRow=i=>HT()?.rows[i]?[...HT().rows[i].cells]:[];
 const greenRow=()=>{const t=HT();if(!t)return null;return [...t.rows].find(r=>r.cells.length===1&&r.cells[0].colSpan>=7&&r.rowIndex>=3)||null};
 const C_DARK=['#44546a','#4472c4','#002060','#0070c0','#5b9bd5'],C_PUR=['#7030a0'],C_GRN=['#70ad47','#00b050','#92d050'],C_RED=['#c00000','#ff0000'],C_LIGHT=['#deebf6','#d9e2f3','#d6dce4','#e7e6e6','#f2f2f2'];
 const hebron=()=>hcells().find(td=>/hebron/i.test(td.textContent));
+const allCols=()=>HT()?cols(HT()):0;
+const rowsArr=()=>HT()?[...HT().rows]:[];
+const isRow=(tr,arr)=>!!tr&&tr.cells.length>0&&[...tr.cells].every(td=>inSet(td,arr));
+const greenRow2=()=>rowsArr().find((tr,i)=>i>0&&tr.cells.length===1&&tr.cells[0].colSpan===allCols())||null;
+const purpleRow=()=>rowsArr().find(tr=>isRow(tr,C_PUR))||null;
+const lastRow=()=>rowsArr().at(-1)||null;
 const HOUSE_TASK={t:'نفّذ: أعد رسم جدول المبنى',kind:'do',goalImg:'img/house-table.jpg',g:'مشروع: أعد رسم الجدول',
- intro:'جهّزنا لك جدولًا من 7 أعمدة و7 صفوف بالمقاسات. حوّله إلى الشكل في الصورة باستخدام الدمج والتظليل والحدود والمحاذاة.',
- setup:{html:houseStart(),caret:'.pg-body > p:last-child'},steps:[],
+ intro:'ابدأ من الصفر: أدرج جدولًا، ثم ادمج وظلّل وارسم الحدود حتى يصبح مثل الصورة. الصورة ستبقى أمامك طوال الوقت.<br><small>في Word العربي يبدأ الجدول من اليمين، فقد يظهر معكوسًا عن الصورة — هذا طبيعي.</small>',
+ setup:{html:'<p class="wtitle">أعد رسم الجدول</p><p><br></p>',caret:'.pg-body > p:last-child'},steps:[],
  reqs:[
+  R('أدرج جدولًا',()=>!!HT(),()=>firstBody().lastElementChild,'إدراج ← جدول ← اختر عدد الأعمدة والصفوف (مثلًا 7 × 7)','table'),
   R('الصف الأول 3 خلايا',()=>hRow(0).length===3,()=>HT()?.rows[0],'حدّد خلايا كل جزء بالسحب ← تخطيط ← دمج الخلايا','merge'),
-  R('مربع كبير يمينًا (2×2)',()=>hcells().some(td=>td.colSpan>=2&&td.rowSpan>=2),()=>HT()?.rows[3]?.cells[5],'حدّد 4 خلايا (2×2) ← دمج الخلايا','merge'),
-  R('الصف الأخضر خلية واحدة',()=>!!greenRow(),()=>HT()?.rows[5],'حدّد الصف كاملًا ← دمج الخلايا','merge'),
-  R('الأول أزرق داكن',()=>hRow(0).length>0&&hRow(0).every(td=>inSet(td,C_DARK)),()=>HT()?.rows[0],'حدّد الصف الأول ← تصميم الجدول ← تظليل ← أزرق داكن','shading'),
-  R('الثالث بنفسجي',()=>hRow(2).length>0&&hRow(2).every(td=>inSet(td,C_PUR)),()=>HT()?.rows[2],'حدّد الصف الثالث ← تظليل ← البنفسجي','shading'),
-  R('الأخضر',()=>!!greenRow()&&inSet(greenRow().cells[0],C_GRN),()=>greenRow()||HT()?.rows[5],'انقر في الصف الطويل ← تظليل ← أخضر','shading'),
-  R('الأخير أحمر',()=>{const r=HT()?.rows[HT().rows.length-1];return !!r&&[...r.cells].every(td=>inSet(td,C_RED))},()=>HT()?.rows[HT().rows.length-1],'حدّد الصف الأخير ← تظليل ← أحمر داكن','shading'),
-  R('الباقي أزرق فاتح',()=>[1,3,4].every(i=>hRow(i).length&&hRow(i).every(td=>inSet(td,C_LIGHT)||/repeating/.test(td.style.backgroundImage))),()=>HT()?.rows[3],'حدّد الخلايا الفارغة ← تظليل ← أزرق فاتح (أو ظلّل الجدول كله أولًا)','shading'),
-  R('نقش مائل',()=>hcells().some(td=>/repeating/.test(td.style.backgroundImage)),()=>HT()?.rows[1]?.cells[HT().rows[1].cells.length-1],'انقر في الخلية ← تظليل ← «نقش مائل»','shading'),
+  R('المربع الكبير (دمج 2×2)',()=>hcells().some(td=>td.colSpan>=2&&td.rowSpan>=2),()=>HT()?.rows[3],'حدّد 4 خلايا (صفّان × عمودان) ← دمج الخلايا','merge'),
+  R('الصف الأخضر خلية واحدة',()=>!!greenRow2(),()=>HT()?.rows[Math.max(0,HT().rows.length-2)],'حدّد الصف كاملًا ← دمج الخلايا','merge'),
+  R('الأول أزرق داكن',()=>isRow(HT()?.rows[0],C_DARK),()=>HT()?.rows[0],'حدّد الصف الأول ← تصميم الجدول ← تظليل ← أزرق داكن','shading'),
+  R('صف بنفسجي',()=>!!purpleRow(),()=>HT()?.rows[2],'حدّد الصف الثالث ← تظليل ← البنفسجي','shading'),
+  R('الأخضر',()=>!!greenRow2()&&inSet(greenRow2().cells[0],C_GRN),()=>greenRow2()||HT(),'انقر في الصف الطويل ← تظليل ← أخضر','shading'),
+  R('الأخير أحمر',()=>rowsArr().length>2&&isRow(lastRow(),C_RED),()=>lastRow(),'حدّد الصف الأخير ← تظليل ← أحمر داكن','shading'),
+  R('الباقي أزرق فاتح',()=>{const ex=new Set([HT()?.rows[0],purpleRow(),greenRow2(),lastRow()]);const cs=rowsArr().filter(tr=>!ex.has(tr)).flatMap(tr=>[...tr.cells]);return cs.length>0&&cs.every(td=>inSet(td,C_LIGHT)||/repeating/.test(td.style.backgroundImage))},()=>HT()?.rows[1],'حدّد الخلايا الفارغة ← تظليل ← أزرق فاتح (أسهل: ظلّل الجدول كله أولًا)','shading'),
+  R('نقش مائل',()=>hcells().some(td=>/repeating/.test(td.style.backgroundImage)),()=>HT()?.rows[1],'انقر في الخلية ← تظليل ← «نقش مائل»','shading'),
   R('إطار الباب مزدوج',()=>{const c=hcells();return c.some(td=>td.style.borderRightStyle==='double')&&c.some(td=>td.style.borderLeftStyle==='double')},()=>HT()?.rows[2],'«نمط الخط» ← مزدوج، ثم حدّد خلايا الباب بالسحب ← حدود ← حدود خارجية','tborders'),
-  R('خط مزدوج بالأسفل',()=>{const r=HT()?.rows[HT().rows.length-1];return !!r&&[...r.cells].every(td=>td.style.borderBottomStyle==='double')},()=>HT()?.rows[HT().rows.length-1],'«نمط الخط» ← مزدوج، حدّد الصف الأخير ← حدود ← حد سفلي','tborders'),
-  R('Bottom center alignment',()=>hcells().some(td=>/bottom center/i.test(td.textContent)&&td.style.verticalAlign==='bottom'&&td.style.textAlign==='center'),()=>hcells().find(td=>td.colSpan>=2&&td.rowSpan>=2),'اكتب العبارة في المربع ← تخطيط ← «محاذاة لأسفل الوسط»','calign'),
-  R('Hebron عمودية',()=>!!hebron()&&!!hebron().style.writingMode,()=>greenRow()?.cells[0],'اكتب Hebron في الصف الأخضر ← تخطيط ← اتجاه النص','textDir'),
-  R('Hebron أصفر وعريض',()=>{const td=hebron();if(!td)return false;const w=document.createTreeWalker(td,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/hebron/i.test(n.nodeValue)){const cs=getComputedStyle(n.parentElement);return cs.color===rgb('#ffff00')&&(+cs.fontWeight>=600||cs.fontWeight==='bold')}}return false},()=>hebron()||greenRow()?.cells[0],'حدّد الكلمة ← الصفحة الرئيسية ← لون الخط أصفر + غامق','fontcolor'),
-  R('الصف الأخضر أعلى (1.5 سم+)',()=>{const r=greenRow();return !!r&&parseFloat(r.cells[0].style.height)>=1.5*CM-2},()=>greenRow()||HT()?.rows[5],'انقر في الصف الأخضر ← تخطيط ← الارتفاع: 1.8','rowH'),
+  R('خط مزدوج بالأسفل',()=>{const r=lastRow();return !!r&&[...r.cells].every(td=>td.style.borderBottomStyle==='double')},()=>lastRow(),'«نمط الخط» ← مزدوج، حدّد الصف الأخير ← حدود ← حد سفلي','tborders'),
+  R('Bottom center alignment',()=>hcells().some(td=>/bottom center/i.test(td.textContent)&&td.style.verticalAlign==='bottom'&&td.style.textAlign==='center'),()=>hcells().find(td=>td.colSpan>=2&&td.rowSpan>=2)||HT(),'اكتب العبارة في المربع الكبير ← تخطيط ← «محاذاة لأسفل الوسط»','calign'),
+  R('Hebron عمودية',()=>!!hebron()&&!!hebron().style.writingMode,()=>greenRow2()?.cells[0]||HT(),'اكتب Hebron في الصف الأخضر ← تخطيط ← اتجاه النص','textDir'),
+  R('Hebron أصفر وعريض',()=>{const td=hebron();if(!td)return false;const w=document.createTreeWalker(td,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/hebron/i.test(n.nodeValue)){const cs=getComputedStyle(n.parentElement);return cs.color===rgb('#ffff00')&&(+cs.fontWeight>=600||cs.fontWeight==='bold')}}return false},()=>hebron()||greenRow2()?.cells[0]||HT(),'حدّد الكلمة ← الصفحة الرئيسية ← لون الخط أصفر + غامق','fontcolor'),
+  R('الصف الأخضر أعلى (1.5 سم+)',()=>{const r=greenRow2();return !!r&&parseFloat(r.cells[0].style.height)>=1.5*CM-2},()=>greenRow2()||HT(),'انقر في الصف الأخضر ← تخطيط ← الارتفاع: 1.8','rowH'),
  ]};
 HOUSE_TASK.check=()=>HOUSE_TASK.reqs.every(q=>{try{return !!q.check()}catch(e){return false}});
