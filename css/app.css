@@ -135,3 +135,27 @@ body.demo #lhead{position:relative;z-index:1005}
 .gbtn{display:inline-flex;align-items:center;gap:10px;border:1px solid #dadce0;background:#fff;border-radius:999px;padding:11px 20px;font-size:15.5px;font-weight:700;color:#3c4043;margin-top:8px}
 .gbtn:hover{background:#f8f9fa}.gbtn.alt{background:#185abd;color:#fff;border-color:#185abd}
 .gwarn{background:#fdecec;color:#b42318;border-radius:12px;padding:12px;margin:12px 0;line-height:1.7}
+
+/* table project */
+.pbar{display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+.pbar .pb-t b{color:var(--ink)}.pbar .pb-s{font-weight:800;color:var(--blue)}
+.pb-bar{display:inline-block;width:110px;height:6px;border-radius:6px;background:#e6ebf2;overflow:hidden;vertical-align:middle}.pb-bar i{display:block;height:100%;background:linear-gradient(90deg,#41a5ee,#16a34a)}
+.pb-goal{border:1px solid #b9d0f3;background:var(--blueL);color:var(--blue);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:800}
+.pb-goal:hover{background:#dbe8fc}
+#goalPop{position:fixed;z-index:3000;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px rgba(16,24,40,.22);padding:12px 14px;width:min(560px,92vw);animation:pop .2s}
+#goalPop .gp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}#goalPop .gp-h button{border:0;background:none;font-size:16px;color:var(--mute)}
+#goalPop p{margin:8px 0 0;font-size:13.5px;color:var(--mute)}#goalPop p b{color:var(--ink)}
+.goalbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px "Calibri","Tajawal",Arial,sans-serif;direction:rtl;text-align:right;max-height:300px;overflow:auto}
+.goalbox table.wt{margin:0;pointer-events:none}.goalbox table.wt td{height:auto!important;padding:3px 6px}
+.ocard.proj{max-width:600px}.ocard.proj .goalbox{margin:12px 0 4px}
+.pwon{margin:10px auto 0;background:var(--okL);color:#137a37;border-radius:12px;padding:8px 12px;font-size:14px;display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap}
+.pwon small{font-weight:800}
+
+/* laptops: give the simulator more room */
+@media (min-width:901px) and (max-width:1500px){#side{width:280px}.sbrand{padding:14px 16px 10px}}
+@media (min-width:901px) and (max-height:820px){
+ .main{padding:8px 10px 10px;gap:8px}
+ #lhead{padding:8px 14px;border-radius:12px}#lhead h1{font-size:17.5px}#lhead p{font-size:13px;margin-top:1px}.crumb{font-size:12px}
+ .pbar{margin-top:4px}.b{padding:6px 11px}
+ #taskbar{height:34px}#taskbar .tb{width:32px;height:32px}#taskbar .tsearch{height:24px}#taskbar .clock{font-size:10px;line-height:1.15}#wwin{inset:0 0 34px 0}
+}
