@@ -41,6 +41,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 <script src="js/config.js"></script>
 <script src="js/topics-meta.js"></script>
 <script>
+const inSec=(st,id)=>st.section_id===id||(st.extra||[]).includes(id);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=window.TOPICS_META;
 const ld=src=>new Promise((r,j)=>{const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=j;document.head.appendChild(s)});
 let sb,SEC=[],STU=[],PRO={},view='track',selSec='';
@@ -63,11 +64,11 @@ const secName=id=>SEC.find(s=>s.id===id)?.name||'—';
 const ok=r=>{if(r.error){alert('خطأ: '+r.error.message);return false}return true};
 function render(){const v=$('#view');
   if(view==='sections'){v.innerHTML=`<div class="card"><h2>الشعب</h2><div class="row"><input id="nsec" placeholder="اسم الشعبة، مثل: التاسع أ"><button class="btn" id="asec">إضافة شعبة</button></div>
-    <table><tr><th>الشعبة</th><th>عدد الطلاب</th><th>الدروس المفتوحة</th><th></th></tr>${SEC.map(s=>`<tr><td><b>${s.name}</b></td><td>${STU.filter(x=>x.section_id===s.id).length}</td><td>${(s.unlocked||[]).length} / ${T.length}</td><td><button class="btn r" data-del="${s.id}">حذف</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا توجد شعب بعد</td></tr>'}</table></div>`;
+    <table><tr><th>الشعبة</th><th>عدد الطلاب</th><th>الدروس المفتوحة</th><th></th></tr>${SEC.map(s=>`<tr><td><b>${s.name}</b></td><td>${STU.filter(x=>inSec(x,s.id)).length}</td><td>${(s.unlocked||[]).length} / ${T.length}</td><td><button class="btn r" data-del="${s.id}">حذف</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا توجد شعب بعد</td></tr>'}</table></div>`;
     $('#asec').onclick=async()=>{const n=$('#nsec').value.trim();if(!n)return;if(ok(await sb.from('sections').insert({name:n})))load()};
     $$('[data-del]').forEach(b=>b.onclick=async()=>{if(confirm('حذف الشعبة؟ (الطلاب يبقون بلا شعبة)')&&ok(await sb.from('sections').delete().eq('id',b.dataset.del)))load()});return}
   if(!SEC.length){v.innerHTML=`<div class="card notice">ابدئي بإضافة شعبة من تبويب «🏫 الشعب».</div>`;return}
-  if(view==='students'){const list=STU.filter(s=>s.section_id===selSec).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
+  if(view==='students'){const list=STU.filter(s=>inSec(s,selSec)).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
     v.innerHTML=`<div class="card"><h2>إضافة طلاب</h2><div class="row">الشعبة: ${secSel('sec')}</div><p class="muted">الصقي سطرًا لكل طالب: <b>الإيميل، الاسم</b> (الاسم اختياري)</p><textarea id="bulk" placeholder="student1@gmail.com, سارة أحمد&#10;student2@gmail.com, محمد علي"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="add">إضافة إلى الشعبة</button><span id="msg" class="muted"></span></div></div>
     <div class="card"><h2>طلاب شعبة ${secName(selSec)} (${list.length})</h2><table><tr><th>الاسم</th><th>الإيميل</th><th>الشعبة</th><th></th></tr>${list.map(s=>`<tr><td>${s.name||'—'}</td><td class="ltr">${s.email}</td><td><select data-mv="${s.email}">${SEC.map(x=>`<option value="${x.id}" ${x.id===s.section_id?'selected':''}>${x.name}</option>`).join('')}</select></td><td><button class="btn r" data-rm="${s.email}">حذف</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا يوجد طلاب في هذه الشعبة</td></tr>'}</table></div>`;
     $('#sec').onchange=e=>{selSec=e.target.value;render()};
@@ -80,7 +81,7 @@ function render(){const v=$('#view');
     $('#sec').onchange=e=>{selSec=e.target.value;render()};
     $$('[data-u]').forEach(c=>c.onchange=async()=>{const set=new Set(un);c.checked?set.add(c.dataset.u):set.delete(c.dataset.u);if(ok(await sb.from('sections').update({unlocked:[...set]}).eq('id',s.id)))load()});
     $('#cpy').onclick=async()=>{if(!confirm('نسخ الدروس المفتوحة لهذه الشعبة إلى كل الشعب؟'))return;for(const x of SEC)await sb.from('sections').update({unlocked:un}).eq('id',x.id);load()};return}
-  if(view==='track'){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];const TT=T.filter(t=>un.includes(t.id));const list=STU.filter(x=>x.section_id===s.id).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
+  if(view==='track'){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];const TT=T.filter(t=>un.includes(t.id));const list=STU.filter(x=>inSec(x,s.id)).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
     const cell=(p,t)=>{const d=(p?.done?.[t.id]?.p)||{};const dn=t.learn.filter(k=>d[k]).length+t.tasks.filter(k=>d[k[0]]).length,tot=t.learn.length+t.tasks.length;const ex=t.tasks.filter(k=>k[2]);const exd=ex.filter(k=>d[k[0]]).length;return `<td><span class="chip c${dn===0?0:dn<tot?1:2}">${dn}/${tot}</span>${ex.length?`<div class="muted" style="font-size:11.5px;margin-top:3px">نفّذ: ${exd}/${ex.length}</div>`:''}</td>`};
     const fmt=ts=>ts?new Date(ts).toLocaleString('ar',{dateStyle:'short',timeStyle:'short'}):'لم يدخل بعد';
     v.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">متابعة شعبة ${s.name}</h2><div class="row" style="margin:0">الشعبة: ${secSel('sec')}<button class="btn g" id="rf">↻ تحديث</button><button class="btn g" id="csv">نسخ الجدول (CSV)</button></div></div>

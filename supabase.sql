@@ -27,3 +27,4 @@ drop policy if exists p_upd on progress; create policy p_upd on progress for upd
 
 -- إيميل المعلّمة (الأدمن):
 insert into admins(email) values (lower('TEACHER_EMAIL@gmail.com')) on conflict do nothing;
+alter table students add column if not exists extra uuid[] not null default '{}';

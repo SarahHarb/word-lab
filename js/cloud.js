@@ -30,7 +30,7 @@ async function onUser(u){
     const a=await sb.from('admins').select('email').eq('email',email).maybeSingle();CLOUD.admin=!!a.data;
     if(!CLOUD.admin){
       const st=await sb.from('students').select('*').eq('email',email).maybeSingle();if(!st.data){gate('denied',email);return}CLOUD.student=st.data;
-      const loadSec=async()=>{const r=await sb.from('sections').select('unlocked').eq('id',CLOUD.student.section_id).maybeSingle();window.UNLOCKED=r.data?(r.data.unlocked||[]):[];if(appStarted){renderNav2();if(CO.unit&&!isUnlocked(CO.unit))openWorkspace()}};
+      const loadSec=async()=>{const ids=[CLOUD.student.section_id,...(CLOUD.student.extra||[])].filter(Boolean);const r=ids.length?await sb.from('sections').select('unlocked').in('id',ids):{data:[]};window.UNLOCKED=[...new Set((r.data||[]).flatMap(x=>x.unlocked||[]))];if(appStarted){renderNav2();if(CO.unit&&!isUnlocked(CO.unit))openWorkspace()}};
       await loadSec();
       try{sb.channel('sec').on('postgres_changes',{event:'*',schema:'public',table:'sections'},loadSec).subscribe()}catch(e){}
       setInterval(loadSec,60000);
