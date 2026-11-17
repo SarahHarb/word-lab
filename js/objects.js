@@ -83,7 +83,7 @@ Object.assign(OPS,{
   addShapeText(){const o=shpOnly();if(!o)return;const t=o.querySelector('.stxt');t.contentEditable='true';placeCaretIn(t,false);logAct('addShapeText')},
   /* arrange (shared) */
   wrap(a){const o=objOnly();if(!o)return;snap();const d=o.dataset;const was=d.wrap;
-    if(['behind','front'].includes(a)&&!['behind','front'].includes(was)){const body=bodyOf(o);const br=body.getBoundingClientRect(),or=o.getBoundingClientRect(),z=S.zoom/100;d.x=Math.round((or.left-br.left)/z);d.y=Math.round((or.top-br.top)/z);if(o.parentElement!==body){body.appendChild(o)}}
+    if(['behind','front'].includes(a)&&!['behind','front'].includes(was)){const body=bodyOf(o);const br=body.getBoundingClientRect(),or=o.getBoundingClientRect(),z=(S.zoom/100*(window.SIMSCALE||1));d.x=Math.round((or.left-br.left)/z);d.y=Math.round((or.top-br.top)/z);if(o.parentElement!==body){body.appendChild(o)}}
     if(!['behind','front'].includes(a)&&['behind','front'].includes(was)){const body=bodyOf(o);const blocks=[...body.children].filter(b=>b!==o&&!b.classList.contains('obj'));const y=+d.y||0;let tgt=blocks.find(b=>b.offsetTop+b.offsetHeight>y)||blocks.at(-1);if(a==='inline'){const p=document.createElement('p');p.appendChild(o);tgt?tgt.before(p):body.appendChild(p)}else{tgt?tgt.prepend(o):body.prepend(o)}}
     d.wrap=a;if(a!=='inline')delete d.align;applyObj(o);logAct('wrap:'+a)},
   wrapMore(){simToast('خيارات تخطيط إضافية: للعرض فقط')},
@@ -110,14 +110,14 @@ function scaleObj(o,f){const d=o.dataset;['w','h','iw','ih','ix','iy'].forEach(k
 let drag=null;
 document.addEventListener('mousedown',e=>{
   if(!e.target.closest||!e.target.closest('#doc'))return;
-  if(S.drawKind&&e.target.closest('.page')){e.preventDefault();const page=e.target.closest('.page');const body=page.querySelector('.pg-body');const br=body.getBoundingClientRect(),z=S.zoom/100;
+  if(S.drawKind&&e.target.closest('.page')){e.preventDefault();const page=e.target.closest('.page');const body=page.querySelector('.pg-body');const br=body.getBoundingClientRect(),z=(S.zoom/100*(window.SIMSCALE||1));
     const box=document.createElement('div');box.className='drawbox';body.appendChild(box);drag={mode:'draw',body,box,x0:(e.clientX-br.left)/z,y0:(e.clientY-br.top)/z,br,z};return}
   const o=e.target.closest('.obj');
   if(!o){if(S.obj){const cropEnd=S.obj.classList.contains('cropping');clearObjSel();if(cropEnd)logAct('cropDone')}return}
   if(e.button===2){selectObj(o);return}
   const stxt=e.target.closest('.stxt');if(stxt&&stxt.isContentEditable&&o.classList.contains('sel')){return}
   if(stxt&&stxt.isContentEditable&&!o.classList.contains('sel')){selectObj(o);if(o.classList.contains('wordart')||o.classList.contains('textbox'))return}
-  e.preventDefault();selectObj(o);const d=o.dataset,z=S.zoom/100;
+  e.preventDefault();selectObj(o);const d=o.dataset,z=(S.zoom/100*(window.SIMSCALE||1));
   const h=e.target.closest('.h');
   if(h&&!h.classList.contains('anchor')){const cls=[...h.classList].find(c=>c!=='h');snap();drag={mode:h.classList.contains('rot')?'rot':o.classList.contains('cropping')?'crop':'resize',o,h:cls,x0:e.clientX,y0:e.clientY,d0:{...d},z,c:o.getBoundingClientRect()};return}
   snap();drag={mode:'move',o,x0:e.clientX,y0:e.clientY,d0:{...d},z,moved:false};

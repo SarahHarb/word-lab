@@ -11,17 +11,13 @@
 </head>
 <body>
 <header class="top">
-  <button class="brand" id="brand"><span class="applogo w">W</span><span><b>برنامج وورد</b><small>دليل التطبيق العملي · إعداد: سارة حرب</small></span></button>
+  <div class="brand"><span class="applogo w">W</span><span><b>برنامج وورد</b><small>دليل التطبيق العملي · إعداد: سارة حرب</small></span></div>
   <div class="gprog" id="gprog"></div>
 </header>
-<main id="home"></main>
-<section id="unit" hidden>
-  <div id="uhead"></div>
-  <div class="ubody">
-    <aside id="panel"></aside>
-    <div class="simwrap"><div id="sim"></div><div id="simcard" class="simcard"></div></div>
-  </div>
-</section>
+<nav id="secbar"></nav>
+<div id="strip"></div>
+<div class="goalbar"><span class="gt">🎯 <span id="goal"></span></span><span class="dots" id="dots"></span><button id="watchBtn">▶ شاهد</button><button id="againBtn">↺ من جديد</button></div>
+<div class="simwrap"><div id="sim"></div><div id="simcard" class="simcard"></div></div>
 <div id="ring"></div><div id="bubble"></div><div id="blocker"></div>
 <div id="cursor"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M4 2l15 11-7 1 4 8-3 1.5-4-8-5 5z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
 <script src="js/icons.js"></script>
@@ -34,8 +30,7 @@
 <script src="js/learn.js"></script>
 <script src="js/content.js"></script>
 <script>
-buildSim();renderHome();
-document.getElementById('brand').onclick=goHome;
+buildSim();initApp();
 </script>
 </body>
 </html>

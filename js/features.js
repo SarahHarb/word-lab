@@ -37,7 +37,7 @@ Object.assign(OPS,{
   grow(){const p=curPt();const n=SIZES.find(s=>s>p)||p+10;styleSel(`font-size:${n}pt`)},
   shrink(){const p=curPt();const n=[...SIZES].reverse().find(s=>s<p)||Math.max(1,p-1);styleSel(`font-size:${n}pt`)},
   clearfmt(){if(!needSel())return;snap();ex('removeFormat');const r=S.range;const host=editHost(r.startContainer);if(host)host.querySelectorAll('span[style],font').forEach(s=>{if(r.intersectsNode(s)){s.replaceWith(...s.childNodes)}});selBlocks().forEach(b=>{b.removeAttribute('style');if(/H1|H2/.test(b.tagName)||b.className)setBlock(b,'p','')});logAct('clearfmt')},
-  bold(){if(needSel())ex('bold')},italic(){if(needSel())ex('italic')},
+  bold(){if(needSel()){ex('styleWithCSS',false);ex('bold')}},italic(){if(needSel()){ex('styleWithCSS',false);ex('italic')}},
   underline(a){if(!needSel())return;if(!a||a==='single'){ex('underline');return}styleSel(`text-decoration:underline ${a}`)},
   strike(){if(needSel())ex('strikeThrough')},sub(){if(needSel())ex('subscript')},sup(){if(needSel())ex('superscript')},
   textfx(a){if(a==='none'){styleSel('text-shadow:none;-webkit-text-stroke:0')}else if(a==='outline')styleSel('color:#fff;-webkit-text-stroke:1px #000');else if(a==='shadow')styleSel('text-shadow:2px 2px 3px rgba(0,0,0,.45)');else if(a==='glow')styleSel('text-shadow:0 0 6px #ffc000,0 0 3px #ffc000');else if(a!=null)styleSel(TEXT_FX[+a].css)},
@@ -259,7 +259,7 @@ function addComment(){
   setTimeout(()=>{const t=$(`#cmtpane .ccard[data-c="${id}"] .ctext`);if(t){t.focus()}},30);logAct('comment:add');
 }
 function renderComments(){
-  const p=$('#cmtpane');if(!p)return;doc.querySelectorAll('.cmt').forEach(s=>{if(!S.comments.find(c=>c.id==s.dataset.c))s.replaceWith(...s.childNodes)});
+  const p=$('#cmtpane');if(!p)return;
   S.comments=S.comments.filter(c=>doc.querySelector(`.cmt[data-c="${c.id}"]`));
   if(!S.comments.length||!S.cmts){p.hidden=true;return}p.hidden=false;
   p.innerHTML=`<div class="pane-h"><b>التعليقات</b><button data-x>✕</button></div><div class="clist">${S.comments.map(c=>`<div class="ccard ${S.activeC==c.id?'act':''}" data-c="${c.id}"><div class="who ${c.author!=='سارة حرب'?'t':''}"><i>${c.author.split(' ').map(w=>w[0]).join(' ')}</i>${c.author}</div>

@@ -131,3 +131,34 @@ button{font-family:inherit;cursor:pointer}
 .arr{font-style:normal;color:#b07d00;font-size:12px}
 .reveal{display:block;margin:10px auto 2px;border:0;background:var(--g);color:#fff;border-radius:999px;padding:9px 24px;font-weight:800;font-size:15px}
 @media(max-width:900px){.ubody{flex-direction:column}#panel{width:auto;max-height:38vh}.pair{grid-template-columns:1fr}.or{justify-self:center}}
+/* ===== lesson-strip shell ===== */
+body{height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+#secbar{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line);flex:none;scrollbar-width:thin}
+#secbar button{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;color:var(--mute);white-space:nowrap}
+#secbar button small{color:#b07d00;font-weight:800;margin-inline-end:6px}
+#secbar button.on{background:var(--g);border-color:var(--g);color:#fff}#secbar button.on small{color:var(--gold)}
+#secbar button.done:not(.on){border-color:#9fd6b0;color:var(--ok)}
+#strip{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;flex:none;scrollbar-width:thin}
+.ls{flex:none;display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:#fff;border-radius:14px;padding:7px 12px 7px 10px;font-size:14.5px;font-weight:700;color:var(--ink);max-width:290px;text-align:right;transition:.15s}
+.ls:hover{transform:translateY(-2px);border-color:#c9bfa6}
+.ls .li{width:30px;height:30px;border-radius:9px;background:var(--gl);color:var(--g);display:grid;place-items:center;font-size:14px;flex:none}
+.ls .lt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls.on{border-color:var(--g2);box-shadow:0 4px 14px rgba(31,91,74,.15)}.ls.on .li{background:var(--g);color:#fff}
+.ls.done .li{background:var(--ok);color:#fff}
+.goalbar{display:flex;align-items:center;gap:12px;margin:0 14px 10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:7px 12px;flex:none}
+.goalbar .gt{font-size:16px;font-weight:800;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goalbar .dots{margin:0}
+.goalbar button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 12px;font-size:14px;font-weight:700;flex:none}
+#watchBtn{background:#185abd;color:#fff;border-color:#185abd}
+.simwrap{flex:1;min-height:0;position:relative;display:flex;margin:0 14px 14px;overflow:hidden;border-radius:10px}
+.ocard small.sec{display:block;color:#b07d00;font-weight:800;margin-bottom:2px}
+@media (max-width:700px){
+ .top{padding:8px 12px}.brand b{font-size:17px}.brand small{display:none}.brand .applogo{width:32px;height:32px;font-size:18px}.gprog .bar{width:70px}
+ #secbar{padding:6px 10px}#secbar button{padding:5px 11px;font-size:13px}
+ #strip{padding:8px 10px;gap:6px}.ls{font-size:13px;padding:5px 9px;max-width:220px}.ls .li{width:24px;height:24px;font-size:12px}
+ .goalbar{margin:0 10px 8px;padding:6px 8px;gap:6px;flex-wrap:wrap}.goalbar .gt{font-size:14px;flex-basis:100%;white-space:normal}.goalbar .dots{flex:1}
+ .goalbar button{padding:5px 10px;font-size:13px}
+ .simwrap{margin:0 6px 6px}
+ .ocard{padding:18px 18px;margin:10px}.ocard h2{font-size:20px}.ocard .big{width:64px;height:64px}.cbtns button{font-size:14px;padding:9px 14px}
+ #bubble{font-size:13px;max-width:240px}
+}
