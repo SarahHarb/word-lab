@@ -159,3 +159,6 @@ body.demo #lhead{position:relative;z-index:1005}
  .pbar{margin-top:4px}.b{padding:6px 11px}
  #taskbar{height:34px}#taskbar .tb{width:32px;height:32px}#taskbar .tsearch{height:24px}#taskbar .clock{font-size:10px;line-height:1.15}#wwin{inset:0 0 34px 0}
 }
+
+.goalbox img{display:block;width:100%;height:auto;border-radius:6px}
+.reqs.many{max-width:none;justify-content:flex-start;margin-top:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}.reqs.many .rq{white-space:nowrap}.reqs.many .rq{font-size:11.5px;padding:2px 8px}

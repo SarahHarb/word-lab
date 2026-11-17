@@ -121,11 +121,11 @@ function renderHead(){
   const u=CO.unit,l=CO.item;if(!u||!l)return;const ls=L(u),i=ls.indexOf(l);
   const sec=l.kind==='learn'?'تعلّم':'تحدَّ نفسك';
   $('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button>
-   <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}${l.proj?projBar(l):''}</div>
-   <div class="la">${l.kind==='do'?`<div class="reqs" id="reqs"></div><button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
+   <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}${l.proj?projBar(l):''}${l.goalImg?`<div class="pbar"><button class="pb-goal" id="goalBtn">🖼️ عرض الصورة المطلوبة</button></div>`:''}${l.kind==='do'&&l.reqs.length>6?'<div class="reqs many" id="reqs"></div>':''}</div>
+   <div class="la">${l.kind==='do'?`${l.reqs.length>6?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
   $('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');
   $('#hr').onclick=()=>startItem();$('#hn').onclick=()=>nextLesson();
-  if(l.proj){$('#goalBtn').onclick=e=>{e.stopPropagation();toggleGoal()}}
+  if(l.proj||l.goalImg){$('#goalBtn').onclick=e=>{e.stopPropagation();toggleGoal()}}
   if(l.kind==='do'){$('#verify').onclick=verify;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
   fitSim();
 }
@@ -140,7 +140,7 @@ document.addEventListener('mousedown',e=>{if(CO.mode==='do'&&CO.exEl&&!e.target.
 function renderDots(i){const d=$('#dots');if(!d||!CO.item||!CO.item.steps)return;d.innerHTML=CO.item.steps.map((_,k)=>`<i class="${k<i||i===99?'d':k===i?'c':''}"></i>`).join('')}
 function openLesson(u,i){CO.ws=false;CO.mode='idle';CO.exEl=null;hideCoach();clearHints();hideTip();cur().style.display='none';const ls=L(u);CO.unit=u;CO.itemI=i;CO.item=ls[i]||ls[0];CO.lastI=null;CO.hit=false;CO.bad=null;openTopic=u;
   try{localStorage.setItem(PKEY+'-last',u.id+':'+CO.item.key)}catch(e){}
-  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();closeGoal();if(CO.item.proj&&CO.item.proj.i===0&&!isDone(u,CO.item)){showSimCard('proj');return}setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
+  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();closeGoal();if(CO.item.proj&&CO.item.proj.i===0&&!isDone(u,CO.item)){showSimCard('proj');return}if(CO.item.goalImg){showSimCard('goal');return}setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
 function startItem(){openLesson(CO.unit,L(CO.unit).indexOf(CO.item))}
 function tryItem(){hideSimCard();applySetup(CO.item.setup||{});CO.lastI=null;CO.hit=false;setTimeout(()=>{CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try'},90)}
 function stopDemo(){if(CO.mode!=='demo')return;CO.mode='idle';hideCoach();hideTip();cur().style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');tryItem();renderHead()}
@@ -161,6 +161,7 @@ function showSimCard(kind){const it=CO.item,o=$('#simcard');if(!it)return;const 
   if(kind==='start')o.innerHTML=`<div class="ocard"><div class="big">${icon(it.ic||u.icon,40)}</div><small class="sec">${u.title} · ${it.kind==='learn'?'تعلّم':'تحدَّ نفسك'}</small><h2>${it.t}</h2>${it.hint?`<div class="after">💡 ${it.hint}</div>`:''}
     ${doT?`<ul class="rl">${it.reqs.map(r=>`<li>${r.t}</li>`).join('')}</ul><p class="sm">نفّذ بنفسك بلا إرشاد، ثم اضغط <b>«✔ تحقّق»</b>.</p><div class="cbtns"><button class="try" data-a="try">✍️ ابدأ التنفيذ</button></div>`:`<div class="cbtns"><button class="watch" data-a="watch">▶ شاهد كيف</button><button class="try" data-a="try">✋ جرّب بنفسك</button></div>`}</div>`;
   if(kind==='proj')o.innerHTML=`<div class="ocard proj"><small class="sec">مشروع الجداول</small><h2>🎯 سنبني هذا الجدول معًا</h2><p>في كل درس تتعلّم أمرًا واحدًا وتضيفه إلى الجدول نفسه، حتى يكتمل.</p><div class="goalbox">${projGoalHTML()}</div><div class="cbtns"><button class="try" data-a="try">✋ ابدأ الخطوة الأولى</button></div></div>`;
+  if(kind==='goal')o.innerHTML=`<div class="ocard proj"><small class="sec">تحدَّ نفسك · نفّذ</small><h2>🖼️ أعد رسم هذا الجدول</h2><p>${it.intro||''}</p><div class="goalbox"><img src="${it.goalImg}" alt=""></div><p class="sm">نفّذ بنفسك، وكل شرط يتحقّق يصبح أخضر. «عرض الصورة المطلوبة» في الأعلى متى احتجتها.</p><div class="cbtns"><button class="try" data-a="try">✍️ ابدأ التنفيذ</button></div></div>`;
   if(kind==='welcome')o.innerHTML=`<div class="ocard welcome"><div class="big"><span class="wl">W</span></div><h2>أهلًا بك 👋</h2><p>تعلّم Word خطوة بخطوة على نسخة تشبه البرنامج الحقيقي.<br>في كل درس: <b>▶ شاهد</b> كيف يُعمل، ثم <b>✋ جرّب</b> بنفسك.</p><div class="cbtns"><button class="try" data-a="start">ابدأ الدرس الأول ←</button></div></div>`;
   if(kind==='turn')o.innerHTML=`<div class="ocard"><div class="big">👏</div><h2>الآن دورك!</h2><p>${it.t}</p><div class="cbtns"><button class="try" data-a="try">✋ ابدأ</button><button class="ghost" data-a="watch">▶ شاهد مرة أخرى</button></div></div>`;
   if(kind==='won'){o.innerHTML=`<div class="ocard"><div class="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div><h2>أحسنت!</h2><p>${it.t} ✓</p>${it.proj?projWon(it):''}${it.after?`<div class="after">💡 ${it.after}</div>`:''}<div class="cbtns"><button class="try" data-a="next">التالي ←</button><button class="ghost" data-a="again">↺ أعد</button><button class="ghost" data-a="free">✏️ تابع على المحاكي</button></div></div>`}
@@ -193,7 +194,7 @@ function projBar(l){const p=l.proj;const pct=p.extra?100:Math.round(p.i/p.n*100)
   return `<div class="pbar"><span class="pb-t">🎯 مشروع: <b>برنامج رحلة أريحا</b></span><span class="pb-s">${p.extra?'أوامر إضافية':`الخطوة ${p.i+1} من ${p.n}`}</span><span class="pb-bar"><i style="width:${pct}%"></i></span><button class="pb-goal" id="goalBtn">عرض الهدف</button></div>`}
 function projWon(it){const p=it.proj;return `<div class="pwon">➕ أُضيف إلى المشروع: <b>${p.adds}</b>${!p.extra?`<span class="pb-bar"><i style="width:${Math.round((p.i+1)/p.n*100)}%"></i></span><small>${p.i+1} / ${p.n}</small>`:''}</div>`}
 function toggleGoal(){let g=$('#goalPop');if(g){closeGoal();return}g=document.createElement('div');g.id='goalPop';const l=CO.item;
-  g.innerHTML=`<div class="gp-h"><b>🎯 الشكل النهائي للجدول</b><button aria-label="إغلاق">✕</button></div><div class="goalbox">${projGoalHTML()}</div>${l&&l.proj&&!l.proj.extra?`<p>الآن نضيف: <b>${l.proj.adds}</b></p>`:''}`;
+  g.innerHTML=`<div class="gp-h"><b>🎯 الشكل النهائي للجدول</b><button aria-label="إغلاق">✕</button></div><div class="goalbox">${l&&l.goalImg?`<img src="${l.goalImg}" alt="">`:projGoalHTML()}</div>${l&&l.proj&&!l.proj.extra?`<p>الآن نضيف: <b>${l.proj.adds}</b></p>`:''}`;
   document.body.appendChild(g);const r=$('#goalBtn').getBoundingClientRect();g.style.top=(r.bottom+8)+'px';g.style.left=Math.max(10,Math.min(innerWidth-g.offsetWidth-10,r.left))+'px';
   g.querySelector('button').onclick=closeGoal;setTimeout(()=>document.addEventListener('click',goalOut,true),0)}
 function goalOut(e){if(!e.target.closest('#goalPop,#goalBtn'))closeGoal()}

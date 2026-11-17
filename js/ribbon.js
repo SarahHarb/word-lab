@@ -100,7 +100,7 @@ const RIBBON={
  /* ---------- contextual ---------- */
  tdesign:{label:'تصميم الجدول',ctx:'table',groups:[
   {label:'خيارات أنماط الجداول',items:[{col:[{id:'optHeader',check:1,label:'صف الرأس'},{id:'optTotal',check:1,label:'صف الإجمالي'},{id:'optBanded',check:1,label:'صفوف ذات نطاقات'}]},{col:[{id:'optFirstCol',check:1,label:'العمود الأول'},{id:'optLastCol',check:1,label:'العمود الأخير'},{id:'optBandCols',check:1,label:'أعمدة ذات نطاقات'}]}]},
-  {label:'أنماط الجداول',items:[{id:'tstyles',gallery:'tstyles'},{id:'shading',label:'تظليل',icon:'shading',big:1,dd:SW('shading',['none:بلا لون'])}]},
+  {label:'أنماط الجداول',items:[{id:'tstyles',gallery:'tstyles'},{id:'shading',label:'تظليل',icon:'shading',big:1,dd:SW('shading',['none:بلا لون','pattern:نقش مائل'])}]},
   {label:'حدود',items:[{col:[{id:'penStyle',label:'نمط الخط',icon:'penstyle',dd:[{id:'penStyle',arg:'solid',label:'────── مفرد'},{id:'penStyle',arg:'dashed',label:'- - - - متقطع'},{id:'penStyle',arg:'double',label:'══════ مزدوج'}]},{id:'penWeight',label:'سُمك القلم',icon:'penweight',dd:[{id:'penWeight',arg:'1',label:'½ نقطة'},{id:'penWeight',arg:'2',label:'1½ نقطة'},{id:'penWeight',arg:'3',label:'2¼ نقطة'},{id:'penWeight',arg:'4',label:'3 نقاط'}]},{id:'penColor',label:'لون القلم',icon:'pencolor',dd:SW('penColor')}]},
    {id:'tborders',label:'حدود',icon:'borders',big:1,dd:'tborders'},{id:'borderPainter',label:'نسخ تنسيق الحدود',icon:'borderpainter',big:1}]},
  ]},

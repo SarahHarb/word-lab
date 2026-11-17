@@ -33,7 +33,11 @@ document.addEventListener('click',e=>{const s=e.target.closest&&e.target.closest
 let tdDrag=null;
 function clearCells(){S.selCells.forEach(c=>c.classList.remove('sel'));S.selCells=[]}
 function setCells(a){clearCells();S.selCells=a.filter(Boolean);S.selCells.forEach(c=>c.classList.add('sel'));logAct('cellsSelected:'+S.selCells.length);SIM.emit('change')}
-function rectCells(a,b){const t=a.closest('table');const r1=Math.min(a.parentElement.rowIndex,b.parentElement.rowIndex),r2=Math.max(a.parentElement.rowIndex,b.parentElement.rowIndex),c1=Math.min(a.cellIndex,b.cellIndex),c2=Math.max(a.cellIndex,b.cellIndex);const o=[];for(let r=r1;r<=r2;r++)[...t.rows[r].cells].forEach(c=>{if(c.cellIndex>=c1&&c.cellIndex<=c2)o.push(c)});return o}
+/* visual grid (handles merged cells): each cell -> {r1,r2,c1,c2} */
+function gridMap(t){const occ=[];const m=new Map();[...t.rows].forEach((tr,r)=>{occ[r]=occ[r]||[];let c=0;[...tr.cells].forEach(td=>{while(occ[r][c])c++;const rs=td.rowSpan||1,cs=td.colSpan||1;for(let i=0;i<rs;i++){occ[r+i]=occ[r+i]||[];for(let j=0;j<cs;j++)occ[r+i][c+j]=td}m.set(td,{r1:r,r2:r+rs-1,c1:c,c2:c+cs-1});c+=cs})});return m}
+function rectCells(a,b){const t=a.closest('table');const g=gridMap(t);const A=g.get(a),B=g.get(b);if(!A||!B)return [a];let r1=Math.min(A.r1,B.r1),r2=Math.max(A.r2,B.r2),c1=Math.min(A.c1,B.c1),c2=Math.max(A.c2,B.c2);
+  let grow=true;while(grow){grow=false;g.forEach(v=>{if(v.r2>=r1&&v.r1<=r2&&v.c2>=c1&&v.c1<=c2){if(v.r1<r1){r1=v.r1;grow=true}if(v.r2>r2){r2=v.r2;grow=true}if(v.c1<c1){c1=v.c1;grow=true}if(v.c2>c2){c2=v.c2;grow=true}}})}
+  const o=[];g.forEach((v,td)=>{if(v.r2>=r1&&v.r1<=r2&&v.c2>=c1&&v.c1<=c2)o.push(td)});return o}
 document.addEventListener('mousedown',e=>{if(!e.target.closest)return;const td=e.target.closest('#doc table.wt td');if(e.target.closest('#ribbon,.dd,#dlgs,#wtabs'))return;
   if(td&&e.shiftKey&&S.curCell&&S.curCell.closest('table')===td.closest('table')){e.preventDefault();setCells(rectCells(S.curCell,td));return}
   if(e.target.closest('#doc'))clearCells();tdDrag=td||null});
@@ -55,15 +59,15 @@ Object.assign(OPS,{
   optHeader(v){if(!needCell())return;S.curCell.closest('table').classList.toggle('nohdr',!v)},optTotal(v){if(!needCell())return;S.curCell.closest('table').classList.toggle('tot',!!v)},
   optBanded(v){if(!needCell())return;S.curCell.closest('table').classList.toggle('noband',!v)},optFirstCol(v){if(!needCell())return;S.curCell.closest('table').classList.toggle('fcol',!!v)},
   optLastCol(v){if(!needCell())return;S.curCell.closest('table').classList.toggle('lcol',!!v)},optBandCols(v){if(!needCell())return;S.curCell.closest('table').classList.toggle('bcols',!!v)},
-  shading(c){const cs=targetCells();if(!cs.length){simToast('حدِّد الخلايا أولًا');return}snap();cs.forEach(x=>x.style.backgroundColor=c==='none'?'':(c||'#ffff00'));logAct('shading:'+cs.length)},
+  shading(c){const cs=targetCells();if(!cs.length){simToast('حدِّد الخلايا أولًا');return}snap();if(c==='pattern'){cs.forEach(x=>x.style.backgroundImage='repeating-linear-gradient(45deg,#000 0 2px,#fff 2px 7px)');logAct('shading:pattern');return}cs.forEach(x=>{x.style.backgroundColor=c==='none'?'':(c||'#ffff00');if(c==='none')x.style.backgroundImage=''});logAct('shading:'+cs.length)},
   penStyle(a){S.pen=Object.assign(S.pen||{},{s:a})},penWeight(a){S.pen=Object.assign(S.pen||{},{w:a})},penColor(a){S.pen=Object.assign(S.pen||{},{c:a==='more'?'#000':a})},
-  tborders(a){if(!needCell())return;snap();const t=S.curCell.closest('table');const cs=S.selCells.length?S.selCells:[...t.querySelectorAll('td')];const p=S.pen||{};const bd=`${p.w||1}px ${p.s||'solid'} ${p.c||'#000'}`;
+  tborders(a){if(!needCell())return;snap();const t=S.curCell.closest('table');const cs=S.selCells.length?S.selCells:[...t.querySelectorAll('td')];const p=S.pen||{};const bd=`${p.w||(p.s==='double'?3:1)}px ${p.s||'solid'} ${p.c||'#000'}`;
     if(a==='none'){cs.forEach(c=>c.style.border='1px solid transparent')}else if(a==='all'||!a){cs.forEach(c=>c.style.border=bd)}
-    else if(a==='outside'){cs.forEach(c=>c.style.border='1px solid transparent');const rs=cs.map(c=>c.parentElement.rowIndex),r1=Math.min(...rs),r2=Math.max(...rs),ci=cs.map(c=>c.cellIndex),c1=Math.min(...ci),c2=Math.max(...ci);cs.forEach(c=>{const r=c.parentElement.rowIndex;if(r===r1)c.style.borderTop=bd;if(r===r2)c.style.borderBottom=bd;if(c.cellIndex===c1)c.style.borderRight=bd;if(c.cellIndex===c2)c.style.borderLeft=bd})}
+    else if(a==='outside'){const g=gridMap(t);const bs=cs.map(c=>g.get(c)).filter(Boolean);const r1=Math.min(...bs.map(b=>b.r1)),r2=Math.max(...bs.map(b=>b.r2)),c1=Math.min(...bs.map(b=>b.c1)),c2=Math.max(...bs.map(b=>b.c2));cs.forEach(c=>{const v=g.get(c);if(!v)return;if(v.r1===r1)c.style.borderTop=bd;if(v.r2===r2)c.style.borderBottom=bd;const ltr=getComputedStyle(t).direction==='ltr';if(v.c1===c1)c.style[ltr?'borderLeft':'borderRight']=bd;if(v.c2===c2)c.style[ltr?'borderRight':'borderLeft']=bd})}
     else if(a==='inside'){cs.forEach(c=>c.style.border=bd)}else{const k={top:'borderTop',bottom:'borderBottom',right:'borderRight',left:'borderLeft'}[a];cs.forEach(c=>c.style[k]=bd)}logAct('tborders:'+a)},
   borderPainter(){OPS.tborders('all')},
   /* layout */
-  tselect(a){if(!needCell())return;const t=S.curCell.closest('table');if(a==='cell')setCells([S.curCell]);if(a==='row')setCells([...S.curCell.parentElement.cells]);if(a==='col'){const i=S.curCell.cellIndex;setCells([...t.rows].map(r=>r.cells[i]))}if(a==='table')setCells([...t.querySelectorAll('td')])},
+  tselect(a){if(!needCell())return;const t=S.curCell.closest('table');if(a==='cell')setCells([S.curCell]);if(a==='row')setCells([...S.curCell.parentElement.cells]);if(a==='col'){const g=gridMap(t),v=g.get(S.curCell);const o=[];g.forEach((w,td)=>{if(w.c2>=v.c1&&w.c1<=v.c2)o.push(td)});setCells(o)}if(a==='table')setCells([...t.querySelectorAll('td')])},
   viewGrid(){doc.classList.toggle('vgrid')},tprops(){simToast('خصائص الجدول: للعرض فقط')},eraser(){simToast('الممحاة: استخدم «دمج الخلايا»')},
   tdel(a){if(!needCell())return;snap();const t=S.curCell.closest('table');const cs=targetCells();
     if(a==='table'){t.remove()}else if(a==='row'){new Set(cs.map(c=>c.parentElement)).forEach(r=>r.remove());if(!t.rows.length)t.remove()}
