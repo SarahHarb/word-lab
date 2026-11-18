@@ -501,3 +501,12 @@ body.tool-eraser #doc table.wt td{cursor:url("data:image/svg+xml,%3Csvg xmlns='h
 #doc table.wt td::after{content:'';position:absolute;inset:-1px;pointer-events:none;border:0 dashed #8fb1e3}
 #doc.vgrid table.wt td.gl-t::after{border-top-width:1px}#doc.vgrid table.wt td.gl-b::after{border-bottom-width:1px}
 #doc.vgrid table.wt td.gl-l::after{border-left-width:1px}#doc.vgrid table.wt td.gl-r::after{border-right-width:1px}
+
+.bdtabs{display:flex;gap:2px;border-bottom:1px solid #d0d0d0;margin:-4px 0 12px}.bdtabs button{border:1px solid transparent;border-bottom:0;background:none;padding:6px 14px;font-size:13px;border-radius:4px 4px 0 0}
+.bdtabs button.on{background:#fff;border-color:#d0d0d0;margin-bottom:-1px;font-weight:700}
+.bd-lines{height:118px;overflow-y:auto;border:1px solid #c8c8c8;background:#fff;display:flex;flex-direction:column}
+.bln{border:0;background:none;padding:7px 8px;text-align:right}.bln span{display:block;width:100%}.bln.on{background:#cfe0f5}
+.bd-apl{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px}
+.shg{display:grid;grid-template-columns:1.2fr 1fr 170px;gap:16px;font-size:13px}.shg label{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.bd-fills{display:grid;grid-template-columns:repeat(7,22px);gap:4px;margin-top:6px}.bdf,.bdpc{width:22px;height:22px;border:1px solid #999;border-radius:3px;font-size:11px;padding:0}.bdf.on,.bdpc.on{outline:2px solid #2b579a;outline-offset:1px}
+.shprev{height:90px;border:1px solid #bbb;display:grid;place-items:center;margin-top:6px;font-size:18px}

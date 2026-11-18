@@ -34,7 +34,7 @@ const TABLE_TIPS={
  optLastCol:{n:'العمود الأخير',d:'يميّز العمود الأخير.'},
  optBandCols:{n:'أعمدة ذات نطاقات',d:'يلوّن عمودًا ويترك عمودًا.'},
  tstyles:{n:'أنماط الجداول',d:'تصاميم جاهزة: ألوان وحدود بنقرة واحدة.'},
- shading:{n:'تظليل',d:'لون خلفية الخلايا المحدّدة — وفيه «نقش مائل».',u:'لتمييز صف العناوين أو خلية مهمة.'},
+ shading:{n:'تظليل',d:'لون خلفية الخلايا المحدّدة. (النقوش مثل الخطوط المائلة: «حدود ← حدود وتظليل... ← التظليل»)',u:'لتمييز صف العناوين أو خلية مهمة.'},
  penStyle:{n:'نمط الخط',d:'شكل الحد: متصل، متقطع، مزدوج…',u:'اختره أولًا، ثم طبّقه من «حدود».'},
  penWeight:{n:'سُمك القلم',d:'سُمك الحد الذي ستطبّقه.'},
  penColor:{n:'لون القلم',d:'لون الحد الذي ستطبّقه.'},
@@ -188,11 +188,16 @@ const allEdges=(pred,f=()=>true)=>{const es=tEdges(PT_()).filter(f);return es.le
 const CANT_T=()=>DOCT('مقصف المدرسة',mkT(CANT,'ts0'));
 const B_PEN='لون القلم وسُمك القلم ونمط الخط في «تصميم الجدول ← حدود» — اخترها أولًا، ثم طبّق من «حدود».';
 
-const PIC_SHADE=PIC({t:'التظليل',goalImg:'img/b1-shade.png',skills:['تظليل خلية','تظليل صف','النقش المائل'],
- intro:'لوّن الخلفيات كما في الصورة. التظليل يلوّن الخلفية فقط ولا يغيّر الحدود.',setup:CANT_T(),
- reqs:[R('صف العناوين أخضر',()=>{const tr=PT_()?.rows[0];return !!tr&&[...tr.cells].every(td=>inSet(td,C_GRN))},()=>PT_()?.rows[0],'حدّد الصف الأول (بالسحب أو السهم ➜ يمين الصف) ← تصميم الجدول ← تظليل ← أخضر','shading'),
-  R('صف «المجموع» أصفر',()=>{const tr=rowOf('المجموع');return !!tr&&[...tr.cells].every(td=>inSet(td,C_GOLD)||inSet(td,C_YEL))},()=>rowOf('المجموع')||PT_(),'حدّد صف المجموع ← تظليل ← أصفر','shading'),
-  R('خلية «كعك» بنقش مائل',()=>/repeating/.test(findCell('كعك')?.style.backgroundImage||''),()=>findCell('كعك')||PT_(),'انقر في «كعك» ← تظليل ← «نقش مائل»','shading')]});
+const isDiag=td=>/repeating-linear-gradient\((45|135)deg/.test(td?.style.backgroundImage||'');
+const hasPat=td=>!!(td?.style.backgroundImage);
+const PAT_HOW='انقر في الخلية ← تصميم الجدول ← حدود ▾ ← «حدود وتظليل...» ← تبويب «التظليل» ← النقش، النمط: «قطري لأسفل داكن» ← تطبيق على: الخلية ← موافق';
+const PIC_SHADE=PIC({t:'التظليل والنقش',goalImg:'img/b1-shade.png',skills:['تظليل خلية/صف','نافذة «حدود وتظليل» ← التظليل','النقش','تطبيق على: الخلية أو الجدول'],
+ intro:'لوّن الخلفيات كما في الصورة. لون الخلفية من زر «تظليل»، أما النقش (الخطوط المائلة) فمن نافذة «حدود وتظليل» ← تبويب «التظليل». انتبه إلى «تطبيق على»: الخلية أم الجدول.',setup:CANT_T(),
+ reqs:[R('صف العناوين أخضر',()=>{const tr=PT_()?.rows[0];return !!tr&&[...tr.cells].every(td=>inSet(td,C_GRN)&&!hasPat(td))},()=>PT_()?.rows[0],'حدّد الصف الأول (بالسحب أو السهم ➜ يمين الصف) ← تصميم الجدول ← تظليل ← أخضر','shading'),
+  R('صف «المجموع» أصفر',()=>{const tr=rowOf('المجموع');return !!tr&&[...tr.cells].every(td=>(inSet(td,C_GOLD)||inSet(td,C_YEL))&&!hasPat(td))},()=>rowOf('المجموع')||PT_(),'حدّد صف المجموع ← تظليل ← أصفر','shading'),
+  R('خلية «كعك» بنقش قطري',()=>isDiag(findCell('كعك')),()=>findCell('كعك')||PT_(),PAT_HOW,'tborders'),
+  R('النقش في «كعك» فقط',()=>pcells().filter(hasPat).length===1&&isDiag(findCell('كعك')),()=>pcells().find(td=>hasPat(td)&&td!==findCell('كعك'))||PT_(),'النقش وصل لخلايا أخرى: Ctrl+Z، ثم في النافذة اختر «تطبيق على: الخلية» (وليس الجدول) — أو أزل النقش منها: النمط «واضح»','tborders'),
+  R('باقي الخلايا بلا تظليل',()=>{const ex=new Set([...(PT_()?.rows[0]?.cells||[]),...(rowOf('المجموع')?.cells||[]),findCell('كعك')]);return pcells().filter(td=>!ex.has(td)).every(td=>!td.style.backgroundColor||td.style.backgroundColor==='transparent'||inSet(td,FAM(x=>x.l>.97)))},()=>PT_()?.rows[1],'إذا تلوّنت خلايا أخرى: حدّدها ← تظليل ← «بلا لون»','shading')]});
 
 const PIC_NOB=PIC({t:'إزالة الحدود وخطوط الشبكة',goalImg:'img/b2-none.png',skills:['بلا حدود','خطوط الشبكة: تظهر ولا تُطبع','معاينة الطباعة'],
  intro:'أزل كل حدود الجدول. ستبقى خطوط زرقاء منقّطة: هذه «خطوط الشبكة» يُظهرها Word لتعرف أين الخلايا، ولا تُطبع. الصورة تُظهر الجدول كما سيُطبع.',setup:CANT_T(),

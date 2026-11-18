@@ -169,3 +169,63 @@ function bordersDlg(){if(!needCell())return;const t=S.curCell.closest('table');c
  new MutationObserver(m=>{if(m.some(x=>!(x.type==='attributes'&&x.attributeName==='class')))sched()}).observe(doc,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
  doc.classList.add('vgrid');setTimeout(()=>{$$('#ribbon [data-hid="viewGrid"]').forEach(b=>b.classList.add('on'));upd()},300);
  })();
+
+/* ===== «حدود وتظليل» — مثل Word: تبويب الحدود + تبويب التظليل (تعبئة + نقش) + «تطبيق على» ===== */
+const PATS=[['clear','واضح'],['solid','خالص (100%)'],['p10','10%'],['p25','25%'],['p50','50%'],['p75','75%'],
+ ['dkH','أفقي داكن'],['dkV','عمودي داكن'],['dkD','قطري لأسفل داكن'],['dkU','قطري لأعلى داكن'],['dkG','شبكة داكنة'],['dkT','تعريشة داكنة'],
+ ['ltH','أفقي فاتح'],['ltV','عمودي فاتح'],['ltD','قطري لأسفل فاتح'],['ltU','قطري لأعلى فاتح']];
+function hexA(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+function patCSS(k,c){const st=(deg,w,gap)=>`repeating-linear-gradient(${deg}deg,${c} 0 ${w}px,transparent ${w}px ${gap}px)`;
+ return ({clear:'',solid:`linear-gradient(${c},${c})`,p10:`linear-gradient(${hexA(c,.1)},${hexA(c,.1)})`,p25:`linear-gradient(${hexA(c,.25)},${hexA(c,.25)})`,p50:`linear-gradient(${hexA(c,.5)},${hexA(c,.5)})`,p75:`linear-gradient(${hexA(c,.75)},${hexA(c,.75)})`,
+  dkH:st(0,2,6),dkV:st(90,2,6),dkD:st(45,2,7),dkU:st(135,2,7),dkG:st(0,2,7)+','+st(90,2,7),dkT:st(45,2,7)+','+st(135,2,7),ltH:st(0,1,6),ltV:st(90,1,6),ltD:st(45,1,6),ltU:st(135,1,6)})[k]||''}
+const LINE_STYLES=[['solid','──────────'],['dotted','··············'],['dashed','- - - - - - - -'],['double','══════════'],['groove','≡≡ محفور'],['ridge','≡≡ بارز']];
+const FILLS=['','#ffffff','#f2f2f2','#d9d9d9','#bfbfbf','#deebf6','#d9e2f3','#bdd7ee','#e2efda','#c6e0b4','#fff2cc','#ffe699','#fbe5d6','#f8cbad','#ffff00','#ffc000','#92d050','#00b050','#00b0f0','#0070c0','#4472c4','#7030a0','#c00000','#ff0000','#000000'];
+window.bordersDlg=function(tab){if(!needCell())return;const t=S.curCell.closest('table');const sel=S.selCells.length?[...S.selCells]:[S.curCell];const p=S.pen||{};
+ let setting=null,sides={top:1,bottom:1,left:1,right:1,ih:1,iv:1};const touched=new Set();let bChanged=false,sChanged=false;
+ const st={style:p.s||'solid',color:p.c||'#000000',w:String(p.w||1),fill:null,pat:'clear',pcol:'#000000',apply:'cell'};
+ const PRE={none:{top:0,bottom:0,left:0,right:0,ih:0,iv:0},box:{top:1,bottom:1,left:1,right:1,ih:0,iv:0},all:{top:1,bottom:1,left:1,right:1,ih:1,iv:1},grid:{top:1,bottom:1,left:1,right:1,ih:1,iv:1}};
+ const DESC={none:'<b>بلا:</b> يزيل كل الخطوط.',box:'<b>مربع:</b> إطار خارجي فقط — ويُزيل الخطوط الداخلية!',all:'<b>الكل:</b> كل الخطوط الخارجية والداخلية بالشكل نفسه.',grid:'<b>شبكة:</b> إطار خارجي أسمك + خطوط داخلية.',custom:'<b>مخصّص:</b> اختر النمط واللون والعرض، ثم انقر الخطوط في المعاينة: يتغيّر ما تنقره فقط.'};
+ const sw=(cls,arr,cur)=>arr.map(c=>`<button class="${cls}" data-c="${c}" title="${c||'بلا لون'}" style="background:${c||'#fff'}">${c?'':'✕'}</button>`).join('');
+ const applySel=`<label class="bd-apl">تطبيق على: <select class="bdApply"><option value="cell">${sel.length>1?'الخلايا المحدّدة':'الخلية'}</option><option value="table">الجدول</option></select></label>`;
+ const d=dialog({title:'حدود وتظليل',w:700,body:`<div class="bdtabs"><button data-t="borders" class="on">الحدود</button><button data-t="page">حدود الصفحة</button><button data-t="shade">التظليل</button></div>
+  <div class="bdpane" data-p="borders"><div class="bdlg">
+   <div class="bd-set"><b>الإعداد:</b>${[['none','بلا'],['box','مربع'],['all','الكل'],['grid','شبكة'],['custom','مخصّص']].map(([k,l])=>`<button class="bset" data-set="${k}"><i class="bi bi-${k}"></i>${l}</button>`).join('')}</div>
+   <div class="bd-mid"><b>النمط:</b><div class="bd-lines">${LINE_STYLES.map(([k,l])=>`<button class="bln" data-s="${k}"><span style="border-top:${k==='double'?4:2}px ${k} #000"></span></button>`).join('')}</div>
+    <label>اللون:<span class="bd-cols">${sw('bdc',['#000000','#7f7f7f','#0070c0','#00b0f0','#00b050','#92d050','#ffc000','#c00000','#7030a0','#ffffff'])}</span></label>
+    <label>العرض:<select class="bdW"><option value="1">½ نقطة</option><option value="2">1½ نقطة</option><option value="3">2¼ نقطة</option><option value="4">3 نقاط</option><option value="6">4½ نقاط</option></select></label></div>
+   <div class="bd-prev"><b>معاينة</b><small>انقر على الرسم أدناه أو استخدم الأزرار لتطبيق الحدود</small><div class="bp-box"><div class="bp-in"><span class="ih"></span><span class="iv"></span></div>
+    <button class="bp t" data-s="top" title="حد علوي">▔</button><button class="bp b" data-s="bottom" title="حد سفلي">▁</button><button class="bp r" data-s="right" title="حد أيمن">▕</button><button class="bp l" data-s="left" title="حد أيسر">▏</button><button class="bp h" data-s="ih" title="داخلي أفقي">═</button><button class="bp v" data-s="iv" title="داخلي عمودي">║</button></div>${applySel}</div>
+  </div><div class="bd-desc" id="bdDesc">اختر إعدادًا، أو غيّر النمط/اللون/العرض ثم انقر الخطوط في المعاينة.</div></div>
+  <div class="bdpane" data-p="page" hidden><p class="sm" style="padding:30px 10px;text-align:center">«حدود الصفحة» إطار حول الصفحة كلها — من «تصميم ← حدود الصفحة». (ليس للجدول)</p></div>
+  <div class="bdpane" data-p="shade" hidden><div class="shg">
+   <div><b>تعبئة:</b><div class="bd-fills">${sw('bdf',FILLS)}</div><small class="sm">✕ = بلا لون</small></div>
+   <div><b>النقش:</b><label>النمط:<select class="bdP">${PATS.map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></label>
+    <label>اللون:<span class="bd-cols">${sw('bdpc',['#000000','#7f7f7f','#0070c0','#00b050','#c00000','#7030a0','#ffc000','#ffffff'])}</span></label></div>
+   <div class="bd-prev"><b>معاينة</b><div class="shprev"><span>أب ج</span></div>${applySel}</div></div>
+   <p class="sm">التعبئة = لون الخلفية. النقش = خطوط أو نقاط فوق التعبئة (مثل «قطري لأسفل»).</p></div>`,
+  buttons:[{label:'موافق',pri:1,act:dd=>{const cs=st.apply==='table'?[...t.querySelectorAll('td')]:sel;snap();
+     if(bChanged){const bd=`${st.w}px ${st.style} ${st.color}`;const spec={};['top','bottom','left','right','ih','iv'].forEach(k=>{if(setting&&setting!=='custom'||touched.has(k))spec[k]=!!sides[k]});
+       const thick=setting==='grid'?`${Math.max(3,+st.w+1)}px ${st.style} ${st.color}`:null;applyBorderSet(cs,spec,bd,thick);S.pen={s:st.style,c:st.color,w:st.w}}
+     if(sChanged){cs.forEach(x=>{if(st.fill!==null)x.style.backgroundColor=st.fill;x.style.backgroundImage=patCSS(st.pat,st.pcol)})}
+     logAct('bordersDlg');SIM.emit&&SIM.emit('change')}},{label:'إلغاء'}],
+  onOpen:dd=>{const q=s=>dd.querySelector(s),qa=s=>[...dd.querySelectorAll(s)];
+   const paint=()=>{const bd=`${Math.min(4,+st.w)}px ${st.style} ${st.color}`,off='1px dotted #ccc';const bi=q('.bp-in');
+     bi.style.borderTop=sides.top?bd:off;bi.style.borderBottom=sides.bottom?bd:off;bi.style.borderRight=sides.right?bd:off;bi.style.borderLeft=sides.left?bd:off;
+     bi.querySelector('.ih').style.borderTop=sides.ih?bd:off;bi.querySelector('.iv').style.borderLeft=sides.iv?bd:off;
+     qa('.bp').forEach(b=>b.classList.toggle('on',!!sides[b.dataset.s]));qa('.bset').forEach(b=>b.classList.toggle('on',b.dataset.set===setting));
+     qa('.bln').forEach(b=>b.classList.toggle('on',b.dataset.s===st.style));qa('.bdc').forEach(b=>b.classList.toggle('on',b.dataset.c===st.color));
+     if(setting)q('#bdDesc').innerHTML=DESC[setting];
+     qa('.bdf').forEach(b=>b.classList.toggle('on',st.fill!==null&&b.dataset.c===st.fill));qa('.bdpc').forEach(b=>b.classList.toggle('on',b.dataset.c===st.pcol));
+     const sp=q('.shprev');sp.style.backgroundColor=st.fill||'#fff';sp.style.backgroundImage=patCSS(st.pat,st.pcol);qa('.bdApply').forEach(x=>x.value=st.apply)};
+   qa('.bdtabs button').forEach(b=>b.onclick=()=>{qa('.bdtabs button').forEach(x=>x.classList.toggle('on',x===b));qa('.bdpane').forEach(x=>x.hidden=x.dataset.p!==b.dataset.t)});
+   qa('.bset').forEach(b=>b.onclick=()=>{setting=b.dataset.set;touched.clear();if(PRE[setting])sides={...PRE[setting]};bChanged=true;paint()});
+   qa('.bp').forEach(b=>b.onclick=()=>{sides[b.dataset.s]=sides[b.dataset.s]?0:1;touched.add(b.dataset.s);setting='custom';bChanged=true;paint()});
+   q('.bp-in').onclick=e=>{const r=q('.bp-in').getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const dd2={top:y,bottom:r.height-y,left:x,right:r.width-x,ih:Math.abs(y-r.height/2),iv:Math.abs(x-r.width/2)};let k='top';for(const z in dd2)if(dd2[z]<dd2[k])k=z;sides[k]=sides[k]?0:1;touched.add(k);setting='custom';bChanged=true;paint()};
+   qa('.bln').forEach(b=>b.onclick=()=>{st.style=b.dataset.s;bChanged=true;if(!setting)setting='custom';paint()});
+   qa('.bdc').forEach(b=>b.onclick=()=>{st.color=b.dataset.c;bChanged=true;if(!setting)setting='custom';paint()});
+   q('.bdW').value=st.w;q('.bdW').onchange=e=>{st.w=e.target.value;bChanged=true;if(!setting)setting='custom';paint()};
+   qa('.bdf').forEach(b=>b.onclick=()=>{st.fill=b.dataset.c;sChanged=true;paint()});
+   q('.bdP').onchange=e=>{st.pat=e.target.value;sChanged=true;paint()};qa('.bdpc').forEach(b=>b.onclick=()=>{st.pcol=b.dataset.c;sChanged=true;paint()});
+   qa('.bdApply').forEach(x=>x.onchange=()=>{st.apply=x.value;paint()});
+   if(tab==='shade')qa('.bdtabs button')[2].click();paint()}})};
+OPS.tborders=(function(prev){return function(a){if(a==='more')return window.bordersDlg();return prev.call(this,a)}})(OPS.tborders);
