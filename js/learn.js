@@ -109,7 +109,7 @@ function renderNav2(){
     const sec=(k,title,arr)=>{if(!arr.length)return '';const id=u.id+k;const has=arr.includes(CO.item)&&CO.unit===u;if(secOpen[id]==null)secOpen[id]=has||k==='l';const o=secOpen[id];const sd=arr.filter(l=>isDone(u,l)).length;
       return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map((l,k)=>{const i=ls.indexOf(l);const gh=l.g&&(k===0||arr[k-1].g!==l.g)?`<div class="lg">${l.g}</div>`:'';return gh+`<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
     return `<div class="topic ${op?'open':''} ${CO.unit===u?'cur':''}"><button class="th" data-t="${u.id}"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>${u.sub}</small></span><span class="tc">${dn}/${ls.length}</span><span class="chev">‹</span></button>
-      ${op?`<div class="tbody">${sec('l',u.learnTitle||'تعلّم',ls.filter(l=>l.key[0]==='l'))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.key[0]!=='l'))}</div>`:''}</div>`}).join('');
+      ${op?`<div class="tbody">${sec('l',u.learnTitle||'تعلّم',ls.filter(l=>l.key[0]==='l'&&!l.proj))}${sec('p','🧭 خطوة بخطوة: برنامج رحلة أريحا',ls.filter(l=>l.proj))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.key[0]!=='l'))}</div>`:''}</div>`}).join('');
   $('#wsBtn').onclick=()=>{openWorkspace();document.body.classList.remove('drawer')};
   $$('#topics [data-t]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.t);openTopic=openTopic===u?null:u;renderNav2()});
   $$('#topics [data-s]').forEach(b=>b.onclick=()=>{secOpen[b.dataset.s]=!secOpen[b.dataset.s];renderNav2()});
@@ -125,7 +125,6 @@ function renderHead(){
    <div class="la">${l.kind==='do'?`${l.reqs.length>6||l.goalImg?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
   $('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');
   $('#hr').onclick=()=>startItem();$('#hn').onclick=()=>nextLesson();
-  if(l.proj){$('#goalBtn').onclick=e=>{e.stopPropagation();toggleGoal()}}
   if(l.kind==='do'){$('#verify').onclick=verify;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
   fitSim();
 }
@@ -140,7 +139,7 @@ document.addEventListener('mousedown',e=>{if(CO.mode==='do'&&CO.exEl&&!e.target.
 function renderDots(i){const d=$('#dots');if(!d||!CO.item||!CO.item.steps)return;d.innerHTML=CO.item.steps.map((_,k)=>`<i class="${k<i||i===99?'d':k===i?'c':''}"></i>`).join('')}
 function openLesson(u,i){CO.ws=false;CO.mode='idle';CO.exEl=null;hideCoach();clearHints();hideTip();cur().style.display='none';const ls=L(u);CO.unit=u;CO.itemI=i;CO.item=ls[i]||ls[0];CO.lastI=null;CO.hit=false;CO.bad=null;openTopic=u;
   try{localStorage.setItem(PKEY+'-last',u.id+':'+CO.item.key)}catch(e){}
-  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();closeGoal();if(CO.item.goalImg)showRef(CO.item.goalImg);else hideRef();if(CO.item.proj&&CO.item.proj.i===0&&!isDone(u,CO.item)){showSimCard('proj');return}if(CO.item.goalImg){showSimCard('goal');return}setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
+  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();closeGoal();if(CO.item.goalImg)showRef(CO.item.goalImg);else if(CO.item.proj)showRef(projGoalHTML(),'الشكل النهائي للجدول');else hideRef();renderRefList();if(CO.item.proj&&CO.item.proj.i===0&&!isDone(u,CO.item)){showSimCard('proj');return}if(CO.item.goalImg){showSimCard('goal');return}setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
 function startItem(){openLesson(CO.unit,L(CO.unit).indexOf(CO.item))}
 function tryItem(){hideSimCard();applySetup(CO.item.setup||{});CO.lastI=null;CO.hit=false;setTimeout(()=>{CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try'},90)}
 function stopDemo(){if(CO.mode!=='demo')return;CO.mode='idle';hideCoach();hideTip();cur().style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');tryItem();renderHead()}
@@ -192,7 +191,7 @@ function initApp(){
 
 /* ---------- table project UI ---------- */
 function projBar(l){const p=l.proj;const pct=p.extra?100:Math.round(p.i/p.n*100);
-  return `<div class="pbar"><span class="pb-t">🎯 مشروع: <b>برنامج رحلة أريحا</b></span><span class="pb-s">${p.extra?'أوامر إضافية':`الخطوة ${p.i+1} من ${p.n}`}</span><span class="pb-bar"><i style="width:${pct}%"></i></span><button class="pb-goal" id="goalBtn">عرض الهدف</button></div>`}
+  return `<div class="pbar"><span class="pb-t">🎯 مشروع: <b>برنامج رحلة أريحا</b></span><span class="pb-s">${p.extra?'أوامر إضافية':`الخطوة ${p.i+1} من ${p.n}`}</span><span class="pb-bar"><i style="width:${pct}%"></i></span></div>`}
 function projWon(it){const p=it.proj;return `<div class="pwon">➕ أُضيف إلى المشروع: <b>${p.adds}</b>${!p.extra?`<span class="pb-bar"><i style="width:${Math.round((p.i+1)/p.n*100)}%"></i></span><small>${p.i+1} / ${p.n}</small>`:''}</div>`}
 function toggleGoal(){let g=$('#goalPop');if(g){closeGoal();return}g=document.createElement('div');g.id='goalPop';const l=CO.item;
   g.innerHTML=`<div class="gp-h"><b>🎯 الشكل النهائي للجدول</b><button aria-label="إغلاق">✕</button></div><div class="goalbox">${l&&l.goalImg?`<img src="${l.goalImg}" alt="">`:projGoalHTML()}</div>${l&&l.proj&&!l.proj.extra?`<p>الآن نضيف: <b>${l.proj.adds}</b></p>`:''}`;
@@ -202,16 +201,21 @@ function goalOut(e){if(!e.target.closest('#goalPop,#goalBtn'))closeGoal()}
 function closeGoal(){const g=$('#goalPop');if(g)g.remove();document.removeEventListener('click',goalOut,true)}
 
 /* ---------- reference picture that stays in front of the student ---------- */
-function showRef(src){let p=$('#refpanel');const w=$('.simwrap');if(!w)return;if(!p){p=document.createElement('div');p.id='refpanel';w.appendChild(p)}
-  p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>🖼️ صمّم مثل الصورة</b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div><img src="${src}" alt="الصورة المطلوبة"><div class="rp-lh"><b>للمطابقة</b><span id="rpCount"></span></div><ol class="rp-list" id="rplist"></ol><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;CO.rpSig='';
+function showRef(src,title){let p=$('#refpanel');const w=$('.simwrap');if(!w)return;if(!p){p=document.createElement('div');p.id='refpanel';w.appendChild(p)}
+  const isH=src.trim().startsWith('<');p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>${isH?'🎯 '+(title||''):'🖼️ صمّم مثل الصورة'}</b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div>${isH?`<div class="goalbox rp-goal">${src}</div>`:`<img src="${src}" alt="الصورة المطلوبة">`}<div class="rp-lh"><b>${isH?'خطوات المشروع':'للمطابقة'}</b><span id="rpCount"></span></div><ol class="rp-list" id="rplist"></ol><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;CO.rpSig='';
   p.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=b.dataset.r;if(r==='big'){p.classList.toggle('big');p.classList.remove('min')}else p.classList.toggle('min')});
-  p.querySelector('img').onclick=()=>{p.classList.toggle('big')};
+  const im=p.querySelector('img,.rp-goal');if(im)im.onclick=()=>{p.classList.toggle('big')};
   const h=p.querySelector('.rp-h');h.onmousedown=e=>{if(e.target.closest('button'))return;const wr=w.getBoundingClientRect(),pr=p.getBoundingClientRect(),dx=e.clientX-pr.left,dy=e.clientY-pr.top;
     const mv=ev=>{p.style.left=Math.max(0,Math.min(wr.width-pr.width,ev.clientX-wr.left-dx))+'px';p.style.top=Math.max(0,Math.min(wr.height-40,ev.clientY-wr.top-dy))+'px';p.style.bottom='auto'};
     const up=()=>{removeEventListener('mousemove',mv);removeEventListener('mouseup',up)};addEventListener('mousemove',mv);addEventListener('mouseup',up);e.preventDefault()}}
 function hideRef(){const p=$('#refpanel');if(p)p.remove()}
 
-function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it||!it.reqs)return;let cur=-1;const st=it.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}if(!ok&&cur<0)cur=i;return ok});
+function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)return;
+  if(it.proj){const ls=L(CO.unit).filter(l=>l.proj);const sig='p'+it.proj.i+ls.map(l=>isDone(CO.unit,l)?1:0).join('');if(CO.rpSig===sig)return;CO.rpSig=sig;
+    ul.innerHTML=ls.map(l=>{const d=isDone(CO.unit,l),c=l===it;return `${l.g&&l.g!==(ls[ls.indexOf(l)-1]||{}).g?`<li class="grp">${l.g}</li>`:''}<li class="${d?'ok':''} ${c?'cur':''} pj" data-pi="${L(CO.unit).indexOf(l)}"><i>${d?'✓':l.proj.i+1}</i><div><span>${l.t}</span>${c?`<small>➕ ${l.proj.adds}</small>`:''}</div></li>`}).join('');
+    const n=ls.filter(l=>isDone(CO.unit,l)).length;$('#rpCount').textContent=`${n} / ${ls.length}`;
+    ul.querySelectorAll('[data-pi]').forEach(x=>x.onclick=()=>openLesson(CO.unit,+x.dataset.pi));const c=ul.querySelector('.cur');if(c)c.scrollIntoView({block:'nearest'});return}
+  if(!it.reqs)return;let cur=-1;const st=it.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}if(!ok&&cur<0)cur=i;return ok});
   const sig=st.join()+cur;if(CO.rpSig===sig)return;CO.rpSig=sig;
   ul.innerHTML=it.reqs.map((r,i)=>`<li class="${st[i]?'ok':i===cur?'cur':''}"><i>${st[i]?'✓':i+1}</i><div><span>${r.t}</span>${i===cur?`<small>${r.fix}</small>${r.cmd||r.where?`<button data-h="${i}">👆 أرني أين</button>`:''}`:''}</div></li>`).join('');
   const n=st.filter(Boolean).length;$('#rpCount').textContent=`${n} / ${st.length}`;
