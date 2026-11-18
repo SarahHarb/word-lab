@@ -92,7 +92,7 @@ function buildTips(){UNITS.flatMap(s=>s.units||[s]).forEach(u=>(u.explore||[]).f
 /* screen tips (like Word) */
 let tipT;
 function showTip(el){const t=$('#rtip');const hid=el.dataset.hid||el.closest('[data-hid]')?.dataset.hid;const info=TIPS[hid]||{};const lab=info.n||el.dataset.tip||el.querySelector('span')?.textContent||'';if(!lab)return;
-  t.innerHTML=`<b>${lab.replace(/▾/g,'')}</b>${info.d||el.dataset.tip&&el.dataset.tip!==lab?`<p>${info.d||el.dataset.tip}</p>`:''}${info.k?`<kbd>${info.k}</kbd>`:''}`;t.style.display='block';const r=el.getBoundingClientRect();let x=r.left+r.width/2-t.offsetWidth/2;x=Math.max(6,Math.min(innerWidth-t.offsetWidth-6,x));t.style.left=x+'px';t.style.top=(r.bottom+6)+'px'}
+  t.innerHTML=`<b>${lab.replace(/▾/g,'')}</b>${info.d||el.dataset.tip&&el.dataset.tip!==lab?`<p>${info.d||el.dataset.tip}</p>`:''}${info.u?`<p class="tu">🧭 متى نستخدمه؟ ${info.u}</p>`:''}${info.k?`<kbd>${info.k}</kbd>`:''}`;t.style.display='block';const r=el.getBoundingClientRect();let x=r.left+r.width/2-t.offsetWidth/2;x=Math.max(6,Math.min(innerWidth-t.offsetWidth-6,x));t.style.left=x+'px';t.style.top=(r.bottom+6)+'px'}
 function hideTip(){clearTimeout(tipT);$('#rtip').style.display='none'}
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('#ribbon .rb,#ribbon .rck,#ribbon .rnum,#ribbon .rsel,#ribbon .gi');if(!el||$('.ddw.open')){if(!e.target.closest||!e.target.closest('#ribbon'))hideTip();return}clearTimeout(tipT);tipT=setTimeout(()=>showTip(el),350)});
 document.addEventListener('mousedown',hideTip,true);
@@ -103,13 +103,13 @@ let openTopic=null;const secOpen={};
 function renderNav2(){
   const all=allUnits();let d=0,t=0;all.forEach(u=>L(u).forEach(l=>{t++;if(isDone(u,l))d++}));
   $('#sprog').innerHTML=`<div class="pt"><span>تقدّمك</span><b>${d} / ${t}</b></div><div class="bar"><i style="width:${t?d/t*100:0}%"></i></div>`;
-  const tag=l=>l.kind==='do'?'<em class="tag do">نفّذ</em>':l.problem?'<em class="tag pr">مشكلة</em>':'';
+  const tag=l=>l.level?`<em class="tag lv">${l.level}</em>`:l.kind==='do'?'<em class="tag do">نفّذ</em>':l.problem?'<em class="tag pr">مشكلة</em>':'';
   const wsBtn=`<button class="wsbtn ${CO.ws?'on':''}" id="wsBtn"><span class="tic">${icon('pen',22)}</span><span class="tt"><b>مساحتي الحرة</b><small>جرّب أي شيء على Word بحرية</small></span></button>`;
   $('#topics').innerHTML=wsBtn+all.map(u=>{if(!isUnlocked(u))return `<div class="topic locked"><div class="th"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>لم يُفتح بعد</small></span><span class="lock">🔒</span></div></div>`;const ls=L(u),dn=ls.filter(l=>isDone(u,l)).length,op=u===openTopic;
     const sec=(k,title,arr)=>{if(!arr.length)return '';const id=u.id+k;const has=arr.includes(CO.item)&&CO.unit===u;if(secOpen[id]==null)secOpen[id]=has||k==='l';const o=secOpen[id];const sd=arr.filter(l=>isDone(u,l)).length;
       return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map((l,k)=>{const i=ls.indexOf(l);const gh=l.g&&(k===0||arr[k-1].g!==l.g)?`<div class="lg">${l.g}</div>`:'';return gh+`<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
     return `<div class="topic ${op?'open':''} ${CO.unit===u?'cur':''}"><button class="th" data-t="${u.id}"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>${u.sub}</small></span><span class="tc">${dn}/${ls.length}</span><span class="chev">‹</span></button>
-      ${op?`<div class="tbody">${sec('l','تعلّم',ls.filter(l=>l.kind==='learn'))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.kind!=='learn'))}</div>`:''}</div>`}).join('');
+      ${op?`<div class="tbody">${sec('l',u.learnTitle||'تعلّم',ls.filter(l=>l.key[0]==='l'))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.key[0]!=='l'))}</div>`:''}</div>`}).join('');
   $('#wsBtn').onclick=()=>{openWorkspace();document.body.classList.remove('drawer')};
   $$('#topics [data-t]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.t);openTopic=openTopic===u?null:u;renderNav2()});
   $$('#topics [data-s]').forEach(b=>b.onclick=()=>{secOpen[b.dataset.s]=!secOpen[b.dataset.s];renderNav2()});
@@ -119,17 +119,17 @@ function renderNav2(){
 function renderHead(){
   if(CO.ws){$('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button><div class="lt"><div class="crumb">مساحتي الحرة</div><h1>اعمل ما تريد على Word</h1><p>بلا قيود ولا تقييم — يُحفظ عملك تلقائيًا على هذا الجهاز.</p></div><div class="la"><button class="b" id="wsNew">📄 مستند جديد</button></div>`;$('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');$('#wsNew').onclick=()=>{if(confirmWs()){localStorage.removeItem(PKEY+'-ws');openWorkspace()}};fitSim();return}
   const u=CO.unit,l=CO.item;if(!u||!l)return;const ls=L(u),i=ls.indexOf(l);
-  const sec=l.kind==='learn'?'تعلّم':'تحدَّ نفسك';
+  const sec=l.goalImg?'صمّم مثل الصورة':l.kind==='learn'?'تعلّم':'تحدَّ نفسك';
   $('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button>
-   <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}${l.proj?projBar(l):''}${l.kind==='do'&&l.reqs.length>6?'<div class="reqs many" id="reqs"></div>':''}</div>
-   <div class="la">${l.kind==='do'?`${l.reqs.length>6?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
+   <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.level?` <em class="tag lv">${l.level}</em>`:l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}${l.proj?projBar(l):''}${l.kind==='do'&&!l.goalImg&&l.reqs.length>6?'<div class="reqs many" id="reqs"></div>':''}</div>
+   <div class="la">${l.kind==='do'?`${l.reqs.length>6||l.goalImg?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
   $('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');
   $('#hr').onclick=()=>startItem();$('#hn').onclick=()=>nextLesson();
   if(l.proj){$('#goalBtn').onclick=e=>{e.stopPropagation();toggleGoal()}}
   if(l.kind==='do'){$('#verify').onclick=verify;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
   fitSim();
 }
-function renderReqs(){const b=$('#reqs');if(!b||!CO.item.reqs)return;const h=CO.item.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}return `<span class="rq ${ok?'ok':CO.bad===i?'bad':''}" data-r="${i}">${ok?'✓':CO.bad===i?'✗':i+1} ${r.t}</span>`}).join('');if(b.innerHTML!==h){b.innerHTML=h;b.querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>showReqHint(+x.dataset.r))}}
+function renderReqs(){renderRefList();const b=$('#reqs');if(!b||!CO.item.reqs)return;const h=CO.item.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}return `<span class="rq ${ok?'ok':CO.bad===i?'bad':''}" data-r="${i}">${ok?'✓':CO.bad===i?'✗':i+1} ${r.t}</span>`}).join('');if(b.innerHTML!==h){b.innerHTML=h;b.querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>showReqHint(+x.dataset.r))}}
 function clearHints(){$$('.hintpulse').forEach(e=>e.classList.remove('hintpulse'))}
 function showReqHint(i){const r=CO.item.reqs[i];CO.bad=i;renderReqs();clearHints();let el=null;try{el=r.where&&r.where()}catch(e){}
   if(r.cmd){const tab=tabOfCmd(r.cmd);const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`);const tb=tab&&$(`#wtabs [data-tab="${tab}"]`);if(tb)tb.classList.add('hintpulse');if(b)b.classList.add('hintpulse')}
@@ -161,8 +161,8 @@ function showSimCard(kind){const it=CO.item,o=$('#simcard');if(!it)return;const 
   if(kind==='start')o.innerHTML=`<div class="ocard"><div class="big">${icon(it.ic||u.icon,40)}</div><small class="sec">${u.title} · ${it.kind==='learn'?'تعلّم':'تحدَّ نفسك'}</small><h2>${it.t}</h2>${it.hint?`<div class="after">💡 ${it.hint}</div>`:''}
     ${doT?`<ul class="rl">${it.reqs.map(r=>`<li>${r.t}</li>`).join('')}</ul><p class="sm">نفّذ بنفسك بلا إرشاد، ثم اضغط <b>«✔ تحقّق»</b>.</p><div class="cbtns"><button class="try" data-a="try">✍️ ابدأ التنفيذ</button></div>`:`<div class="cbtns"><button class="watch" data-a="watch">▶ شاهد كيف</button><button class="try" data-a="try">✋ جرّب بنفسك</button></div>`}</div>`;
   if(kind==='proj')o.innerHTML=`<div class="ocard proj"><small class="sec">مشروع الجداول</small><h2>🎯 سنبني هذا الجدول معًا</h2><p>في كل درس تتعلّم أمرًا واحدًا وتضيفه إلى الجدول نفسه، حتى يكتمل.</p><div class="goalbox">${projGoalHTML()}</div><div class="cbtns"><button class="try" data-a="try">✋ ابدأ الخطوة الأولى</button></div></div>`;
-  if(kind==='goal')o.innerHTML=`<div class="ocard proj"><small class="sec">تحدَّ نفسك · نفّذ</small><h2>🖼️ أعد رسم هذا الجدول</h2><p>${it.intro||''}</p><div class="goalbox"><img src="${it.goalImg}" alt=""></div><p class="sm">نفّذ بنفسك، وكل شرط يتحقّق يصبح أخضر.</p><div class="cbtns"><button class="try" data-a="try">✍️ ابدأ التنفيذ</button></div></div>`;
-  if(kind==='welcome')o.innerHTML=`<div class="ocard welcome"><div class="big"><span class="wl">W</span></div><h2>أهلًا بك 👋</h2><p>تعلّم Word خطوة بخطوة على نسخة تشبه البرنامج الحقيقي.<br>في كل درس: <b>▶ شاهد</b> كيف يُعمل، ثم <b>✋ جرّب</b> بنفسك.</p><div class="cbtns"><button class="try" data-a="start">ابدأ الدرس الأول ←</button></div></div>`;
+  if(kind==='goal')o.innerHTML=`<div class="ocard proj"><small class="sec">صمّم مثل الصورة${it.level?' · '+it.level:''}</small><h2>🖼️ أعد رسم هذا الجدول</h2><p>${it.intro||''}</p><div class="goalbox"><img src="${it.goalImg}" alt=""></div><p class="sm">نفّذ بنفسك، وكل شرط يتحقّق يصبح أخضر.</p><div class="cbtns"><button class="try" data-a="try">✍️ ابدأ التنفيذ</button></div></div>`;
+  if(kind==='welcome')o.innerHTML=`<div class="ocard welcome"><div class="big"><span class="wl">W</span></div><h2>أهلًا بك 👋</h2><p>تعلّم Word خطوة بخطوة على نسخة تشبه البرنامج الحقيقي.<br>مرّر الفأرة فوق أي أمر لتعرف لماذا يُستخدم.</p><div class="cbtns"><button class="try" data-a="start">ابدأ الدرس الأول ←</button></div></div>`;
   if(kind==='turn')o.innerHTML=`<div class="ocard"><div class="big">👏</div><h2>الآن دورك!</h2><p>${it.t}</p><div class="cbtns"><button class="try" data-a="try">✋ ابدأ</button><button class="ghost" data-a="watch">▶ شاهد مرة أخرى</button></div></div>`;
   if(kind==='won'){o.innerHTML=`<div class="ocard"><div class="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div><h2>أحسنت!</h2><p>${it.t} ✓</p>${it.proj?projWon(it):''}${it.after?`<div class="after">💡 ${it.after}</div>`:''}<div class="cbtns"><button class="try" data-a="next">التالي ←</button><button class="ghost" data-a="again">↺ أعد</button><button class="ghost" data-a="free">✏️ تابع على المحاكي</button></div></div>`}
   o.className='simcard show '+kind;
@@ -182,11 +182,12 @@ function openWorkspace(){hideRef();CO.ws=true;CO.mode='free';CO.unit=null;CO.ite
   try{localStorage.setItem(PKEY+'-last','ws')}catch(e){}renderNav2();renderHead()}
 SIM.on('change',()=>{if(!CO.ws||S.app!=='doc')return;clearTimeout(wsT);wsT=setTimeout(()=>{try{localStorage.setItem(PKEY+'-ws',JSON.stringify(docData()))}catch(e){}},800)});
 function initApp(){
-  buildTips();$('#stopDemo').onclick=stopDemo;$('#scrim').onclick=()=>document.body.classList.remove('drawer');
+  if(window.ONLY_TOPICS){const keep=TOPICS.filter(t=>ONLY_TOPICS.includes(t.id));if(keep.length)TOPICS.splice(0,TOPICS.length,...keep)}
+  buildTips();if(window.applyTableTips)applyTableTips();$('#stopDemo').onclick=stopDemo;$('#scrim').onclick=()=>document.body.classList.remove('drawer');
   const open=TOPICS.filter(isUnlocked);if(!open.length){openWorkspace();setTimeout(()=>{$('#simcard').innerHTML=`<div class="ocard"><div class="big">🔒</div><h2>لم تُفتح دروس بعد</h2><p>ستفتح المعلّمة الدروس بعد كل محاضرة.<br>حتى ذلك الحين جرّب Word بحرية في «مساحتي الحرة».</p><div class="cbtns"><button class="try" onclick="hideSimCard()">حسنًا</button></div></div>`;$('#simcard').className='simcard show'},200);return}
   if((localStorage.getItem(PKEY+'-last')||'')==='ws'){openWorkspace();return}
   let u=open[0],i=0,fresh=true;try{const l=(localStorage.getItem(PKEY+'-last')||'').split(':');const x=open.find(v=>v.id===l[0]);if(x){fresh=false;const j=L(x).findIndex(z=>z.key===l[1]);if(j>=0){u=x;i=j}}}catch(e){}
-  fitSim();openLesson(u,i);if(fresh){setTimeout(()=>{CO.mode='idle';showSimCard('welcome')},150)}
+  fitSim();openLesson(u,i);if(fresh&&!CO.item.goalImg){setTimeout(()=>{CO.mode='idle';showSimCard('welcome')},150)}
 }
 
 /* ---------- table project UI ---------- */
@@ -202,10 +203,17 @@ function closeGoal(){const g=$('#goalPop');if(g)g.remove();document.removeEventL
 
 /* ---------- reference picture that stays in front of the student ---------- */
 function showRef(src){let p=$('#refpanel');const w=$('.simwrap');if(!w)return;if(!p){p=document.createElement('div');p.id='refpanel';w.appendChild(p)}
-  p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>🖼️ الصورة المطلوبة</b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div><img src="${src}" alt="الصورة المطلوبة"><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;
+  p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>🖼️ صمّم مثل الصورة</b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div><img src="${src}" alt="الصورة المطلوبة"><div class="rp-lh"><b>للمطابقة</b><span id="rpCount"></span></div><ol class="rp-list" id="rplist"></ol><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;CO.rpSig='';
   p.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=b.dataset.r;if(r==='big'){p.classList.toggle('big');p.classList.remove('min')}else p.classList.toggle('min')});
   p.querySelector('img').onclick=()=>{p.classList.toggle('big')};
   const h=p.querySelector('.rp-h');h.onmousedown=e=>{if(e.target.closest('button'))return;const wr=w.getBoundingClientRect(),pr=p.getBoundingClientRect(),dx=e.clientX-pr.left,dy=e.clientY-pr.top;
     const mv=ev=>{p.style.left=Math.max(0,Math.min(wr.width-pr.width,ev.clientX-wr.left-dx))+'px';p.style.top=Math.max(0,Math.min(wr.height-40,ev.clientY-wr.top-dy))+'px';p.style.bottom='auto'};
     const up=()=>{removeEventListener('mousemove',mv);removeEventListener('mouseup',up)};addEventListener('mousemove',mv);addEventListener('mouseup',up);e.preventDefault()}}
 function hideRef(){const p=$('#refpanel');if(p)p.remove()}
+
+function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it||!it.reqs)return;let cur=-1;const st=it.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}if(!ok&&cur<0)cur=i;return ok});
+  const sig=st.join()+cur;if(CO.rpSig===sig)return;CO.rpSig=sig;
+  ul.innerHTML=it.reqs.map((r,i)=>`<li class="${st[i]?'ok':i===cur?'cur':''}"><i>${st[i]?'✓':i+1}</i><div><span>${r.t}</span>${i===cur?`<small>${r.fix}</small>${r.cmd||r.where?`<button data-h="${i}">👆 أرني أين</button>`:''}`:''}</div></li>`).join('');
+  const n=st.filter(Boolean).length;$('#rpCount').textContent=`${n} / ${st.length}`;
+  ul.querySelectorAll('[data-h]').forEach(b=>b.onclick=e=>{e.stopPropagation();showReqHint(+b.dataset.h)});
+  const c=ul.querySelector('.cur');if(c)c.scrollIntoView({block:'nearest'})}

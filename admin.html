@@ -42,7 +42,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 <script src="js/topics-meta.js"></script>
 <script>
 const inSec=(st,id)=>st.section_id===id||(st.extra||[]).includes(id);
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=window.TOPICS_META;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=(window.ONLY_TOPICS?window.TOPICS_META.filter(t=>ONLY_TOPICS.includes(t.id)):window.TOPICS_META);
 const ld=src=>new Promise((r,j)=>{const s=document.createElement('script');s.src=src;s.onload=r;s.onerror=j;document.head.appendChild(s)});
 let sb,SEC=[],STU=[],PRO={},view='track',selSec='';
 function gateMsg(h){const g=$('#gate');g.hidden=false;g.innerHTML=`<div class="gcard"><div class="glogo">W</div><h1>لوحة المعلّمة</h1>${h}</div>`}
