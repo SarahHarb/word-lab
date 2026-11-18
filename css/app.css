@@ -203,3 +203,10 @@ body.demo #lhead{position:relative;z-index:1005}
 #wonbar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #b7e4c7;border-radius:14px;box-shadow:0 12px 30px rgba(16,24,40,.2);padding:10px 14px;max-width:92%;animation:pop .25s}
 #wonbar .wb-s{font-size:26px}#wonbar b{display:block;color:#137a37}#wonbar small{color:var(--mute);font-size:12.5px}
 #wonbar .wb-n{border:0;background:var(--ok);color:#fff;font-weight:800;border-radius:10px;padding:8px 14px;white-space:nowrap}#wonbar .wb-x{border:0;background:none;color:var(--mute);font-size:15px}
+
+#oktoast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,20px);background:#16a34a;color:#fff;font-weight:800;font-size:15px;padding:8px 18px;border-radius:999px;box-shadow:0 8px 20px rgba(22,163,74,.35);opacity:0;pointer-events:none;transition:.25s;z-index:5000}
+#oktoast.show{opacity:1;transform:translate(-50%,0)}
+
+.rp-intro{padding:6px 12px 2px;border-top:1px solid var(--line);flex:none}.rp-intro p{margin:4px 0;font-size:12.5px;color:var(--mute);line-height:1.55}
+.rp-sk{display:flex;flex-wrap:wrap;gap:4px}.rp-sk span{background:var(--blueL);color:var(--blue);font-size:11.5px;font-weight:800;border-radius:999px;padding:2px 8px}
+.refpanel.big .rp-intro{display:none}
