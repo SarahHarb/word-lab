@@ -135,7 +135,7 @@ function renderReqs(){renderRefList();const b=$('#reqs');if(!b||!CO.item.reqs)re
 function clearHints(){$$('.hintpulse').forEach(e=>e.classList.remove('hintpulse'))}
 function showReqHint(i){const r=CO.item.reqs[i];CO.bad=i;renderReqs();clearHints();let el=null;try{el=r.where&&r.where()}catch(e){}
   if(r.cmd){const tab=tabOfCmd(r.cmd);const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`);const tb=tab&&$(`#wtabs [data-tab="${tab}"]`);if(tb)tb.classList.add('hintpulse');if(b)b.classList.add('hintpulse')}
-  const html=`<span class="bt">✗ ${r.t}</span>الحل: ${r.fix}`;if(el&&vis(el)){if(canvas.contains(el))el.scrollIntoView({block:'center'});CO.exEl=el;CO.exHtml=html;CO.mode='do';placeCoach(el,html)}else{simToast('الحل: '+r.fix)}}
+  const html=`<span class="bt">✗ ${r.t}</span>${fixOf(r)}`;if(el&&vis(el)){if(canvas.contains(el))el.scrollIntoView({block:'center'});CO.exEl=el;CO.exHtml=html;CO.mode='do';placeCoach(el,html)}else{simToast(fixOf(r))}}
 function verify(){const rs=CO.item.reqs;const ok=rs.map(r=>{try{return !!r.check()}catch(e){return false}});let bad=CO.focus!=null&&!ok[CO.focus]?CO.focus:rs.findIndex((r,i)=>!ok[i]&&(r.need||[]).every(k=>ok[k]));if(bad<0)bad=ok.indexOf(false);if(bad<0){checkItem();return}showReqHint(bad)}
 setInterval(()=>{if(CO.mode==='do'&&CO.exEl){if(vis(CO.exEl))placeCoach(CO.exEl,CO.exHtml);else hideCoach()}},250);
 document.addEventListener('mousedown',e=>{if(CO.mode==='do'&&CO.exEl&&!e.target.closest('#reqs,#verify')){CO.exEl=null;hideCoach()}},true);
@@ -222,8 +222,10 @@ function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)retu
   if(CO.focus!=null&&(st[CO.focus]||!av[CO.focus]))CO.focus=null;const f=CO.focus;
   const sig=st.join()+'|'+av.join()+'|'+f;if(CO.rpSig===sig)return;CO.rpSig=sig;
   ul.innerHTML=it.reqs.map((r,i)=>{const cls=st[i]?'ok':av[i]?(i===f?'av cur':'av'):'lock';const nd=(r.need||[]).filter(k=>!st[k]).map(k=>k+1);
-    return `<li class="${cls}" data-q="${i}"><i>${st[i]?'✓':av[i]?i+1:'🔒'}</i><div><span>${r.t}</span>${i===f?`<small>${r.fix}</small>${r.cmd||r.where?`<button data-h="${i}">👆 أرني أين</button>`:''}`:!st[i]&&!av[i]&&nd.length?`<em>بعد ${nd.join('، ')}</em>`:''}</div></li>`}).join('');
+    return `<li class="${cls}" data-q="${i}"><i>${st[i]?'✓':av[i]?i+1:'🔒'}</i><div><span>${r.t}</span>${i===f?`<small>${fixOf(r)}</small>${r.cmd||r.where?`<button data-h="${i}">👆 أرني أين</button>`:''}`:!st[i]&&!av[i]&&nd.length?`<em>بعد ${nd.join('، ')}</em>`:''}</div></li>`}).join('');
   const n=st.filter(Boolean).length;$('#rpCount').textContent=`${n} / ${st.length}`;
   const lh=$('#refpanel .rp-lh b');if(lh)lh.textContent=n===st.length?'تمّت المطابقة 🎉':'المضيء جاهز — اختر أي واحد';
   ul.querySelectorAll('li.av').forEach(x=>x.onclick=()=>{CO.focus=+x.dataset.q;CO.rpSig='';renderRefList()});
   ul.querySelectorAll('[data-h]').forEach(b=>b.onclick=e=>{e.stopPropagation();showReqHint(+b.dataset.h)})}
+
+function fixOf(r){let x=null;try{x=r.fixFn&&r.fixFn()}catch(e){}return x||r.fix}

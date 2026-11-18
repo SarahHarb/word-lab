@@ -183,3 +183,20 @@ HOUSE_TASK.t='تحدٍّ: أعد رسم جدول المبنى';HOUSE_TASK.level=
    let allOn=false;if(TOG[k]){allOn=cs.every(c=>{pick(c);return document.queryCommandState(TOG[k])})}
    cs.forEach(c=>{pick(c);if(TOG[k]&&!allOn&&document.queryCommandState(TOG[k]))return;orig.apply(this,a)});
    setTimeout(()=>{S.curCell=cur;setCells(keep);updateCtx()},0)}})})();
+
+/* ---------- smart hints: say exactly what is wrong and how to fix it ---------- */
+const ar=(n,one,two,many)=>n===1?one:n===2?two:`${n} ${many}`;
+function dimFix(r,C,R){const t=PT_();if(!t){r.cmd='table';return `لم تُدرج جدولًا بعد. إدراج ← جدول ← مرّر على المربعات حتى ${C}×${R} وانقر.`}
+  const c=cols(t),n=t.rows.length,out=[];let cmd=null;
+  if(n<R){out.push(`جدولك فيه ${n} صفوف والمطلوب ${R}: ينقصه ${ar(R-n,'صف واحد','صفّان','صفوف')}. لا داعي لإعادة الجدول — انقر في آخر خلية واضغط Tab، أو «تخطيط ← إدراج أسفل».`);cmd='insBelow'}
+  if(n>R){out.push(`في جدولك ${ar(n-R,'صف زائد','صفّان زائدان','صفوف زائدة')}: انقر في الصف الزائد ← «تخطيط ← حذف ← حذف صفوف».`);cmd='tdelete'}
+  if(c<C){out.push(`جدولك فيه ${c} أعمدة والمطلوب ${C}: ينقصه ${ar(C-c,'عمود واحد','عمودان','أعمدة')} — «تخطيط ← إدراج إلى اليسار».`);cmd=cmd||'insLeft'}
+  if(c>C){out.push(`في جدولك ${ar(c-C,'عمود زائد','عمودان زائدان','أعمدة زائدة')}: انقر فيه ← «تخطيط ← حذف ← حذف أعمدة».`);cmd=cmd||'tdelete'}
+  if(cmd)r.cmd=cmd;return out.join('<br>')||null}
+function rowHint(arr){const t=PT_();if(!t)return null;let best=null,bs=-1;prows().forEach(tr=>{const x=rowT(tr);const sc=arr.filter((v,j)=>txtEq(x[j]||'',v)).length;if(sc>bs){bs=sc;best=x}});
+  if(!best)return null;const msgs=[];arr.forEach((v,j)=>{const got=best[j]||'';if(txtEq(got,v))return;msgs.push(got?`اكتب «${v}» بدل «${got}»`:`الخلية ${j+1} فارغة: اكتب «${v}»`)});
+  return msgs.length?msgs.slice(0,2).join('، ')+(msgs.length>2?'…':''):null}
+(()=>{const dimReq=(task,i,C,R)=>{const r=task.reqs[i];if(!r)return;r.fixFn=()=>dimFix(r,C,R);const w0=r.where;r.where=()=>{const t=PT_();if(!t)return w0();const lr=t.rows[t.rows.length-1];return lr.cells[lr.cells.length-1]}};
+ dimReq(PIC_INS,0,4,3);dimReq(PIC_TYPE,0,3,4);
+ FR.forEach((row,k)=>{const r=PIC_TYPE.reqs[k+1];if(r)r.fixFn=()=>rowHint(row)});
+ if(HOUSE_TASK.reqs[0])HOUSE_TASK.reqs[0].fixFn=()=>PT_()?null:'إدراج ← جدول ← اختر 7×7 (أو العدد الذي تراه مناسبًا).'})();
