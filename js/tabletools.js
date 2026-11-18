@@ -58,7 +58,7 @@ document.addEventListener('mouseup',e=>{if(!toolClick)return;const {td,x,y}=tool
 /* switch the tool off when leaving the table, changing ribbon tab, or opening another lesson */
 document.addEventListener('mousedown',e=>{if(!S.tool||!e.target.closest)return;if(e.target.closest('#doc')&&!e.target.closest('#doc table.wt'))setTool(null)},true);
 document.addEventListener('click',e=>{if(!S.tool||!e.target.closest)return;const tb=e.target.closest('#wtabs [data-tab]');if(tb&&!['tdesign','tlayout'].includes(tb.dataset.tab))setTool(null)},true);
-const _aps=window.applySetup;if(_aps)window.applySetup=function(...a){setTool(null);return _aps.apply(this,a)};
+const _aps=window.applySetup;if(_aps)window.applySetup=function(...a){setTool(null);const r=_aps.apply(this,a);try{doc.classList.toggle('vgrid',S.gridOn!==false)}catch(e){}return r};
 document.addEventListener('mousemove',e=>{if(!toolDrag)return;showDrawLine(toolDrag.x,toolDrag.y,e.clientX,e.clientY)},true);
 document.addEventListener('mouseup',e=>{if(!toolDrag)return;const {td,x,y}=toolDrag;toolDrag=null;hideDrawLine();const dx=e.clientX-x,dy=e.clientY-y;snap();
   if(Math.max(Math.abs(dx),Math.abs(dy))<8){const [side]=nearestSide(td,x,y);paintEdge(td,side,penBd());logAct('paint:'+side)}
@@ -111,7 +111,7 @@ function bordersDlg(){if(!needCell())return;const t=S.curCell.closest('table');c
  OPS.penColor=function(c){if(c==='more'){colorDlg(v=>OPS.penColor(v));return}return _pc.call(this,c)};
  const tbl=()=>S.curCell&&S.curCell.closest('table');
  const cmv=px=>(parseFloat(px)/CM||0).toFixed(2).replace(/\.?0+$/,'');
- OPS.viewGrid=function(){doc.classList.toggle('vgrid');$$('#ribbon [data-hid="viewGrid"]').forEach(b=>b.classList.toggle('on',doc.classList.contains('vgrid')));simToast(doc.classList.contains('vgrid')?'خطوط الشبكة ظاهرة (لا تُطبع)':'أُخفيت خطوط الشبكة')};
+ OPS.viewGrid=function(){doc.classList.toggle('vgrid');S.gridOn=doc.classList.contains('vgrid');$$('#ribbon [data-hid="viewGrid"]').forEach(b=>b.classList.toggle('on',doc.classList.contains('vgrid')));simToast(doc.classList.contains('vgrid')?'خطوط الشبكة ظاهرة (لا تُطبع)':'أُخفيت خطوط الشبكة')};
  OPS.repeatHeader=function(){if(!needCell())return;const t=tbl();snap();t.classList.toggle('rpthdr');$$('#ribbon [data-hid="repeatHeader"]').forEach(b=>b.classList.toggle('on',t.classList.contains('rpthdr')));simToast(t.classList.contains('rpthdr')?'سيتكرر صف العناوين أعلى كل صفحة إذا امتد الجدول':'أُلغي تكرار صف العناوين');logAct('repeatHeader')};
  OPS.cellMargins=function(){if(!needCell())return;const t=tbl();const td=t.querySelector('td');const cs=getComputedStyle(td);
   dialog({title:'خيارات الجدول — هوامش الخلايا',body:`<p class="sm">المسافة بين الكتابة وحدود الخلية (سم):</p>${[['mt','أعلى',cs.paddingTop],['mb','أسفل',cs.paddingBottom],['mr','يمين',cs.paddingRight],['ml','يسار',cs.paddingLeft]].map(([id,l,v])=>`<label class="row" style="justify-content:space-between">${l}: <input type="number" step="0.1" min="0" max="3" id="${id}" value="${cmv(v)}" style="width:70px"></label>`).join('')}`,
@@ -160,3 +160,12 @@ function bordersDlg(){if(!needCell())return;const t=S.curCell.closest('table');c
   dialog({title:'حذف الخلايا',w:340,body:`${[['shift','إزاحة الخلايا (حذف الخلايا فقط)'],['row','حذف صف بالكامل'],['col','حذف عمود بالكامل']].map(([k,l],i)=>`<label class="row"><input type="radio" name="dcx" value="${k}" ${i===0?'checked':''}> ${l}</label>`).join('')}<p class="sm">لحذف الجدول كله استخدم «حذف ← حذف جدول».</p>`,
    buttons:[{label:'موافق',pri:1,act:d=>{const v=d.querySelector('[name=dcx]:checked').value;if(v!=='shift'){setCells(cs);return _td.call(OPS,v)}snap();cs.forEach(c=>c.remove());cleanup(t);S.curCell=null;clearCells();updateCtx();logAct('tdel:cells');SIM.emit&&SIM.emit('change')}},{label:'إلغاء'}]})};
 })();
+
+/* gridlines: mark sides without a visible border */
+(function boot(){if(typeof doc==='undefined'||!doc||!doc.querySelector){setTimeout(boot,200);return}let tm=null;
+ function upd(){tm=null;doc.querySelectorAll('table.wt td').forEach(td=>{const cs=getComputedStyle(td);[['Top','gl-t'],['Bottom','gl-b'],['Left','gl-l'],['Right','gl-r']].forEach(([S2,k])=>{const st=cs['border'+S2+'Style'],w=parseFloat(cs['border'+S2+'Width'])||0,c=cs['border'+S2+'Color'];
+   const none=st==='none'||st==='hidden'||w===0||/rgba\(0, 0, 0, 0\)|transparent/.test(c);if(td.classList.contains(k)!==none)td.classList.toggle(k,none)})})}
+ const sched=()=>{if(!tm)tm=setTimeout(upd,60)};
+ new MutationObserver(m=>{if(m.some(x=>!(x.type==='attributes'&&x.attributeName==='class')))sched()}).observe(doc,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
+ doc.classList.add('vgrid');setTimeout(()=>{$$('#ribbon [data-hid="viewGrid"]').forEach(b=>b.classList.add('on'));upd()},300);
+ })();
