@@ -51,9 +51,10 @@ const pcells=()=>PT_()?[...PT_().querySelectorAll('td')]:[];
 const ctext=td=>(td?.textContent||'').replace(/ /g,' ').trim();
 const rowT=tr=>[...tr.cells].map(ctext);
 const prows=()=>PT_()?[...PT_().rows]:[];
-const hasRowSeq=seq=>prows().some(tr=>{const t=rowT(tr);for(let i=0;i+seq.length<=t.length;i++)if(seq.every((v,j)=>t[i+j]===v))return true;return false});
+const hasRowSeq=seq=>prows().some(tr=>{const t=rowT(tr);for(let i=0;i+seq.length<=t.length;i++)if(seq.every((v,j)=>txtEq(t[i+j],v)))return true;return false});
 const isBold=el=>{if(!el)return false;const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n,any=false;while(n=w.nextNode()){if(!n.nodeValue.trim())continue;any=true;const f=getComputedStyle(n.parentElement).fontWeight;if(!(+f>=600||f==='bold'))return false}return any};
-const findCell=txt=>pcells().find(td=>ctext(td)===txt);
+const findCell=txt=>pcells().find(td=>txtEq(ctext(td),txt));
+const rowIs=(tr,arr)=>{const t=rowT(tr);return t.length===arr.length&&arr.every((v,j)=>txtEq(t[j],v))};
 
 /* ---------- 1) easy: packing list ---------- */
 const PACK=[['الرقم','الغرض','العدد'],['1','ماء','2'],['2','قبعة','1'],['3','وجبة خفيفة','3'],['4','واقي شمس','1']];
@@ -64,7 +65,7 @@ const PIC_PACK={t:'صمّم: قائمة ما نحمله',kind:'do',level:'سهل
   R('أدرج جدولًا: 3 أعمدة × 5 صفوف',()=>!!PT_()&&cols(PT_())===3&&prows().length===5,()=>firstBody().lastElementChild,'إدراج ← جدول ← مرّر حتى 3×5 وانقر','table'),
   R('اكتب صف العناوين',()=>hasRowSeq(PACK[0]),()=>PT_()?.rows[0],'انقر في الخلية الأولى واكتب، وانتقل بـ Tab'),
   R('اكتب البيانات',()=>PACK.slice(1).every(r=>hasRowSeq(r)),()=>PT_()?.rows[1],'اكتب كل صف كما في الصورة، وTab للانتقال'),
-  R('ظلّل صف العناوين بالأزرق',()=>{const tr=prows().find(tr=>rowT(tr).join()===PACK[0].join());return !!tr&&[...tr.cells].every(td=>inSet(td,C_BLUE))},()=>PT_()?.rows[0],'حدّد صف العناوين ← تصميم الجدول ← تظليل ← أزرق فاتح','shading'),
+  R('ظلّل صف العناوين بالأزرق',()=>{const tr=prows().find(tr=>rowIs(tr,PACK[0]));return !!tr&&[...tr.cells].every(td=>inSet(td,C_BLUE))},()=>PT_()?.rows[0],'حدّد صف العناوين ← تصميم الجدول ← تظليل ← أزرق فاتح','shading'),
   R('وسّط الكتابة في كل الخلايا',()=>pcells().length>0&&pcells().every(td=>td.style.textAlign==='center'),()=>PT_(),'تخطيط ← تحديد ← تحديد الجدول ← «توسيط»','calign-middle-center'),
   R('الجدول على قدر كتابته',()=>PT_()?.style.width==='auto',()=>PT_(),'تخطيط ← احتواء تلقائي ← احتواء تلقائي للمحتويات','autofit'),
  ]};
@@ -79,12 +80,12 @@ const PIC_TRIP={t:'صمّم: برنامج رحلة أريحا',kind:'do',level:'
   R('أدرج جدولًا: 4 أعمدة × 6 صفوف',()=>!!PT_()&&cols(PT_())===4&&prows().length===6,()=>firstBody().lastElementChild,'إدراج ← جدول ← 4×6','table'),
   R('اكتب صف العناوين',()=>hasRowSeq(TRIP_H),()=>PT_()?.rows[1],'اكتب «الفترة، الوقت، النشاط، المكان» في الصف الثاني'),
   R('اكتب الأنشطة',()=>TRIP_D.every(r=>hasRowSeq(r)),()=>PT_()?.rows[2],'اكتب الوقت والنشاط والمكان لكل صف'),
-  R('صف العنوان خلية واحدة',()=>{const tr=PT_()?.rows[0];return !!tr&&tr.cells.length===1&&ctext(tr.cells[0])===TRIP_T},()=>PT_()?.rows[0],'حدّد الصف الأول ← تخطيط ← دمج الخلايا، ثم اكتب العنوان','merge'),
+  R('صف العنوان خلية واحدة',()=>{const tr=PT_()?.rows[0];return !!tr&&tr.cells.length===1&&txtEq(ctext(tr.cells[0]),TRIP_T)},()=>PT_()?.rows[0],'حدّد الصف الأول ← تخطيط ← دمج الخلايا، ثم اكتب العنوان','merge'),
   R('«صباحًا» و«ظهرًا» مدموجتان',()=>findCell('صباحًا')?.rowSpan===2&&findCell('ظهرًا')?.rowSpan===2,()=>PT_()?.rows[2]?.cells[0],'حدّد خليتين فوق بعض في عمود الفترة ← دمج الخلايا، واكتب','merge'),
   R('«صباحًا» و«ظهرًا» عموديتان',()=>!!findCell('صباحًا')?.style.writingMode&&!!findCell('ظهرًا')?.style.writingMode,()=>findCell('صباحًا')||PT_(),'انقر في الخلية ← تخطيط ← اتجاه النص','textDir'),
   R('نمط جاهز',()=>/\bts[1-6]\b/.test(PT_()?.className||''),()=>PT_(),'تصميم الجدول ← أنماط الجداول ← اختر نمطًا (الأقرب للصورة: «جدول شبكة 4 - تمييز 1»)','tstyle-1'),
   R('بلا صفوف ذات نطاقات',()=>!!PT_()?.classList.contains('noband'),()=>PT_(),'تصميم الجدول ← أزل ✓ عن «صفوف ذات نطاقات»','optBanded'),
-  R('صف العناوين ذهبي',()=>{const tr=prows().find(tr=>rowT(tr).join()===TRIP_H.join());return !!tr&&[...tr.cells].every(td=>inSet(td,C_GOLD))},()=>PT_()?.rows[1],'حدّد صف العناوين ← تظليل ← أصفر/ذهبي (أي درجة)','shading'),
+  R('صف العناوين ذهبي',()=>{const tr=prows().find(tr=>rowIs(tr,TRIP_H));return !!tr&&[...tr.cells].every(td=>inSet(td,C_GOLD))},()=>PT_()?.rows[1],'حدّد صف العناوين ← تظليل ← أصفر/ذهبي (أي درجة)','shading'),
   R('الحدود زرقاء',()=>pcells().length>0&&pcells().every(td=>C_BLUE(td.style.borderTopColor)&&td.style.borderTopStyle!=='none'),()=>PT_(),'لون القلم ← أي أزرق، ثم حدود ← كل الحدود','tborders'),
   R('الكتابة في الوسط',()=>pcells().length>0&&pcells().every(td=>td.style.textAlign==='center'),()=>PT_(),'تحديد ← تحديد الجدول ← توسيط','calign-middle-center'),
   R('صف العنوان أعلى (1.2 سم)',()=>parseFloat(PT_()?.rows[0]?.cells[0]?.style.height)>=1.1*CM,()=>PT_()?.rows[0],'انقر في صف العنوان ← تخطيط ← الارتفاع: 1.2','rowH'),
