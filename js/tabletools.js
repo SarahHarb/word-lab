@@ -34,8 +34,12 @@ function splitByLine(td,dir){const t=td.closest('table'),g=gridMap(t),v=g.get(td
 /* ---- tool modes ---- */
 const TOOL_BTN={painter:'borderPainter',draw:'drawTable',eraser:'eraser'};
 const TOOL_MSG={painter:'الريشة مفعّلة: انقر على أي خط في الجدول ليأخذ نمط القلم ولونه وسُمكه. Esc للإيقاف.',draw:'القلم مفعّل: اسحب خطًّا داخل خلية لتقسيمها، أو انقر على خط لتلوينه. Esc للإيقاف.',eraser:'الممحاة مفعّلة: انقر على الخط بين خليتين لدمجهما. Esc للإيقاف.'};
+const TOOL_NAME={painter:'🖌️ الريشة مفعّلة',draw:'✏️ القلم مفعّل',eraser:'🧽 الممحاة مفعّلة'};
 function setTool(t){S.tool=t;Object.entries(TOOL_BTN).forEach(([k,id])=>$$(`#ribbon [data-hid="${id}"]`).forEach(b=>b.classList.toggle('on',S.tool===k)));
-  document.body.classList.remove('tool-painter','tool-draw','tool-eraser');if(t){document.body.classList.add('tool-'+t);simToast(TOOL_MSG[t])}}
+  document.body.classList.remove('tool-painter','tool-draw','tool-eraser');let c=$('#toolchip');
+  if(t){document.body.classList.add('tool-'+t);simToast(TOOL_MSG[t]);if(!c){c=document.createElement('div');c.id='toolchip';($('.simwrap')||document.body).appendChild(c)}
+    c.innerHTML=`<span>${TOOL_NAME[t]}</span><small>${t==='draw'?'اسحب لترسم':'انقر على خط · اسحب للتحديد'}</small><button>إيقاف</button>`;c.querySelector('button').onclick=()=>setTool(null);c.style.display='flex'}
+  else if(c)c.style.display='none'}
 function toggleTool(t){setTool(S.tool===t?null:t);logAct('tool:'+(S.tool||'off'))}
 Object.assign(OPS,{borderPainter(){toggleTool('painter')},drawTable(){toggleTool('draw')},eraser(){toggleTool('eraser')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.tool)setTool(null)},true);
@@ -43,10 +47,18 @@ let toolDrag=null;
 document.addEventListener('mousedown',e=>{if(!S.tool||e.button!==0||!e.target.closest)return;const td=e.target.closest('#doc table.wt:not(.prev) td');if(!td)return;
   e.preventDefault();e.stopPropagation();S.curCell=td;
   if(S.tool==='draw'){toolDrag={td,x:e.clientX,y:e.clientY};showDrawLine(e.clientX,e.clientY,e.clientX,e.clientY);return}
-  const [side]=nearestSide(td,e.clientX,e.clientY);snap();
+  toolClick={td,x:e.clientX,y:e.clientY}},true);
+let toolClick=null;
+/* painter / eraser: a click acts; a drag means "I want to select" → the tool switches off and the drag selects */
+document.addEventListener('mousemove',e=>{if(!toolClick)return;if(Math.hypot(e.clientX-toolClick.x,e.clientY-toolClick.y)>7){const td=toolClick.td;toolClick=null;setTool(null);clearCells();S.curCell=td;tdDrag=td;simToast('أُوقفت الأداة — اسحب لتحديد الخلايا')}},true);
+document.addEventListener('mouseup',e=>{if(!toolClick)return;const {td,x,y}=toolClick;toolClick=null;const [side]=nearestSide(td,x,y);snap();
   if(S.tool==='painter'){paintEdge(td,side,penBd());logAct('paint:'+side)}
   else if(S.tool==='eraser'){const r=eraseEdge(td,side);if(r)logAct('erase:'+r)}
   SIM.emit&&SIM.emit('change')},true);
+/* switch the tool off when leaving the table, changing ribbon tab, or opening another lesson */
+document.addEventListener('mousedown',e=>{if(!S.tool||!e.target.closest)return;if(e.target.closest('#doc')&&!e.target.closest('#doc table.wt'))setTool(null)},true);
+document.addEventListener('click',e=>{if(!S.tool||!e.target.closest)return;const tb=e.target.closest('#wtabs [data-tab]');if(tb&&!['tdesign','tlayout'].includes(tb.dataset.tab))setTool(null)},true);
+const _aps=window.applySetup;if(_aps)window.applySetup=function(...a){setTool(null);return _aps.apply(this,a)};
 document.addEventListener('mousemove',e=>{if(!toolDrag)return;showDrawLine(toolDrag.x,toolDrag.y,e.clientX,e.clientY)},true);
 document.addEventListener('mouseup',e=>{if(!toolDrag)return;const {td,x,y}=toolDrag;toolDrag=null;hideDrawLine();const dx=e.clientX-x,dy=e.clientY-y;snap();
   if(Math.max(Math.abs(dx),Math.abs(dy))<8){const [side]=nearestSide(td,x,y);paintEdge(td,side,penBd());logAct('paint:'+side)}
