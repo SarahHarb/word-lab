@@ -190,3 +190,10 @@ body.demo #lhead{position:relative;z-index:1005}
 .rp-goal{flex:none;margin:8px;padding:6px;max-height:none;cursor:zoom-in;border-radius:8px;overflow:hidden}.rp-goal table.wt{font-size:11px;zoom:.8}.rp-goal table.wt td{padding:1px 4px}
 .refpanel.big .rp-goal{max-height:none}
 .rp-list li.pj{cursor:pointer}.rp-list li.pj:hover{background:#f3f6fa}.rp-list li.grp{font-size:11.5px;font-weight:800;color:var(--blue);padding:8px 6px 2px;display:block}
+
+.rp-list li.av{background:#fff8e6;cursor:pointer;outline:1px solid #f5dc9d}.rp-list li.av i{background:#f59e0b;color:#fff}.rp-list li.av:hover{background:#fff1cc}
+.rp-list li.cur{background:#fff1c2;outline:2px solid #f59e0b}
+.rp-list li.lock{opacity:.55}.rp-list li.lock i{background:#eef2f7;font-size:10px}.rp-list li em{display:block;font-style:normal;font-size:11.5px;color:var(--mute)}
+.skl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 8px}.skl span{background:var(--blueL);color:var(--blue);border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:800}
+.simwrap:has(#dlgs.show) .refpanel{visibility:hidden}
+.simwrap:has(.ddw.open) .refpanel,.simwrap:has(.dd.open) .refpanel{opacity:.12;pointer-events:none}
