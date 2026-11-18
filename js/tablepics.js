@@ -176,6 +176,55 @@ const PIC_BORDER=PIC({t:'التظليل والحدود',goalImg:'img/p11-border.
   R('صف المجموع أصفر',()=>{const tr=prows().find(tr=>fuzzyHas(rowT(tr).join(' '),'المجموع'));return !!tr&&[...tr.cells].every(td=>inSet(td,C_GOLD))},()=>PT_()?.rows[PT_().rows.length-1],'حدّد الصف الأخير ← تظليل ← أصفر','shading'),
   R('إطار خارجي أزرق سميك',()=>outerOK(PT_(),C_BLUE,2),()=>PT_(),'لون القلم أزرق + سُمك 2¼، ثم حدود ← حدود خارجية (أو «حدود وتظليل...» ← مربع، أو الريشة على الخطوط الخارجية)','tborders')]});
 
+
+/* ===== سلسلة الحدود والتظليل (من الأسهل للأصعب) ===== */
+const bInfo=(td,S2)=>{const cs=getComputedStyle(td);return {s:cs['border'+S2+'Style'],w:parseFloat(cs['border'+S2+'Width'])||0,c:cs['border'+S2+'Color']}};
+const bVis=i=>i.s!=='none'&&i.s!=='hidden'&&i.w>0&&!/rgba\(0, 0, 0, 0\)|transparent/.test(i.c);
+function tEdges(t){if(!t)return [];const g=gridMap(t),nr=t.rows.length,nc=cols(t),rtl=isRTLt(t),out=[];
+  g.forEach((v,td)=>{[['Top',v.r1===0,'h'],['Bottom',v.r2===nr-1,'h'],['Right',rtl?v.c1===0:v.c2===nc-1,'v'],['Left',rtl?v.c2===nc-1:v.c1===0,'v']].forEach(([S2,outer,k])=>out.push({td,S2,outer,k,r1:v.r1,r2:v.r2}))});return out}
+const OPPC={Top:'Bottom',Bottom:'Top',Left:'Right',Right:'Left'};
+function edgeOK(e,pred){if(pred(bInfo(e.td,e.S2)))return true;if(e.outer)return false;const n=neighbour(e.td,e.S2.toLowerCase());return !!n&&pred(bInfo(n,OPPC[e.S2]))}
+const allEdges=(pred,f=()=>true)=>{const es=tEdges(PT_()).filter(f);return es.length>0&&es.every(e=>edgeOK(e,pred))};
+const CANT_T=()=>DOCT('مقصف المدرسة',mkT(CANT,'ts0'));
+const B_PEN='لون القلم وسُمك القلم ونمط الخط في «تصميم الجدول ← حدود» — اخترها أولًا، ثم طبّق من «حدود».';
+
+const PIC_SHADE=PIC({t:'التظليل',goalImg:'img/b1-shade.png',skills:['تظليل خلية','تظليل صف','النقش المائل'],
+ intro:'لوّن الخلفيات كما في الصورة. التظليل يلوّن الخلفية فقط ولا يغيّر الحدود.',setup:CANT_T(),
+ reqs:[R('صف العناوين أخضر',()=>{const tr=PT_()?.rows[0];return !!tr&&[...tr.cells].every(td=>inSet(td,C_GRN))},()=>PT_()?.rows[0],'حدّد الصف الأول (بالسحب أو السهم ➜ يمين الصف) ← تصميم الجدول ← تظليل ← أخضر','shading'),
+  R('صف «المجموع» أصفر',()=>{const tr=rowOf('المجموع');return !!tr&&[...tr.cells].every(td=>inSet(td,C_GOLD)||inSet(td,C_YEL))},()=>rowOf('المجموع')||PT_(),'حدّد صف المجموع ← تظليل ← أصفر','shading'),
+  R('خلية «كعك» بنقش مائل',()=>/repeating/.test(findCell('كعك')?.style.backgroundImage||''),()=>findCell('كعك')||PT_(),'انقر في «كعك» ← تظليل ← «نقش مائل»','shading')]});
+
+const PIC_NOB=PIC({t:'إزالة الحدود وخطوط الشبكة',goalImg:'img/b2-none.png',skills:['بلا حدود','عرض خطوط الشبكة'],
+ intro:'أزل كل حدود الجدول. ثم أظهر «خطوط الشبكة»: خطوط منقّطة تساعدك ترى الخلايا ولا تُطبع.',setup:CANT_T(),
+ reqs:[R('الجدول بلا حدود',()=>allEdges(i=>!bVis(i)),()=>PT_(),'انقر في الجدول ← تصميم الجدول ← حدود ← بلا حدود (بدون تحديد = الجدول كله)','tborders'),
+  N(R('خطوط الشبكة ظاهرة',()=>doc.classList.contains('vgrid'),()=>PT_(),'تخطيط ← «عرض خطوط الشبكة»','viewGrid'),0)]});
+
+const PIC_ALLB=PIC({t:'كل الحدود بلون وسُمك',goalImg:'img/b3-all.png',skills:['لون القلم','سُمك القلم','كل الحدود'],
+ intro:'اجعل كل خطوط الجدول زرقاء وأسمك قليلًا. القاعدة: اختر شكل القلم أولًا، ثم طبّقه.',setup:CANT_T(),
+ reqs:[R('كل الخطوط زرقاء',()=>allEdges(i=>bVis(i)&&C_BLUE(i.c)),()=>PT_(),'لون القلم ← أزرق، ثم حدود ← كل الحدود','penColor'),
+  R('كل الخطوط بسُمك 1½ أو أكثر',()=>allEdges(i=>bVis(i)&&i.w>=2),()=>PT_(),'سُمك القلم ← 1½ نقطة، ثم حدود ← كل الحدود مرة أخرى','penWeight')]});
+
+const PIC_OUTER=PIC({t:'الإطار الخارجي فقط',goalImg:'img/b4-outer.png',skills:['حدود خارجية','الفرق بين «مربع» و«حدود خارجية»'],
+ intro:'غيّر الإطار الخارجي فقط إلى أحمر سميك، وأبقِ الخطوط الداخلية كما هي. انتبه: «مربع» في نافذة «حدود وتظليل» يزيل الخطوط الداخلية!',setup:CANT_T(),
+ reqs:[R('الإطار الخارجي أحمر سميك',()=>allEdges(i=>bVis(i)&&C_RED(i.c)&&i.w>=3,e=>e.outer),()=>PT_(),'لون القلم ← أحمر، سُمك ← 2¼، ثم حدود ← حدود خارجية','tborders'),
+  R('الخطوط الداخلية باقية (سوداء رفيعة)',()=>allEdges(i=>bVis(i)&&!C_RED(i.c)&&i.w<=1.5,e=>!e.outer),()=>PT_()?.rows[1],'إذا اختفت: Ctrl+Z، أو حدّد الجدول ← قلم أسود ½ ← حدود ← حدود داخلية. («مربع» يزيلها — استخدم «حدود خارجية» أو «مخصّص»)','tborders')]});
+
+const PIC_DBL=PIC({t:'خط مزدوج تحت العناوين',goalImg:'img/b5-double.png',skills:['نمط الخط','حد سفلي لصف محدّد'],
+ intro:'ضع خطًّا مزدوجًا أحمر تحت صف العناوين فقط.',setup:CANT_T(),
+ reqs:[R('تحت العناوين خط مزدوج',()=>{const tr=PT_()?.rows[0];return !!tr&&[...tr.cells].every(td=>{const e={td,S2:'Bottom',outer:false};return edgeOK(e,i=>i.s==='double')})},()=>PT_()?.rows[0],'نمط الخط ← مزدوج، لون ← أحمر، ثم حدّد صف العناوين ← حدود ← حد سفلي','penStyle'),
+  R('الخط المزدوج أحمر',()=>{const tr=PT_()?.rows[0];return !!tr&&[...tr.cells].every(td=>edgeOK({td,S2:'Bottom',outer:false},i=>i.s==='double'&&C_RED(i.c)))},()=>PT_()?.rows[0],'لون القلم ← أحمر، ثم طبّق الحد السفلي مرة أخرى','penColor'),
+  R('باقي الخطوط عادية',()=>tEdges(PT_()).filter(e=>!(e.r2===0&&e.S2==='Bottom')&&!(e.r1===1&&e.S2==='Top')).every(e=>bInfo(e.td,e.S2).s!=='double'),()=>PT_(),'لا تحدّد الجدول كله — حدّد صف العناوين فقط. للتراجع: Ctrl+Z','tborders')]});
+
+const PIC_DASH=PIC({t:'خطوط داخلية متقطعة',goalImg:'img/b6-dash.png',skills:['حدود داخلية','نمط الخط متقطع','حدود وتظليل ← مخصّص'],
+ intro:'اجعل الخطوط الداخلية متقطعة، والإطار الخارجي متصلًا وسميكًا. جرّب «حدود وتظليل... ← مخصّص»: انقر في المعاينة على الخطوط التي تريد تغييرها فقط.',setup:CANT_T(),
+ reqs:[R('الخطوط الداخلية متقطعة',()=>allEdges(i=>i.s==='dashed',e=>!e.outer),()=>PT_()?.rows[1],'نمط الخط ← متقطع، ثم حدود ← حدود داخلية (أو «حدود وتظليل» ← مخصّص ← انقر الخطين الداخليين)','tborders'),
+  R('الإطار الخارجي متصل وسميك',()=>allEdges(i=>i.s==='solid'&&i.w>=3,e=>e.outer),()=>PT_(),'نمط الخط ← متصل، سُمك ← 2¼، ثم حدود ← حدود خارجية','tborders')]});
+
+const PIC_PAINT=PIC({t:'الريشة: ارسم خطًّا بعينه',goalImg:'img/b7-painter.png',skills:['الريشة (نسخ تنسيق الحدود)','حد أيسر / أيمن'],
+ intro:'لوّن الخط الفاصل بين العمودين فقط بالأخضر السميك. الطريقة السريعة: اختر القلم، شغّل «الريشة»، ثم انقر على الخط في كل صف.',setup:CANT_T(),
+ reqs:[R('الخط بين العمودين أخضر سميك',()=>allEdges(i=>bVis(i)&&C_GRN(i.c)&&i.w>=3,e=>!e.outer&&e.k==='v'),()=>PT_()?.rows[1],'لون القلم ← أخضر، سُمك ← 2¼، ثم «نسخ تنسيق الحدود» (الريشة) وانقر على الخط في كل صف. (أو حدّد العمود الأول ← حدود ← حد أيسر)','borderPainter'),
+  R('باقي الخطوط سوداء رفيعة',()=>allEdges(i=>bVis(i)&&!C_GRN(i.c)&&i.w<=1.5,e=>e.outer||e.k==='h'),()=>PT_(),'إذا تلوّن خط آخر: Ctrl+Z، أو أوقف الريشة (Esc) وانتبه أين تنقر','borderPainter')]});
+
 /* ===== 12. تقسيم الجدول وتحويله وحذفه ===== */
 const ITEMS=[['الغرض','العدد'],['ماء','2'],['قبعة','1']];
 const PIC_SPLITT=PIC({t:'تقسيم الجدول وتحويله وحذفه',goalImg:'img/p12-tables.png',skills:['تقسيم الجدول','تحويل إلى نص','حذف جدول'],
@@ -183,9 +232,9 @@ const PIC_SPLITT=PIC({t:'تقسيم الجدول وتحويله وحذفه',goal
  setup:DOCT('رحلتنا المدرسية',mkT(TRIPROWS(),'ts0')+'<p>ما نحمله:</p>'+mkT(ITEMS,'ts0')+'<p><br></p>'+mkT([['جدول قديم','لا نحتاجه'],['—','—']],'ts0')),
  reqs:[R('البرنامج في جدولين',()=>{const ts=[...doc.querySelectorAll('table.wt:not(.prev)')];const a=ts.find(t=>fuzzyHas(t.textContent,'8:00')),b=ts.find(t=>t.rows[0]&&fuzzyHas(rowT(t.rows[0]).join(' '),'13:00'));return !!a&&!!b&&a!==b},()=>pcells().find(td=>ctext(td)==='13:00')||PT_(),'انقر في صف «13:00» ← تخطيط ← تقسيم الجدول','splitTable'),
   R('«ما نحمله» صار نصًّا',()=>![...doc.querySelectorAll('table.wt:not(.prev) td')].some(td=>txtEq(ctext(td),'ماء'))&&[...firstBody().querySelectorAll(':scope > p')].some(p=>fuzzyHas(p.textContent,'ماء')),()=>[...doc.querySelectorAll('table.wt:not(.prev)')].find(t=>/ماء/.test(t.textContent))||PT_(),'انقر في جدول «ما نحمله» ← تخطيط ← تحويل إلى نص','convertText'),
-  R('حُذف الجدول القديم',()=>![...doc.querySelectorAll('table.wt:not(.prev)')].some(t=>/قديم/.test(t.textContent)),()=>[...doc.querySelectorAll('table.wt:not(.prev)')].find(t=>/قديم/.test(t.textContent)),'انقر في الجدول القديم ← تخطيط ← حذف ← حذف جدول','tdelete')]});
+  R('حُذف الجدول القديم',()=>{const ts=[...doc.querySelectorAll('table.wt:not(.prev)')];return ts.length>0&&ts.every(t=>fuzzyHas(t.textContent,'8:00')||fuzzyHas(t.textContent,'13:00')||fuzzyHas(t.textContent,'ماء'))},()=>[...doc.querySelectorAll('table.wt:not(.prev)')].find(t=>!(fuzzyHas(t.textContent,'8:00')||fuzzyHas(t.textContent,'13:00')||fuzzyHas(t.textContent,'ماء'))),'انقر في الجدول القديم ← تخطيط ← حذف ← حذف جدول','tdelete')]});
 
-const TABLE_PICS=[PIC_INS,PIC_TYPE,PIC_SELECT,PIC_ADD,PIC_DEL,PIC_SORT,PIC_MERGE,PIC_SPLIT,PIC_SIZE,PIC_ALIGN,PIC_STYLE,PIC_BORDER,PIC_SPLITT];
+const TABLE_PICS=[PIC_INS,PIC_TYPE,PIC_SELECT,PIC_ADD,PIC_DEL,PIC_SORT,PIC_MERGE,PIC_SPLIT,PIC_SIZE,PIC_ALIGN,PIC_STYLE,PIC_SHADE,PIC_NOB,PIC_ALLB,PIC_OUTER,PIC_DBL,PIC_DASH,PIC_PAINT,PIC_SPLITT];
 TABLE_PICS.forEach((p,i)=>p.t=`${i+1}. ${p.t}`);
 /* the hard one: every skill, as a challenge */
 HOUSE_TASK.t='تحدٍّ: أعد رسم جدول المبنى';HOUSE_TASK.level='صعب';HOUSE_TASK.skills=['كل مهارات الجداول'];delete HOUSE_TASK.g;HOUSE_TASK.intro=HOUSE_TASK.intro.replace('ابدأ من الصفر: ','');
@@ -217,3 +266,6 @@ function rowHint(arr){const t=PT_();if(!t)return null;let best=null,bs=-1;prows(
  dimReq(PIC_INS,0,4,3);dimReq(PIC_TYPE,0,3,4);
  FR.forEach((row,k)=>{const r=PIC_TYPE.reqs[k+1];if(r)r.fixFn=()=>rowHint(row)});
  if(HOUSE_TASK.reqs[0])HOUSE_TASK.reqs[0].fixFn=()=>PT_()?null:'إدراج ← جدول ← اختر 7×7 (أو العدد الذي تراه مناسبًا).'})();
+
+PIC_SPLITT.reqs[2].fixFn=()=>{const t=[...doc.querySelectorAll('table.wt:not(.prev)')].find(t=>!(fuzzyHas(t.textContent,'8:00')||fuzzyHas(t.textContent,'13:00')||fuzzyHas(t.textContent,'ماء')));if(!t)return null;
+  if(!t.textContent.trim())return 'بقي جدول فارغ: «حذف خلايا» أو Delete يمسح المحتوى فقط والجدول باقٍ. انقر فيه ← تخطيط ← حذف ← «حذف جدول».';return null};

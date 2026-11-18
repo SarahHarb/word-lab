@@ -3,7 +3,7 @@
 const SIDE_CAP={top:'Top',bottom:'Bottom',left:'Left',right:'Right'};
 const OPP={top:'bottom',bottom:'top',left:'right',right:'left'};
 const isRTLt=t=>getComputedStyle(t).direction!=='ltr';
-function penBd(){const p=S.pen||{};const w=+p.w||(p.s==='double'?3:1);return `${w}px ${p.s||'solid'} ${p.c||'#000'}`}
+function penBd(){const p=S.pen||{};const w=Math.max(+p.w||1,p.s==='double'?4:1);return `${w}px ${p.s||'solid'} ${p.c||'#000'}`}
 /* neighbour of a cell across one physical side (using the visual grid) */
 function neighbour(td,side){const t=td.closest('table'),g=gridMap(t),v=g.get(td);if(!v)return null;const rtl=isRTLt(t);let r,c;
   if(side==='top'){r=v.r1-1;c=v.c1}else if(side==='bottom'){r=v.r2+1;c=v.c1}
@@ -69,16 +69,19 @@ function showDrawLine(x1,y1,x2,y2){let l=$('#drawline');if(!l){l=document.create
 function hideDrawLine(){const l=$('#drawline');if(l)l.style.display='none'}
 
 /* ---- «حدود وتظليل» dialog: بلا / مربع / الكل / شبكة / مخصّص ---- */
-function applyBorderSet(cs,sides,bd,thick){const t=cs[0].closest('table'),g=gridMap(t),rtl=isRTLt(t);const bs=cs.map(c=>g.get(c));
+/* spec: {top,bottom,left,right,ih,iv} → true = draw with bd, false = remove, undefined = leave as is */
+function applyBorderSet(cs,spec,bd,thick){const t=cs[0].closest('table'),g=gridMap(t),rtl=isRTLt(t);const bs=cs.map(c=>g.get(c));
   const R1=Math.min(...bs.map(b=>b.r1)),R2=Math.max(...bs.map(b=>b.r2)),C1=Math.min(...bs.map(b=>b.c1)),C2=Math.max(...bs.map(b=>b.c2));
   const lowSide=rtl?'right':'left',highSide=rtl?'left':'right';
   cs.forEach(c=>{const v=g.get(c);const outer={top:v.r1===R1,bottom:v.r2===R2,[lowSide]:v.c1===C1,[highSide]:v.c2===C2};
-    ['top','bottom','left','right'].forEach(s=>{const on=outer[s]?sides[s]:((s==='top'||s==='bottom')?sides.ih:sides.iv);const val=on?(outer[s]&&thick?thick:bd):'none';c.style['border'+SIDE_CAP[s]]=val;
-      if(outer[s]){const n=neighbour(c,s);if(n&&!cs.includes(n))n.style['border'+SIDE_CAP[OPP[s]]]=val}})})}
+    ['top','bottom','left','right'].forEach(s=>{const want=outer[s]?spec[s]:((s==='top'||s==='bottom')?spec.ih:spec.iv);if(want===undefined)return;
+      const val=want?(outer[s]&&thick?thick:bd):'none';c.style['border'+SIDE_CAP[s]]=val;const n=neighbour(c,s);if(n&&(!cs.includes(n)||true))n.style['border'+SIDE_CAP[OPP[s]]]=val})})}
 const _tb=OPS.tborders;
-OPS.tborders=function(a){if(a==='more')return bordersDlg();return _tb.call(this,a)};
+OPS.tborders=function(a){if(a==='more')return bordersDlg();if(!needCell())return;const t=S.curCell.closest('table');const cs=S.selCells.length?[...S.selCells]:[...t.querySelectorAll('td')];snap();
+  const SP={none:{top:false,bottom:false,left:false,right:false,ih:false,iv:false},all:{top:true,bottom:true,left:true,right:true,ih:true,iv:true},outside:{top:true,bottom:true,left:true,right:true},inside:{ih:true,iv:true},
+   top:{top:true},bottom:{bottom:true},left:{left:true},right:{right:true}}[a||'all'];if(!SP)return _tb.call(this,a);applyBorderSet(cs,SP,penBd());logAct('tborders:'+a);SIM.emit&&SIM.emit('change')};
 function bordersDlg(){if(!needCell())return;const t=S.curCell.closest('table');const cs=S.selCells.length?[...S.selCells]:[...t.querySelectorAll('td')];
-  const p=S.pen||{};let sides={top:1,bottom:1,left:1,right:1,ih:1,iv:1},setting='all';
+  const p=S.pen||{};let sides={top:1,bottom:1,left:1,right:1,ih:1,iv:1},setting='all';const touched=new Set();
   const PRE={none:{top:0,bottom:0,left:0,right:0,ih:0,iv:0},box:{top:1,bottom:1,left:1,right:1,ih:0,iv:0},all:{top:1,bottom:1,left:1,right:1,ih:1,iv:1},grid:{top:1,bottom:1,left:1,right:1,ih:1,iv:1}};
   const cols=['#000000','#0070c0','#00b050','#c00000','#7030a0','#ffc000','#7f7f7f','#ffffff'];
   dialog({title:'حدود وتظليل',w:680,body:`<div class="bdlg">
@@ -86,19 +89,19 @@ function bordersDlg(){if(!needCell())return;const t=S.curCell.closest('table');c
    <div class="bd-mid"><label>النمط<select id="bdS"><option value="solid">──── متصل</option><option value="dashed">- - - متقطع</option><option value="dotted">····· منقّط</option><option value="double">════ مزدوج</option></select></label>
     <label>اللون<span class="bd-cols">${cols.map(c=>`<button class="bdc" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('')}</span></label>
     <label>العرض<select id="bdW"><option value="1">½ نقطة</option><option value="2">1½ نقطة</option><option value="3">2¼ نقطة</option><option value="4">3 نقاط</option></select></label>
-    <small class="bd-ap">يُطبَّق على: <b>${S.selCells.length?'الخلايا المحدّدة':'الجدول كله'}</b></small></div>
+    <div class="bd-desc" id="bdDesc"></div><small class="bd-ap">يُطبَّق على: <b>${S.selCells.length?'الخلايا المحدّدة':'الجدول كله'}</b></small></div>
    <div class="bd-prev"><b>معاينة</b><small>انقر على الأزرار لإضافة خط أو إزالته</small><div class="bp-box"><div class="bp-in"><span class="ih"></span><span class="iv"></span></div>
     <button class="bp t" data-s="top" title="حد علوي">▔</button><button class="bp b" data-s="bottom" title="حد سفلي">▁</button><button class="bp r" data-s="right" title="حد أيمن">▕</button><button class="bp l" data-s="left" title="حد أيسر">▏</button><button class="bp h" data-s="ih" title="داخلي أفقي">═</button><button class="bp v" data-s="iv" title="داخلي عمودي">║</button></div></div>
   </div>`,buttons:[{label:'موافق',pri:1,act:d=>{const bd=`${d.querySelector('#bdW').value}px ${d.querySelector('#bdS').value} ${d.dataset.c||p.c||'#000000'}`;snap();
-      const thick=setting==='grid'?`${Math.max(3,+d.querySelector('#bdW').value+1)}px ${d.querySelector('#bdS').value} ${d.dataset.c||p.c||'#000000'}`:null;applyBorderSet(cs,sides,bd,thick);logAct('bordersDlg:'+setting);SIM.emit&&SIM.emit('change')}},{label:'إلغاء'}],
+      const thick=setting==='grid'?`${Math.max(3,+d.querySelector('#bdW').value+1)}px ${d.querySelector('#bdS').value} ${d.dataset.c||p.c||'#000000'}`:null;const spec={};['top','bottom','left','right','ih','iv'].forEach(k=>{if(setting!=='custom'||touched.has(k))spec[k]=!!sides[k]});applyBorderSet(cs,spec,bd,thick);logAct('bordersDlg:'+setting);SIM.emit&&SIM.emit('change')}},{label:'إلغاء'}],
    onOpen:d=>{d.querySelector('#bdS').value=p.s||'solid';d.querySelector('#bdW').value=String(p.w||1);d.dataset.c=p.c||'#000000';
      const paint=()=>{const box=d.querySelector('.bp-box'),bd=`${Math.min(3,+d.querySelector('#bdW').value)}px ${d.querySelector('#bdS').value} ${d.dataset.c}`;const bi=d.querySelector('.bp-in');
        bi.style.borderTop=sides.top?bd:'1px dotted #ccc';bi.style.borderBottom=sides.bottom?bd:'1px dotted #ccc';bi.style.borderRight=sides.right?bd:'1px dotted #ccc';bi.style.borderLeft=sides.left?bd:'1px dotted #ccc';
        bi.querySelector('.ih').style.borderTop=sides.ih?bd:'1px dotted #ccc';bi.querySelector('.iv').style.borderLeft=sides.iv?bd:'1px dotted #ccc';
        box.querySelectorAll('.bp').forEach(b=>b.classList.toggle('on',!!sides[b.dataset.s]));d.querySelectorAll('.bset').forEach(b=>b.classList.toggle('on',b.dataset.set===setting));
-       d.querySelectorAll('.bdc').forEach(b=>b.classList.toggle('on',b.dataset.c===d.dataset.c))};
-     d.querySelectorAll('.bset').forEach(b=>b.onclick=()=>{setting=b.dataset.set;if(PRE[setting])sides={...PRE[setting]};paint()});
-     d.querySelectorAll('.bp').forEach(b=>b.onclick=()=>{sides[b.dataset.s]=sides[b.dataset.s]?0:1;setting='custom';paint()});
+       d.querySelectorAll('.bdc').forEach(b=>b.classList.toggle('on',b.dataset.c===d.dataset.c));d.querySelector('#bdDesc').innerHTML={none:'<b>بلا:</b> يزيل كل الخطوط.',box:'<b>مربع:</b> إطار خارجي فقط — ويُزيل الخطوط الداخلية! لتغيير الإطار وإبقاء الداخلية استخدم «مخصّص» أو «حدود خارجية».',all:'<b>الكل:</b> كل الخطوط الخارجية والداخلية بالشكل نفسه.',grid:'<b>شبكة:</b> إطار خارجي أسمك + خطوط داخلية.',custom:'<b>مخصّص:</b> انقر الخطوط في المعاينة: يتغيّر ما تنقره فقط، ويبقى الباقي كما هو.'}[setting]};
+     d.querySelectorAll('.bset').forEach(b=>b.onclick=()=>{setting=b.dataset.set;touched.clear();if(PRE[setting])sides={...PRE[setting]};paint()});
+     d.querySelectorAll('.bp').forEach(b=>b.onclick=()=>{sides[b.dataset.s]=sides[b.dataset.s]?0:1;touched.add(b.dataset.s);setting='custom';paint()});
      d.querySelectorAll('.bdc').forEach(b=>b.onclick=()=>{d.dataset.c=b.dataset.c;paint()});d.querySelector('#bdS').onchange=paint;d.querySelector('#bdW').onchange=paint;paint()}})}
 
 /* ---- more table commands that work ---- */
@@ -148,4 +151,12 @@ function bordersDlg(){if(!needCell())return;const t=S.curCell.closest('table');c
   body.after(sh);let pick=null;sh.querySelectorAll('.bds').forEach(b=>b.onclick=()=>{pick=b.dataset.c;sh.querySelectorAll('.bds').forEach(x=>x.classList.toggle('on',x===b))});
   const ok=d.querySelector('.df .pri');const prev=ok.onclick;ok.onclick=()=>{const pat=sh.querySelector('#bdPat').checked;if(pick!==null||pat){snap();cs.forEach(x=>{if(pick!==null)x.style.backgroundColor=pick;if(pat)x.style.backgroundImage='repeating-linear-gradient(45deg,#000 0 2px,#fff 2px 7px)'})}prev&&prev()}};
  OPS.tborders=function(a){if(a==='more')return window.bordersDlg();return _tb.call(this,a)};
+})();
+
+/* «حذف خلايا...» like Word: a small dialog; empty rows/tables never stay behind */
+(function(){const _td=OPS.tdel;
+ const cleanup=t=>{[...t.rows].forEach(r=>{if(!r.cells.length)r.remove()});if(!t.rows.length||!t.querySelector('td'))t.remove()};
+ OPS.tdel=function(a){if(a!=='cells')return _td.call(this,a);if(!needCell())return;const t=S.curCell.closest('table');const cs=targetCells();
+  dialog({title:'حذف الخلايا',w:340,body:`${[['shift','إزاحة الخلايا (حذف الخلايا فقط)'],['row','حذف صف بالكامل'],['col','حذف عمود بالكامل']].map(([k,l],i)=>`<label class="row"><input type="radio" name="dcx" value="${k}" ${i===0?'checked':''}> ${l}</label>`).join('')}<p class="sm">لحذف الجدول كله استخدم «حذف ← حذف جدول».</p>`,
+   buttons:[{label:'موافق',pri:1,act:d=>{const v=d.querySelector('[name=dcx]:checked').value;if(v!=='shift'){setCells(cs);return _td.call(OPS,v)}snap();cs.forEach(c=>c.remove());cleanup(t);S.curCell=null;clearCells();updateCtx();logAct('tdel:cells');SIM.emit&&SIM.emit('change')}},{label:'إلغاء'}]})};
 })();
