@@ -68,7 +68,7 @@ function moveCursorTo(el,ms=650){if(!el)return wait(0);const r=el.getBoundingCli
 async function clickFx(){const c=cur();c.classList.add('click');await wait(200);c.classList.remove('click')}
 function stepIdx(it){const st=it.steps;for(let i=0;i<st.length;i++){let d=false;try{d=st[i].done()}catch(e){}if(!d)return i}return st.length-1}
 setInterval(()=>{
-  if(CO.mode==='do'&&CO.item){renderReqs();if(CO.item.reqs.every(r=>{try{return r.check()}catch(e){return false}}))checkItem();return}
+  if(CO.mode==='do'&&CO.item){renderReqs();const all=CO.item.reqs.every(r=>{try{return r.check()}catch(e){return false}});if(CO.item.goalImg){const v=$('#verify');if(v)v.classList.toggle('ready',all);return}if(all)checkItem();return}
   if(CO.mode==='try'&&CO.item){
     if(checkItem())return;
     const i=stepIdx(CO.item),s=CO.item.steps[i];CO.idx=i;renderDots(i);let el=null;try{el=s.el()}catch(e){}
@@ -76,7 +76,10 @@ setInterval(()=>{
   }else if(CO.mode==='explore'&&CO.exEl){if(vis(CO.exEl))placeCoach(CO.exEl,CO.exHtml);else{hideCoach();CO.exEl=null}}
 },180);
 function checkItem(){let ok=false;try{ok=!!CO.item.check()}catch(e){}if(!ok)return false;
-  CO.mode='won';hideCoach();clearHints();const u=UP(CO.unit.id);u.p[CO.item.key]=true;saveP();renderDots(99);confetti();renderNav2();renderHead();setTimeout(()=>showSimCard('won'),450);return true}
+  CO.mode='won';hideCoach();clearHints();const u=UP(CO.unit.id);u.p[CO.item.key]=true;saveP();renderDots(99);confetti();renderNav2();renderHead();if(CO.item.goalImg){showWonBar();return true}setTimeout(()=>showSimCard('won'),450);return true}
+function showWonBar(){let b=$('#wonbar');const w=$('.simwrap');if(!w)return;if(!b){b=document.createElement('div');b.id='wonbar';w.appendChild(b)}
+  b.innerHTML=`<span class="wb-s">⭐</span><span><b>أحسنت! جدولك مطابق للصورة</b><small>${CO.item.t} ✓ — قارن جدولك بالصورة، وتابع متى شئت.</small></span><button class="wb-n">التالي ←</button><button class="wb-x" aria-label="إغلاق">✕</button>`;
+  b.querySelector('.wb-n').onclick=()=>{b.remove();nextLesson()};b.querySelector('.wb-x').onclick=()=>b.remove()}
 
 /* ---------- confetti ---------- */
 function confetti(){const C=['#2b579a','#1e8e3e','#f4b400','#d32f2f','#7b3fa6','#00a3d9'];const r=$('#sim').getBoundingClientRect();
@@ -139,7 +142,7 @@ document.addEventListener('mousedown',e=>{if(CO.mode==='do'&&CO.exEl&&!e.target.
 function renderDots(i){const d=$('#dots');if(!d||!CO.item||!CO.item.steps)return;d.innerHTML=CO.item.steps.map((_,k)=>`<i class="${k<i||i===99?'d':k===i?'c':''}"></i>`).join('')}
 function openLesson(u,i){CO.ws=false;CO.mode='idle';CO.exEl=null;hideCoach();clearHints();hideTip();cur().style.display='none';const ls=L(u);CO.unit=u;CO.itemI=i;CO.item=ls[i]||ls[0];CO.lastI=null;CO.hit=false;CO.bad=null;openTopic=u;
   try{localStorage.setItem(PKEY+'-last',u.id+':'+CO.item.key)}catch(e){}
-  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();closeGoal();CO.focus=null;if(CO.item.goalImg)showRef(CO.item.goalImg);else if(CO.item.proj)showRef(projGoalHTML(),'الشكل النهائي للجدول');else hideRef();renderRefList();if(CO.item.proj&&CO.item.proj.i===0&&!isDone(u,CO.item)){showSimCard('proj');return}if(CO.item.goalImg){showSimCard('goal');return}setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
+  applySetup(CO.item.setup||{});renderNav2();renderHead();hideSimCard();closeGoal();$('#wonbar')?.remove();CO.focus=null;if(CO.item.goalImg)showRef(CO.item.goalImg);else if(CO.item.proj)showRef(projGoalHTML(),'الشكل النهائي للجدول');else hideRef();renderRefList();if(CO.item.proj&&CO.item.proj.i===0&&!isDone(u,CO.item)){showSimCard('proj');return}if(CO.item.goalImg){showSimCard('goal');return}setTimeout(()=>{if(CO.mode==='idle'){CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try';renderHead()}},120)}
 function startItem(){openLesson(CO.unit,L(CO.unit).indexOf(CO.item))}
 function tryItem(){hideSimCard();applySetup(CO.item.setup||{});CO.lastI=null;CO.hit=false;setTimeout(()=>{CO.hit=false;CO.mode=CO.item.kind==='do'?'do':'try'},90)}
 function stopDemo(){if(CO.mode!=='demo')return;CO.mode='idle';hideCoach();hideTip();cur().style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');tryItem();renderHead()}
