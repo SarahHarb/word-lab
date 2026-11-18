@@ -68,7 +68,7 @@ function moveCursorTo(el,ms=650){if(!el)return wait(0);const r=el.getBoundingCli
 async function clickFx(){const c=cur();c.classList.add('click');await wait(200);c.classList.remove('click')}
 function stepIdx(it){const st=it.steps;for(let i=0;i<st.length;i++){let d=false;try{d=st[i].done()}catch(e){}if(!d)return i}return st.length-1}
 setInterval(()=>{
-  if(CO.mode==='do'&&CO.item){renderReqs();const all=CO.item.reqs.every(r=>{try{return r.check()}catch(e){return false}});if(CO.item.goalImg){const v=$('#verify');if(v)v.classList.toggle('ready',all);return}if(all)checkItem();return}
+  if(CO.mode==='do'&&CO.item){renderReqs();const all=CO.item.reqs.every(r=>{try{return r.check()}catch(e){return false}});if(all)checkItem();return}
   if(CO.mode==='try'&&CO.item){
     if(checkItem())return;
     const i=stepIdx(CO.item),s=CO.item.steps[i];CO.idx=i;renderDots(i);let el=null;try{el=s.el()}catch(e){}
@@ -76,8 +76,8 @@ setInterval(()=>{
   }else if(CO.mode==='explore'&&CO.exEl){if(vis(CO.exEl))placeCoach(CO.exEl,CO.exHtml);else{hideCoach();CO.exEl=null}}
 },180);
 function checkItem(){let ok=false;try{ok=!!CO.item.check()}catch(e){}if(!ok)return false;
-  CO.mode='won';hideCoach();clearHints();const u=UP(CO.unit.id);u.p[CO.item.key]=true;saveP();renderDots(99);renderNav2();renderHead();okToast();return true}
-function okToast(){let t=$('#oktoast');if(!t){t=document.createElement('div');t.id='oktoast';document.body.appendChild(t)}t.innerHTML='✓ صحيح';t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(okToast.tm);okToast.tm=setTimeout(()=>t.classList.remove('show'),1800)}
+  CO.mode='won';hideCoach();clearHints();const u=UP(CO.unit.id);u.p[CO.item.key]=true;saveP();renderDots(99);confetti();renderNav2();renderHead();okToast();return true}
+function okToast(){let t=$('#oktoast');if(!t){t=document.createElement('div');t.id='oktoast';document.body.appendChild(t)}t.innerHTML='✓ أحسنت — حلّك صحيح';t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(okToast.tm);okToast.tm=setTimeout(()=>t.classList.remove('show'),1800)}
 function showWonBar(){let b=$('#wonbar');const w=$('.simwrap');if(!w)return;if(!b){b=document.createElement('div');b.id='wonbar';w.appendChild(b)}
   b.innerHTML=`<span class="wb-s">⭐</span><span><b>أحسنت! جدولك مطابق للصورة</b><small>${CO.item.t} ✓ — قارن جدولك بالصورة، وتابع متى شئت.</small></span><button class="wb-n">التالي ←</button><button class="wb-x" aria-label="إغلاق">✕</button>`;
   b.querySelector('.wb-n').onclick=()=>{b.remove();nextLesson()};b.querySelector('.wb-x').onclick=()=>b.remove()}
