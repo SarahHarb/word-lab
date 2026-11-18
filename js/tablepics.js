@@ -66,6 +66,7 @@ const rowsOf=()=>prows().map(rowT);
 const dataOrder=col=>prows().slice(1).map(tr=>ctext(tr.cells[col]));
 const ordEq=(a,b)=>a.length===b.length&&a.every((x,i)=>txtEq(x,b[i]));
 const hasRow=arr=>prows().some(tr=>rowIs(tr,arr));
+const rowOf=txt=>prows().find(tr=>[...tr.cells].some(td=>txtEq(ctext(td),txt)))||null;
 function PIC(o){o.kind='do';o.steps=[];o.check=()=>o.reqs.every(q=>{try{return !!q.check()}catch(e){return false}});return o}
 
 /* ===== 1. إدراج جدول ===== */
@@ -120,7 +121,11 @@ const SCH1=[[{t:'جدول الحصص — الصف السابع',cs:4}],['الي�
 const PIC_SPLIT=PIC({t:'تقسيم الخلايا',goalImg:'img/p7-split.png',skills:['تقسيم الخلايا','القلم (رسم جدول)'],
  intro:'يوم الثلاثاء فيه حصتان في الوقت نفسه: قسّم خلية «رياضة» إلى خليتين واكتب «فن».',
  setup:DOCT('جدول الحصص',mkT(SCH1,'ts0')),
- reqs:[R('«رياضة» و«فن» متجاورتان',()=>hasRowSeq(['رياضة','فن'])||hasRowSeq(['فن','رياضة']),()=>findCell('رياضة')||PT_(),'انقر في «رياضة» ← تخطيط ← تقسيم الخلايا (عمودان)، أو ارسم خطًّا عموديًا بالقلم، ثم اكتب «فن»','splitCells')]});
+ reqs:[R('خلية «رياضة» مقسومة إلى خليتين',()=>{const tr=rowOf('رياضة')||rowOf('فن');return !!tr&&tr.cells.length===4},()=>findCell('رياضة')||PT_(),'انقر في «رياضة» ← تخطيط ← تقسيم الخلايا (عدد الأعمدة 2)، أو ارسم خطًّا عموديًا بالقلم داخلها','splitCells'),
+  N(R('«فن» في الخلية الجديدة',()=>hasRowSeq(['رياضة','فن'])||hasRowSeq(['فن','رياضة']),()=>{const c=findCell('رياضة');return c&&(c.nextElementSibling||c.previousElementSibling)||PT_()},'انقر في الخلية الجديدة بجانب «رياضة» واكتب «فن»'),0)]});
+PIC_SPLIT.reqs[0].fixFn=()=>{const tr=rowOf('رياضة')||rowOf('فن');if(!tr)return null;const n=tr.cells.length-3;if(n<=0)return null;if(n===1)return null;
+  PIC_SPLIT.reqs[0].cmd='merge';return `قسمتَ «رياضة» إلى ${n+1} خلايا، والمطلوب خليتان فقط. تراجع (Ctrl+Z)، أو حدّد الخلايا الفارغة الزائدة مع جارتها ← «دمج الخلايا» (أو امسح الخط بينها بالممحاة).`};
+PIC_SPLIT.reqs[1].fixFn=()=>{const c=findCell('رياضة');if(!c)return null;const nb=[c.nextElementSibling,c.previousElementSibling].filter(Boolean).find(x=>ctext(x)&&!txtEq(ctext(x),'تكنولوجيا')&&!txtEq(ctext(x),'الثلاثاء'));return nb?`اكتب «فن» بدل «${ctext(nb)}»`:null};
 
 /* ===== 8. الحجم ===== */
 const TRIPROWS=(st={})=>[[{t:'برنامج رحلة أريحا',cs:4,st:st.title||''}],[{t:'الفترة',st:st.col||''},'الوقت','النشاط','المكان'],[{t:'صباحًا',rs:2,st:st.v||''},'8:00','التجمّع والانطلاق','ساحة المدرسة'],['9:30','زيارة قصر هشام','قصر هشام'],[{t:'ظهرًا',rs:2,st:st.v||''},'13:00','الغداء','استراحة الواحة'],['15:00','العودة','ساحة المدرسة']];
