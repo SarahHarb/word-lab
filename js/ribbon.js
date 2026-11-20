@@ -251,4 +251,4 @@ function renderRibbon(){
   rib.innerHTML=ph;
 }
 /* map command -> tab (first occurrence, normal tabs preferred) */
-function tabOfCmd(id){for(const t of [...TAB_ORDER,...CTX_ORDER]){if($(`[data-panel="${t}"] [data-hid="${id}"]`))return t}return null}
+function tabOfCmd(id){for(const t of CTX_ORDER){const tb=$(`#wtabs [data-tab="${t}"]`);if(tb&&tb.offsetParent&&$(`[data-panel="${t}"] [data-hid="${id}"]`))return t}for(const t of [...TAB_ORDER,...CTX_ORDER]){if($(`[data-panel="${t}"] [data-hid="${id}"]`))return t}return null}
