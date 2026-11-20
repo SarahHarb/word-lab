@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة المعلّمة — برنامج وورد</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=11201327">
+<link rel="stylesheet" href="css/app.css?v=11201333">
 <style>
 body{overflow:auto;height:auto;min-height:100vh}
 .atop{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--side);color:#fff;position:sticky;top:0;z-index:5}
@@ -38,8 +38,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 <div class="atop"><span class="logo">W</span><b>لوحة المعلّمة</b><span class="sp"></span><span id="who" class="muted" style="color:#93a2ba"></span><a href="index.html">فتح الموقع</a><button id="out">خروج</button></div>
 <div class="atabs" id="atabs"><button data-v="track" class="on">📊 المتابعة</button><button data-v="unlock">🔓 فتح الدروس</button><button data-v="students">👩‍🎓 الطلاب</button><button data-v="sections">🏫 الشعب</button></div>
 <div class="wrap" id="view"></div>
-<script src="js/config.js?v=11201327"></script>
-<script src="js/topics-meta.js?v=11201327"></script>
+<script src="js/config.js?v=11201333"></script>
+<script src="js/topics-meta.js?v=11201333"></script>
 <script>
 const inSec=(st,id)=>st.section_id===id||(st.extra||[]).includes(id);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=(window.ONLY_TOPICS?window.TOPICS_META.filter(t=>ONLY_TOPICS.includes(t.id)):window.TOPICS_META);

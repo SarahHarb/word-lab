@@ -5,7 +5,7 @@ const GP={
  cell:(fn,say)=>({el:fn,say,done:()=>{const e=fn();return !!e&&!!S.curCell&&(e===S.curCell||e.contains(S.curCell)||(S.selCells||[]).some(c=>e.contains(c)||e===c))}}),
  tab:(tab)=>({el:()=>$(`#wtabs [data-tab="${tab}"]`),say:`افتح تبويب «${$(`#wtabs [data-tab="${tab}"]`)?.textContent.trim()||tab}»`,done:()=>!!$(`#wtabs [data-tab="${tab}"]`)?.classList.contains('on')}),
  btn:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,click:1}),
- dd:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,done:()=>!!$('.ddw.open')}),
+ dd:(tab,hid,say)=>({el:()=>{const b=$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`);if(!b)return null;const w=b.closest('.split')||b;return w.querySelector('.car')||b},say,done:()=>!!$('.ddw.open')}),
  mi:(cmd,arg,say)=>{const A=arg==null||arg==='null'?'':`[data-arg="${arg}"]`;return {avoid:1,el:()=>$(`.ddw.open .mi[data-cmd="${cmd}"]${A}`)||$(`.ddw.open [data-cmd="${cmd}"]${A}`),say,click:1}},
  menu:(say)=>({el:()=>$('.ddw.open > .dd')||$('.ddw.open'),say,click:1,avoid:1}),
  sel:(q,say,done)=>({el:()=>$(q),say,done,click:done?0:1}),

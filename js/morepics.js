@@ -498,7 +498,27 @@ const LS5=PIC({t:'ترقيم متعدد المستويات 1.1',goalImg:'img/m-l
   ...['إدراج جدول','تنسيق جدول','إدراج صورة','قص الصورة'].map(w=>N(Q(`«${w}» في المستوى الثاني`,()=>depth(w)===2,()=>liOf(w)||blk(w),`انقر في «${w}» ← Tab`,'indentInc',{caretIn:1}),1)),
   Q('الوحدتان في المستوى الأول',()=>depth('الوحدة الأولى')===1&&depth('الوحدة الثانية')===1,()=>liOf('الوحدة الثانية')||blk('الوحدة الثانية'),'أرجعها بـ Shift + Tab','indentDec',{caretIn:1})]});
 LS5.reqs[0].fixFn=()=>{const t=topList('الوحدة الأولى');if(t&&!t.classList.contains('ml'))return 'هذا ترقيم عادي — اختر «قائمة متعددة المستويات» من زرّها (بجانب الترقيم).';return null};
-MORE_PICS_T2=[['الكتابة',[TX1,TX2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة: التعداد',[LS1,LS2,LS3,LS4,LS5]],['الفقرة: المحاذاة',[TX7]]];
+
+const hasB=(b,k)=>!!b&&!!b.style[{top:'borderTop',bottom:'borderBottom',left:'borderLeft',right:'borderRight'}[k]]&&!/none/.test(b.style[{top:'borderTop',bottom:'borderBottom',left:'borderLeft',right:'borderRight'}[k]]);
+const PG1=PIC({t:'حدود الفقرة وتظليلها',goalImg:'img/m-pg1.png',skills:['حدود: حد سفلي','حدود خارجية','تظليل الفقرة'],
+ intro:'ضع خطًّا تحت العنوان فقط، وإطارًا حول القاعدة مع تظليل أصفر فاتح.',
+ setup:{html:`<p style="font-size:16pt"><b>قاعدة مهمة</b></p><p style="font-size:14pt">نغسل أيدينا بالماء والصابون قبل الأكل وبعده.</p><p><br></p>`},
+ reqs:[Q('خط تحت العنوان',()=>{const b=blk('قاعدة مهمة');return hasB(b,'bottom')&&!hasB(b,'top')&&!hasB(b,'left')},()=>blk('قاعدة مهمة'),'انقر في العنوان ← الصفحة الرئيسية ← سهم «حدود» ▾ ← حد سفلي','pborders',{caretIn:1,mi:['pborders','bottom','حد سفلي']}),
+  Q('إطار حول القاعدة',()=>{const b=blk('نغسل');return ['top','bottom','left','right'].every(k=>hasB(b,k))},()=>blk('نغسل'),'انقر في القاعدة ← حدود ▾ ← حدود خارجية','pborders',{caretIn:1,mi:['pborders','box','حدود خارجية']}),
+  Q('تظليل أصفر فاتح',()=>{const c=blk('نغسل')?.style.backgroundColor;return !!c&&isCol(c,FAM(x=>x.h>=35&&x.h<=65&&x.l>=.6))},()=>blk('نغسل'),'انقر في القاعدة ← سهم «تظليل» ▾ ← أصفر فاتح','pshading',{caretIn:1})]});
+const PG2=PIC({t:'اتجاه النص والمسافة البادئة',goalImg:'img/m-pg2.png',skills:['اتجاه النص من اليسار إلى اليمين','زيادة المسافة البادئة'],
+ intro:'الجملة الإنجليزية يجب أن تبدأ من اليسار (اتجاه من اليسار إلى اليمين). وأزِح الاقتباس إلى الداخل بزيادة المسافة البادئة.',
+ setup:{html:`<p style="font-size:14pt">تعلّمنا اليوم جملة بالإنجليزية:</p><p style="font-size:14pt">My name is Sara.</p><p style="font-size:14pt">قال المعلّم:</p><p style="font-size:14pt">«العلم في الصغر كالنقش على الحجر»</p>`},
+ reqs:[Q('الإنجليزية من اليسار إلى اليمين',()=>getComputedStyle(blk('My name')).direction==='ltr',()=>blk('My name'),'انقر في الجملة ← الصفحة الرئيسية ← اتجاه النص من اليسار إلى اليمين','ltr',{caretIn:1}),
+  Q('الاقتباس مُزاح إلى الداخل',()=>(parseFloat(blk('العلم في الصغر')?.style.marginRight)||0)>=40,()=>blk('العلم في الصغر'),'انقر في الاقتباس ← زيادة المسافة البادئة','indentInc',{caretIn:1}),
+  N(Q('باقي الأسطر في مكانها',()=>!(parseFloat(blk('قال المعلّم')?.style.marginRight)>0)&&getComputedStyle(blk('تعلّمنا')).direction==='rtl',()=>blk('قال المعلّم'),'أرجعه: إنقاص المسافة البادئة / اتجاه من اليمين إلى اليسار'),1)]});
+PG2.reqs[0].fixFn=()=>{const b=blk('My name');return b&&getComputedStyle(b).textAlign==='left'&&getComputedStyle(b).direction!=='ltr'?'المحاذاة لليسار لا تكفي — النقطة ستبقى في مكان خاطئ. استخدم زر «اتجاه النص من اليسار إلى اليمين».':null};
+const PG3=PIC({t:'علامات التنسيق',goalImg:'img/m-pg3.png',skills:['إظهار/إخفاء ¶','· = مسافة','حذف المسافات الزائدة'],
+ intro:'أظهر علامات التنسيق ¶ لترى المسافات (كل · مسافة). احذف المسافات الزائدة حتى تكون بين كل كلمتين مسافة واحدة.',
+ setup:{html:`<p style="font-size:16pt">الماء   سرّ  الحياة،  فلا    تسرف   فيه.</p>`},
+ reqs:[Q('علامات التنسيق ظاهرة',()=>!!S.marks,()=>$('#ribbon [data-panel="home"] [data-hid="marks"]'),'الصفحة الرئيسية ← ¶ (إظهار/إخفاء)','marks'),
+  Q('مسافة واحدة بين الكلمات',()=>{const t=(blk('الماء')?.textContent||'').replace(/ /g,' ');return /الماء سرّ الحياة، فلا تسرف فيه/.test(t)&&!/  /.test(t.trim())},()=>blk('الماء'),'انقر بعد كل · زائدة واضغط Backspace')]});
+MORE_PICS_T2=[['الكتابة',[TX1,TX2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة: التعداد',[LS1,LS2,LS3,LS4,LS5]],['الفقرة: المحاذاة والاتجاه والحدود',[TX7,PG2,PG1,PG3]]];
 
 /* ---------- topics ---------- */
 const MORE_PICS={
@@ -508,7 +528,7 @@ const MORE_PICS={
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
 const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
-Object.assign(MORE_IMG,{LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
+Object.assign(MORE_IMG,{PG1:'m-pg1',PG2:'m-pg2',PG3:'m-pg3',LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 var MORE_PICS_T2;
 (function(){
  if(MORE_PICS_T2)MORE_PICS.t2=MORE_PICS_T2;

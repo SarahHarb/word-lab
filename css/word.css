@@ -521,3 +521,9 @@ body:has(#dlgs.show) #tblhandle,body:has(.ddw.open) #tblhandle{display:none!impo
 @counter-style proman{system:extends lower-roman;suffix:") "}
 #doc ol.ml2{list-style-type:pdec}#doc ol.ml2 ol{list-style-type:palpha}#doc ol.ml2 ol ol{list-style-type:proman}
 #doc ul ul{list-style-type:circle}#doc ul ul ul{list-style-type:square}
+#doc.marks .pg-body .spm{position:relative}
+#doc.marks .pg-body .spm::after{content:"·";position:absolute;left:50%;top:0;transform:translateX(-50%);color:#2b579a;font-weight:700;pointer-events:none}
+#doc .pg-body hr.whr{border:0;border-top:1.5px solid #a0a0a0;margin:6px 0}
+.pp-in{position:relative;display:flex;flex-direction:column;justify-content:space-around;padding:8px}
+.pp-in .ppl{display:block;height:5px;background:repeating-linear-gradient(90deg,#bbb 0 6px,transparent 6px 8px);margin:3px 0}
+.bp.h{position:absolute;left:-26px;top:50%;transform:translateY(-50%)}
