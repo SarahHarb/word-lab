@@ -58,7 +58,7 @@ document.addEventListener('mouseup',e=>{if(!toolClick)return;const {td,x,y}=tool
 /* switch the tool off when leaving the table, changing ribbon tab, or opening another lesson */
 document.addEventListener('mousedown',e=>{if(!S.tool||!e.target.closest)return;if(e.target.closest('#doc')&&!e.target.closest('#doc table.wt'))setTool(null)},true);
 document.addEventListener('click',e=>{if(!S.tool||!e.target.closest)return;const tb=e.target.closest('#wtabs [data-tab]');if(tb&&!['tdesign','tlayout'].includes(tb.dataset.tab))setTool(null)},true);
-const _aps=window.applySetup;if(_aps)window.applySetup=function(...a){setTool(null);const r=_aps.apply(this,a);try{doc.classList.toggle('vgrid',S.gridOn!==false)}catch(e){}return r};
+const _aps=window.applySetup;if(_aps)window.applySetup=function(...a){setTool(null);const r=_aps.apply(this,a);try{doc.classList.toggle('vgrid',S.gridOn!==false);if(innerWidth<700){if(S.view!=='web'){S.view='web';applyPage()}if(S.zoom<150)setZoom(160)}}catch(e){}return r};
 document.addEventListener('mousemove',e=>{if(!toolDrag)return;showDrawLine(toolDrag.x,toolDrag.y,e.clientX,e.clientY)},true);
 document.addEventListener('mouseup',e=>{if(!toolDrag)return;const {td,x,y}=toolDrag;toolDrag=null;hideDrawLine();const dx=e.clientX-x,dy=e.clientY-y;snap();
   if(Math.max(Math.abs(dx),Math.abs(dy))<8){const [side]=nearestSide(td,x,y);paintEdge(td,side,penBd());logAct('paint:'+side)}

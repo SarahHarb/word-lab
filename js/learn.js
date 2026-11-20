@@ -174,7 +174,7 @@ function showSimCard(kind){const it=CO.item,o=$('#simcard');if(!it)return;const 
 function hideSimCard(){$('#simcard').className='simcard'}
 /* fit simulator to any screen */
 window.SIMSCALE=1;
-function fitSim(){const wrap=$('.simwrap'),sim=$('#sim');if(!wrap||!sim)return;const W=wrap.clientWidth,H=wrap.clientHeight;const base=W<900?Math.max(W,880):(W<1180?1180:0);
+function fitSim(){const wrap=$('.simwrap'),sim=$('#sim');if(!wrap||!sim)return;const W=wrap.clientWidth,H=wrap.clientHeight;const base=W<700?Math.max(W,560):W<900?Math.max(W,880):(W<1180?1180:0);
   if(base&&base>W){const s=W/base;SIMSCALE=s;Object.assign(sim.style,{position:'absolute',top:'0',right:'0',width:base+'px',height:(H/s)+'px',transform:`scale(${s})`,transformOrigin:'top right',flex:'none'})}
   else{SIMSCALE=1;Object.assign(sim.style,{position:'',top:'',right:'',width:'',height:'',transform:'',transformOrigin:'',flex:''})}}
 addEventListener('resize',()=>{fitSim();closeMenus()});
@@ -206,13 +206,14 @@ function closeGoal(){const g=$('#goalPop');if(g)g.remove();document.removeEventL
 
 /* ---------- reference picture that stays in front of the student ---------- */
 function showRef(src,title){let p=$('#refpanel');const w=$('.simwrap');if(!w)return;if(!p){p=document.createElement('div');p.id='refpanel';w.appendChild(p)}
-  const isH=src.trim().startsWith('<');p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>${isH?'🎯 '+(title||''):'🖼️ صمّم مثل الصورة'}</b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div>${isH?`<div class="goalbox rp-goal">${src}</div>`:`<img src="${src}" alt="الصورة المطلوبة">`}${!isH&&CO.item&&(CO.item.intro||CO.item.skills)?`<div class="rp-intro">${CO.item.skills?`<div class="rp-sk">${CO.item.skills.map(k=>`<span>${k}</span>`).join('')}</div>`:''}${CO.item.intro?`<p>${CO.item.intro}</p>`:''}</div>`:''}<div class="rp-lh"><b>${isH?'خطوات المشروع':'للمطابقة'}</b><span id="rpCount"></span></div><ol class="rp-list" id="rplist"></ol><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;CO.rpSig='';
+  const isH=src.trim().startsWith('<');p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>${isH?'🎯 '+(title||''):'🖼️ صمّم مثل الصورة'}<small class="rp-mini" id="rpMini"></small></b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div>${isH?`<div class="goalbox rp-goal">${src}</div>`:`<img src="${src}" alt="الصورة المطلوبة">`}${!isH&&CO.item&&(CO.item.intro||CO.item.skills)?`<div class="rp-intro">${CO.item.skills?`<div class="rp-sk">${CO.item.skills.map(k=>`<span>${k}</span>`).join('')}</div>`:''}${CO.item.intro?`<p>${CO.item.intro}</p>`:''}</div>`:''}<div class="rp-lh"><b>${isH?'خطوات المشروع':'للمطابقة'}</b><span id="rpCount"></span></div><ol class="rp-list" id="rplist"></ol><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;CO.rpSig='';
   p.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=b.dataset.r;if(r==='big'){p.classList.toggle('big');p.classList.remove('min')}else p.classList.toggle('min')});
   const im=p.querySelector('img,.rp-goal');if(im)im.onclick=()=>{p.classList.toggle('big')};
-  const h=p.querySelector('.rp-h');h.onmousedown=e=>{if(e.target.closest('button'))return;const wr=w.getBoundingClientRect(),pr=p.getBoundingClientRect(),dx=e.clientX-pr.left,dy=e.clientY-pr.top;
+  const h=p.querySelector('.rp-h');if(isPhone()){p.classList.add('mcol');document.body.classList.add('hasref');h.onclick=e=>{if(e.target.closest('button'))return;p.classList.toggle('mcol')}}else document.body.classList.remove('hasref');h.onmousedown=e=>{if(isPhone()||e.target.closest('button'))return;const wr=w.getBoundingClientRect(),pr=p.getBoundingClientRect(),dx=e.clientX-pr.left,dy=e.clientY-pr.top;
     const mv=ev=>{p.style.left=Math.max(0,Math.min(wr.width-pr.width,ev.clientX-wr.left-dx))+'px';p.style.top=Math.max(0,Math.min(wr.height-40,ev.clientY-wr.top-dy))+'px';p.style.bottom='auto'};
     const up=()=>{removeEventListener('mousemove',mv);removeEventListener('mouseup',up)};addEventListener('mousemove',mv);addEventListener('mouseup',up);e.preventDefault()}}
-function hideRef(){const p=$('#refpanel');if(p)p.remove()}
+function hideRef(){const p=$('#refpanel');if(p)p.remove();document.body.classList.remove('hasref')}
+function isPhone(){return innerWidth<=900}
 
 function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)return;
   if(it.proj){const ls=L(CO.unit).filter(l=>l.proj);const sig='p'+it.proj.i+ls.map(l=>isDone(CO.unit,l)?1:0).join('');if(CO.rpSig===sig)return;CO.rpSig=sig;
@@ -224,7 +225,7 @@ function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)retu
   const sig=st.join()+'|'+av.join()+'|'+f;if(CO.rpSig===sig)return;CO.rpSig=sig;
   ul.innerHTML=it.reqs.map((r,i)=>{const cls=st[i]?'ok':av[i]?(i===f?'av cur':'av'):'lock';const nd=(r.need||[]).filter(k=>!st[k]).map(k=>k+1);
     return `<li class="${cls}" data-q="${i}"><i>${st[i]?'✓':av[i]?i+1:'🔒'}</i><div><span>${r.t}</span>${i===f?`<small>${fixOf(r)}</small>${r.cmd||r.where?`<button data-h="${i}">👆 أرني أين</button>`:''}`:!st[i]&&!av[i]&&nd.length?`<em>بعد ${nd.join('، ')}</em>`:''}</div></li>`}).join('');
-  const n=st.filter(Boolean).length;$('#rpCount').textContent=`${n} / ${st.length}`;
+  const n=st.filter(Boolean).length;$('#rpCount').textContent=`${n} / ${st.length}`;const mini=$('#rpMini');if(mini){const fi=f!=null?f:st.findIndex(x=>!x);mini.textContent=fi>=0?`${n}/${st.length} · ${it.reqs[fi].t} ▲`:'✓ تمّت المطابقة'}
   const lh=$('#refpanel .rp-lh b');if(lh)lh.textContent=n===st.length?'تمّت المطابقة 🎉':'المضيء جاهز — اختر أي واحد';
   ul.querySelectorAll('li.av').forEach(x=>x.onclick=()=>{CO.focus=+x.dataset.q;CO.rpSig='';renderRefList()});
   ul.querySelectorAll('[data-h]').forEach(b=>b.onclick=e=>{e.stopPropagation();showReqHint(+b.dataset.h)})}

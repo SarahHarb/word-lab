@@ -211,3 +211,19 @@ body.demo #lhead{position:relative;z-index:1005}
 .rp-sk{display:flex;flex-wrap:wrap;gap:4px}.rp-sk span{background:var(--blueL);color:var(--blue);font-size:11.5px;font-weight:800;border-radius:999px;padding:2px 8px}
 .refpanel.big .rp-intro{display:none}
 .gstop{margin-top:6px;border:0;background:rgba(255,255,255,.18);color:inherit;border-radius:999px;padding:2px 10px;font-size:11.5px;cursor:pointer}
+
+.rp-mini{display:none}
+@media (max-width:900px){
+ .refpanel{position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;width:auto!important;max-height:62vh;border-radius:16px 16px 0 0;z-index:900;box-shadow:0 -10px 30px rgba(16,24,40,.25)}
+ .refpanel .rp-h{cursor:pointer;padding:9px 14px;font-size:14px}
+ .refpanel .rp-h::before{content:'';position:absolute;top:4px;left:50%;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:rgba(255,255,255,.35)}
+ .refpanel .rp-h{position:relative}
+ .refpanel [data-r="big"],.refpanel [data-r="min"]{display:none}
+ .refpanel.mcol img,.refpanel.mcol .rp-goal,.refpanel.mcol .rp-intro,.refpanel.mcol .rp-lh,.refpanel.mcol .rp-list{display:none}
+ .refpanel.mcol .rp-mini{display:block;font-weight:600;font-size:12px;color:#ffd77a;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
+ .refpanel img{max-height:30vh;object-fit:contain}
+ .refpanel .rp-list{max-height:none}
+ .refpanel.min{display:none}
+ body.hasref .simwrap{padding-bottom:58px}
+ body.hasref #bubble{z-index:1200}
+}

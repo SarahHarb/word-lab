@@ -30,7 +30,7 @@ function buildGuide(r){if(r.path)return (typeof r.path==='function'?r.path():r.p
  return st}
 function startGuide(i){const r=CO.item&&CO.item.reqs&&CO.item.reqs[i];if(!r)return false;const st=buildGuide(r);if(!st.length)return false;
  st.push({el:()=>{let e=null;try{e=r.where&&r.where()}catch(x){}return e||PT_()},say:fixOf(r),done:()=>false,last:1});
- GD.on=true;GD.steps=st;GD.i=0;GD.r=r;GD.clicked=false;CO.exEl=null;clearHints();gTick();return true}
+ if(typeof isPhone==='function'&&isPhone())$('#refpanel')?.classList.add('mcol');GD.on=true;GD.steps=st;GD.i=0;GD.r=r;GD.clicked=false;CO.exEl=null;clearHints();gTick();return true}
 function stopGuide(msg){if(!GD.on)return;GD.on=false;hideCoach();if(msg)simToast(msg)}
 function gTick(){if(!GD.on)return;const r=GD.r;if(!CO.item||!CO.item.reqs.includes(r)){stopGuide();return}
  let ok=false;try{ok=r.check()}catch(e){}if(ok){stopGuide('✓ '+r.t);return}

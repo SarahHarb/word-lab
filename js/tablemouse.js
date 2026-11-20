@@ -43,3 +43,10 @@
    const r=t.getBoundingClientRect(),rtl=isRTLt(t);hd._t=t;Object.assign(hd.style,{display:'block',top:(r.top-16)+'px',left:(rtl?r.right+2:r.left-16)+'px'})}
  document.addEventListener('scroll',()=>{const hd=$('#tblhandle');if(hd)hd.style.display='none'},true);
 })();
+/* touch: drag a finger across cells to select them (phones / tablets) */
+(function(){let t0=null;
+ document.addEventListener('touchstart',e=>{if(S.tool)return;const td=e.target.closest&&e.target.closest('#doc table.wt:not(.prev) td');t0=td||null},{passive:true});
+ document.addEventListener('touchmove',e=>{if(!t0)return;const p=e.touches[0];const el=document.elementFromPoint(p.clientX,p.clientY);const td=el&&el.closest&&el.closest('#doc table.wt:not(.prev) td');
+   if(td&&td!==t0&&td.closest('table')===t0.closest('table')){e.preventDefault();S.curCell=t0;setCells(rectCells(t0,td));updateCtx()}},{passive:false});
+ document.addEventListener('touchend',()=>{t0=null},{passive:true});
+})();
