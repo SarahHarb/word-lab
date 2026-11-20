@@ -464,7 +464,41 @@ const TX12=PIC({t:'بحث واستبدال',goalImg:'img/m-tx12.png',skills:['ا
  setup:{html:'<p class="wtitle">رحلة إلى أريحا</p><p>سنزور أريحا يوم السبت. نصل أريحا صباحًا، ونتناول الغداء في أريحا، ثم نعود من أريحا مساءً.</p>'},
  reqs:[Q('لا توجد «أريحا»',()=>!firstBody().textContent.includes('أريحا'),()=>blk('سنزور'),'الصفحة الرئيسية ← استبدال ← البحث عن: أريحا ← استبدال بـ: نابلس ← استبدال الكل','replace'),
   Q('«نابلس» في مكانها (5 مرات)',()=>firstBody().textContent.split('نابلس').length-1===5,()=>blk('سنزور'),'اكتب «نابلس» صحيحة في خانة «استبدال بـ»','replace')]});
-MORE_PICS_T2=[['الكتابة',[TX1,TX2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة',[TX7,TX8,TX9,TX10]]];
+
+/* ---- التعداد: نقطي، رقمي، متعدد المستويات ---- */
+const liOf=t=>[...firstBody().querySelectorAll('li')].find(l=>{const c=l.cloneNode(true);c.querySelectorAll('ul,ol').forEach(x=>x.remove());return c.textContent.trim().includes(t)})||null;
+const depth=t=>{const l=liOf(t);if(!l)return 0;let d=0;for(let x=l;x&&x!==firstBody();x=x.parentElement)if(/^(UL|OL)$/.test(x.tagName))d++;return d};
+const topList=t=>{const l=liOf(t);if(!l)return null;let top=l.closest('ul,ol');while(top&&top.parentElement&&top.parentElement.closest('ul,ol')&&firstBody().contains(top.parentElement))top=top.parentElement.closest('ul,ol');return top};
+const PL=(arr,tag)=>arr.map(t=>`<p style="font-size:14pt">${t}</p>`).join('');
+const LS1=PIC({t:'التعداد النقطي',goalImg:'img/m-ls1.png',skills:['تحديد عدة أسطر','تعداد نقطي'],
+ intro:'حوّل الأدوات الأربع إلى تعداد نقطي (•). لا تحدّد العنوان.',
+ setup:{html:PL(['<b>أدوات الرحلة:</b>','قبعة','ماء','طعام','كاميرا'])},
+ reqs:[Q('الأدوات الأربع بتعداد نقطي',()=>['قبعة','ماء','طعام','كاميرا'].every(t=>liOf(t)?.closest('ul')),()=>blk('قبعة'),'حدّد الأسطر الأربعة ← الصفحة الرئيسية ← تعداد نقطي','bullets',{selText:'قبعة'}),
+  Q('العنوان بلا نقطة',()=>!blk('أدوات الرحلة')?.closest('ul,ol'),()=>blk('أدوات الرحلة'),'انقر في العنوان ← اضغط «تعداد نقطي» مرة ثانية لإلغائه')]});
+const LS2=PIC({t:'التعداد الرقمي',goalImg:'img/m-ls2.png',skills:['ترقيم 1، 2، 3'],
+ intro:'رقّم خطوات التجربة: 1، 2، 3.',
+ setup:{html:PL(['<b>خطوات التجربة:</b>','املأ الكأس بالماء','ضع الملح','حرّك جيدًا'])},
+ reqs:[Q('الخطوات مرقّمة 1، 2، 3',()=>['املأ','الملح','حرّك'].every(t=>{const o=liOf(t)?.closest('ol');return !!o&&!/abjad|roman|alpha|indic/.test(o.style.listStyleType)}),()=>blk('املأ'),'حدّد الخطوات الثلاث ← الصفحة الرئيسية ← ترقيم','numbering',{selText:'املأ'}),
+  Q('العنوان بلا رقم',()=>!blk('خطوات التجربة')?.closest('ul,ol'),()=>blk('خطوات التجربة'),'انقر في العنوان ← اضغط «ترقيم» مرة ثانية لإلغائه')]});
+LS2.reqs[0].fixFn=()=>['املأ','الملح','حرّك'].some(t=>liOf(t)?.closest('ul'))?'هذا تعداد نقطي — المطلوب ترقيم (أرقام).':null;
+const LS3=PIC({t:'شكل النقطة ونوع الترقيم',goalImg:'img/m-ls3.png',skills:['مكتبة التعداد النقطي','مكتبة الترقيم: أ. ب. ج.'],
+ intro:'غيّر شكل النقطة إلى ✓، واجعل الترقيم بالحروف: أ. ب. ج. (افتح السهم ▾ بجانب الزر)',
+ setup:{html:'<p style="font-size:14pt"><b>المهام المنجزة:</b></p><ul style="font-size:14pt"><li>الواجب</li><li>القراءة</li><li>الرسم</li></ul><p style="font-size:14pt"><b>أسئلة الامتحان:</b></p><ol style="font-size:14pt"><li>عرّف الخلية</li><li>اذكر أجزاءها</li><li>ارسمها</li></ol>'},
+ reqs:[Q('النقطة على شكل ✓',()=>/✓/.test(liOf('الواجب')?.closest('ul')?.style.listStyleType||''),()=>blk('الواجب'),'حدّد المهام ← سهم «تعداد نقطي» ▾ ← ✓','bullets',{selText:'الواجب',mi:['bullets','✓','✓']}),
+  Q('الترقيم: أ. ب. ج.',()=>/abjad/.test(liOf('عرّف الخلية')?.closest('ol')?.style.listStyleType||''),()=>blk('عرّف'),'حدّد الأسئلة ← سهم «ترقيم» ▾ ← أ. ب. ج.','numbering',{selText:'عرّف الخلية',mi:['numbering','arabic-abjad','أ. ب. ج.']})]});
+const LS4=PIC({t:'تعداد نقطي متعدد المستويات',goalImg:'img/m-ls4.png',skills:['Tab: مستوى أدنى','Shift + Tab: مستوى أعلى','زيادة المسافة البادئة'],
+ intro:'اجعل «تفاح» و«موز» تحت «الفواكه»، و«جزر» و«بندورة» تحت «الخضار». انقر في أول السطر واضغط Tab (أو «زيادة المسافة البادئة»).',
+ setup:{html:'<ul style="font-size:14pt"><li>الفواكه</li><li>تفاح</li><li>موز</li><li>الخضار</li><li>جزر</li><li>بندورة</li></ul>'},
+ reqs:[...[['تفاح','الفواكه'],['موز','الفواكه'],['جزر','الخضار'],['بندورة','الخضار']].map(([w,par])=>Q(`«${w}» تحت «${par}»`,()=>depth(w)===2&&depth(par)===1&&(()=>{const T=firstBody().textContent;const iw=T.indexOf(w),ip=T.indexOf(par),io=T.indexOf(par==='الفواكه'?'الخضار':'\u0000');return iw>ip&&(par!=='الفواكه'||iw<io)})(),()=>liOf(w),`انقر في «${w}» ← اضغط Tab (أو الصفحة الرئيسية ← زيادة المسافة البادئة)`,'indentInc',{caretIn:1})),
+  N(Q('«الفواكه» و«الخضار» في المستوى الأول',()=>depth('الفواكه')===1&&depth('الخضار')===1,()=>liOf('الخضار'),'أرجعه بـ Shift + Tab (أو إنقاص المسافة البادئة)','indentDec',{caretIn:1}),1)]});
+const LS5=PIC({t:'ترقيم متعدد المستويات 1.1',goalImg:'img/m-ls5.png',skills:['قائمة متعددة المستويات','1. ثم 1.1.','Tab'],
+ intro:'حدّد الأسطر ← قائمة متعددة المستويات (1. 1.1. 1.1.1.)، ثم اضغط Tab على الدروس لتصير 1.1 و 1.2.',
+ setup:{html:PL(['الوحدة الأولى: الجداول','إدراج جدول','تنسيق جدول','الوحدة الثانية: الصور','إدراج صورة','قص الصورة'])},
+ reqs:[Q('قائمة متعددة المستويات (1. 1.1.)',()=>{const t=topList('الوحدة الأولى');return !!t&&t.classList.contains('ml')&&['إدراج جدول','قص الصورة'].every(w=>topList(w)===t)},()=>blk('الوحدة الأولى'),'حدّد الأسطر الستة ← الصفحة الرئيسية ← قائمة متعددة المستويات ← 1. 1.1. 1.1.1.','multilevel',{selText:'الوحدة الأولى',mi:['multilevel','1','1. 1.1. 1.1.1.']}),
+  ...['إدراج جدول','تنسيق جدول','إدراج صورة','قص الصورة'].map(w=>N(Q(`«${w}» في المستوى الثاني`,()=>depth(w)===2,()=>liOf(w)||blk(w),`انقر في «${w}» ← Tab`,'indentInc',{caretIn:1}),1)),
+  Q('الوحدتان في المستوى الأول',()=>depth('الوحدة الأولى')===1&&depth('الوحدة الثانية')===1,()=>liOf('الوحدة الثانية')||blk('الوحدة الثانية'),'أرجعها بـ Shift + Tab','indentDec',{caretIn:1})]});
+LS5.reqs[0].fixFn=()=>{const t=topList('الوحدة الأولى');if(t&&!t.classList.contains('ml'))return 'هذا ترقيم عادي — اختر «قائمة متعددة المستويات» من زرّها (بجانب الترقيم).';return null};
+MORE_PICS_T2=[['الكتابة',[TX1,TX2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة: التعداد',[LS1,LS2,LS3,LS4,LS5]],['الفقرة: المحاذاة',[TX7]]];
 
 /* ---------- topics ---------- */
 const MORE_PICS={
@@ -474,7 +508,7 @@ const MORE_PICS={
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
 const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
-Object.assign(MORE_IMG,{TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
+Object.assign(MORE_IMG,{LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 var MORE_PICS_T2;
 (function(){
  if(MORE_PICS_T2)MORE_PICS.t2=MORE_PICS_T2;

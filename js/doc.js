@@ -380,7 +380,7 @@ function docKeys(e){
   if(k==='Enter'&&!e.shiftKey&&!e.ctrlKey){if(window.tryRand&&tryRand()){e.preventDefault();return}}
   if(k==='Enter'&&e.shiftKey&&!e.ctrlKey){e.preventDefault();document.execCommand('insertHTML',false,'<br class="brk">');return}
   if(k==='Enter'&&e.ctrlKey){e.preventDefault();OPS.pageBreak();return}
-  if(k==='Tab'){if(window.tableTab&&tableTab(e))return;e.preventDefault();if(window.curEq&&curEq())return;document.execCommand('insertHTML',false,'<span class="tabc">&#9;</span>');}
+  if(k==='Tab'){if(window.tableTab&&tableTab(e))return;e.preventDefault();if(window.curEq&&curEq())return;{const r=curRange();const li=r&&(r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement).closest('li');if(li&&li.closest('#doc')){S.range=r.cloneRange();snap();document.execCommand(e.shiftKey?'outdent':'indent');logAct(e.shiftKey?'listOut':'listIn');SIM.emit('change');return}}document.execCommand('insertHTML',false,'<span class="tabc">&#9;</span>');}
 }
 function globalKeys(e){
   if(!$('#sim')||$('#sim').offsetParent===null)return;
