@@ -29,7 +29,9 @@ OPS.rtl=function(){if(!needSel())return;snap();pbBlocks().forEach(b=>{b.dir='rtl
 OPS.ltr=function(){if(!needSel())return;snap();pbBlocks().forEach(b=>{b.dir='ltr';if(/right/.test(b.style.textAlign))b.style.textAlign=''});logAct('dir:ltr');SIM.emit('change')};
 const mside=b=>getComputedStyle(b).direction==='ltr'?'marginLeft':'marginRight';
 OPS.indentInc=function(){if(!needSel())return;snap();if(listOf()){ex('indent');logAct('indentInc');return}pbBlocks().forEach(b=>{const k=mside(b);b.style[k]=((parseFloat(b.style[k])||0)+48)+'px'});logAct('indentInc');SIM.emit('change')};
-OPS.indentDec=function(){if(!needSel())return;snap();if(listOf()){ex('outdent');logAct('indentDec');return}pbBlocks().forEach(b=>{const k=mside(b);b.style[k]=Math.max(0,(parseFloat(b.style[k])||0)-48)+'px'||''});logAct('indentDec');SIM.emit('change')};
+const lvl1=()=>{const l=listOf();if(!l)return false;return !(l.parentElement&&l.parentElement.closest('ul,ol')&&firstBody().contains(l.parentElement))};
+window.listLvl1=lvl1;
+OPS.indentDec=function(){if(!needSel())return;if(listOf()){if(lvl1()){simToast('هذا المستوى الأول من القائمة — لإلغاء الترقيم اضغط زر «ترقيم» مرة ثانية');return}snap();ex('outdent');logAct('indentDec');return}snap();pbBlocks().forEach(b=>{const k=mside(b);b.style[k]=Math.max(0,(parseFloat(b.style[k])||0)-48)+'px'||''});logAct('indentDec');SIM.emit('change')};
 /* علامات التنسيق: ¶ نهاية الفقرة، · للمسافة، → للجدولة */
 function markSpaces(on){doc.querySelectorAll('.pg-body .spm').forEach(s=>s.replaceWith(document.createTextNode(s.textContent)));doc.querySelectorAll('.pg-body').forEach(b=>b.normalize());
   if(!on)return;doc.querySelectorAll('.pg-body').forEach(b=>{const w=document.createTreeWalker(b,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('.obj,.eq,.spm')||!/ /.test(n.data)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});const ns=[];let n;while(n=w.nextNode())ns.push(n);
