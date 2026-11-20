@@ -288,7 +288,8 @@ function wireRibbon(){
   const tabs=$('#wtabs'), rib=$('#ribbon');
   tabs.addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault()});
   tabs.addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)setTab(b.dataset.tab);const c=e.target.closest('[data-cmd]');if(c&&!b)run(c.dataset.cmd,c.dataset.arg)});
-  tabs.addEventListener('dblclick',e=>{if(e.target.closest('[data-tab]')&&!e.target.closest('.file')){rib.classList.toggle('collapsed')}});
+  tabs.addEventListener('click',e=>{if(e.target.closest('[data-tab]')&&rib.classList.contains('collapsed')){rib.classList.remove('collapsed');rib._open=Date.now();setTimeout(()=>{try{fitSim()}catch(x){}},30)}},true);
+  tabs.addEventListener('dblclick',e=>{if(Date.now()-(window.__lastTouch||0)<1500)return;if(Date.now()-(rib._open||0)<700)return;if(e.target.closest('[data-tab]')&&!e.target.closest('.file')){rib.classList.toggle('collapsed')}});
   $('.wtbar').addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault()});
   $('.wtbar').addEventListener('click',e=>{const c=e.target.closest('[data-cmd]');if(c)run(c.dataset.cmd,c.dataset.arg)});
   const onDown=e=>{const b=e.target.closest('button');if(b&&!e.target.closest('input,select'))e.preventDefault()};
