@@ -5,7 +5,7 @@ function shapeHTML(kind,w,h,o={}){const cls=kind==='textbox'?' textbox':kind==='
   const d={fill:'#4472c4',line:'#2f528f',lw:1.5,tcol:'#ffffff',...o};
   if(kind==='textbox'){d.fill='#ffffff';d.line='#000000';d.lw=.75;d.tcol='#000000'}if(kind==='wordart'){d.fill='none';d.line='none'}
   if(kind==='line'||kind==='arrowLine'){d.fill='none';d.line='#4472c4';d.lw=2}
-  return `<span class="obj shp${cls}" contenteditable="false" data-kind="${kind}" data-wrap="${o.wrap||(kind==='wordart'?'inline':'front')}" data-w="${w}" data-h="${h}" data-x="${o.x||0}" data-y="${o.y||0}" data-rot="0" data-fill="${d.fill}" data-line="${d.line}" data-lw="${d.lw}" data-dash="solid" data-tcol="${d.tcol}" ${o.tfill?`data-tfill="${o.tfill}"`:''} ${o.tout?`data-tout="${o.tout}"`:''} ${o.tfx?`data-tfx="${o.tfx}"`:''}><svg><path/></svg><div class="stxt" contenteditable="${kind==='textbox'||kind==='wordart'?'true':'false'}">${o.text||''}</div>${HANDLES}</span>`}
+  return `<span class="obj shp${cls}" contenteditable="false" data-kind="${kind}" data-wrap="${o.wrap||(kind==='wordart'?'inline':'front')}" data-w="${w}" data-h="${h}" data-x="${o.x||0}" data-y="${o.y||0}" data-rot="0" data-fill="${d.fill}" data-line="${d.line}" data-lw="${d.lw}" data-dash="solid" data-tcol="${d.tcol}" ${o.tfill?`data-tfill="${o.tfill}"`:''} ${o.tout?`data-tout="${o.tout}"`:''} ${o.tfx?`data-tfx="${o.tfx}"`:''}><svg><path/></svg><span class="stxt" contenteditable="${kind==='textbox'||kind==='wordart'?'true':'false'}">${o.text||''}</span>${HANDLES}</span>`}
 function applyObj(o){
   const d=o.dataset;let w=+d.w,h=+d.h;o.style.width=w+'px';o.style.height=h+'px';
   const wrap=d.wrap||'inline';o.classList.remove('float','behind','front','sq','tb');o.style.position='';o.style.left='';o.style.top='';o.style.float='';o.style.margin='';o.style.display='';o.style.zIndex='';o.style.shapeOutside='';
@@ -26,7 +26,7 @@ function applyObj(o){
     const lw=+d.lw||1;p.setAttribute('fill',d.fill==='none'?'none':d.fill);p.setAttribute('stroke',d.line==='none'?'none':d.line);p.setAttribute('stroke-width',lw);p.setAttribute('stroke-dasharray',d.dash==='dash'?`${lw*4} ${lw*3}`:d.dash==='dot'?`${lw} ${lw*2}`:'');
     svg.querySelectorAll('.ex').forEach(x=>x.remove());const ex2=shapeExtra(k,w,h);if(ex2){const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','ex');g.style.color=d.line==='none'?'#333':d.line;g.innerHTML=ex2;svg.appendChild(g)}
     svg.setAttribute('class',d.fx&&d.fx!=='none'?'fx-'+d.fx:'');
-    const t=o.querySelector('.stxt');t.style.color=d.tfill||d.tcol||'';t.style.webkitTextStroke=d.tout&&d.tout!=='none'?`1px ${d.tout}`:'';
+    let t=o.querySelector('.stxt');if(!t){t=document.createElement('span');t.className='stxt';t.contentEditable=(o.classList.contains('textbox')||o.classList.contains('wordart'))?'true':'false';o.insertBefore(t,o.querySelector('.h'))}t.style.color=d.tfill||d.tcol||'';t.style.webkitTextStroke=d.tout&&d.tout!=='none'?`1px ${d.tout}`:'';
     t.style.textShadow=d.tfx==='shadow'?'3px 3px 3px rgba(0,0,0,.4)':d.tfx==='glow'?'0 0 8px #ffc000,0 0 4px #ffc000':'';t.style.webkitBoxReflect=d.tfx==='reflection'?'below -6px linear-gradient(transparent 50%,rgba(255,255,255,.4))':'';
     t.style.transform=d.tfx==='arch'?'perspective(200px) rotateX(18deg)':'';
     if(k==='wordart'){const nat=t.scrollWidth;if(nat+8>w&&!d.fixedW){d.w=nat+8;o.style.width=d.w+'px'}}
@@ -228,3 +228,6 @@ function layoutDlg(){const o=S.obj;if(!o){simToast('حدّد صورة أو شك�
    <p class="sm" style="margin:10px 0 4px">التفاف النص على:</p><label class="row"><input type="radio" name="ls" value="both" ${!d.side||d.side==='both'?'checked':''}> كلا الجانبين</label><label class="row"><input type="radio" name="ls" value="right" ${d.side==='right'?'checked':''}> الأيمن فقط (الصورة يسارًا)</label><label class="row"><input type="radio" name="ls" value="left" ${d.side==='left'?'checked':''}> الأيسر فقط (الصورة يمينًا)</label>`,
    onOpen:dd=>dd.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{dd.querySelectorAll('[data-w]').forEach(x=>x.classList.toggle('on',x===b))}),
    buttons:[{label:'موافق',pri:1,act:dd=>{const w=dd.querySelector('[data-w].on')?.dataset.w||d.wrap;OPS.wrap(w);const sd=dd.querySelector('input[name="ls"]:checked')?.value;if(['square','tight','through'].includes(w)&&sd&&sd!=='both'){d.side=sd==='right'?'left':'right';applyObj(o)}logAct('layoutDlg')}},{label:'إلغاء'}]})}
+
+/* Enter داخل الشكل: سطر جديد (بدون div حتى لا ينكسر المستند عند التراجع/الحفظ) */
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing&&e.target.closest&&e.target.closest('#doc .stxt')){e.preventDefault();e.stopPropagation();document.execCommand('insertLineBreak')}},true);

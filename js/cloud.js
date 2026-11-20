@@ -36,11 +36,11 @@ async function onUser(u){
       setInterval(loadSec,60000);
     }else window.UNLOCKED=null;
     const pr=await sb.from('progress').select('done').eq('email',email).maybeSingle();
-    if(pr.data&&pr.data.done){const d=pr.data.done;Object.keys(d).forEach(k=>{P[k]=P[k]||{p:{}};P[k].p={...(P[k].p||{}),...(d[k].p||{})}});saveP(true)}
+    if(pr.data&&pr.data.done){const d=pr.data.done;Object.keys(d).forEach(k=>{P[k]=P[k]||{p:{}};P[k].p={...(P[k].p||{}),...(d[k].p||{})};if(d[k].s){const L=P[k].s=P[k].s||{};Object.keys(d[k].s).forEach(j=>{const a=L[j]||{},b=d[k].s[j]||{};const m={...b,...a};['t','r','a','h','w','ws','n'].forEach(f=>{if(a[f]!=null||b[f]!=null)m[f]=Math.max(+a[f]||0,+b[f]||0)});m.f=Math.min(a.f||Infinity,b.f||Infinity);if(m.f===Infinity)delete m.f;m.l=Math.max(a.l||0,b.l||0);if(a.d||b.d)m.d=Math.min(a.d||Infinity,b.d||Infinity);L[j]=m})}});saveP(true)}
   }catch(e){alertGate('خطأ في الاتصال: '+e.message);return}
   $('#gate').hidden=true;startOnce();renderUser();
 }
-let csT;function cloudSave(){if(!CLOUD.on||!CLOUD.user||CLOUD.admin)return;clearTimeout(csT);csT=setTimeout(async()=>{const done={};Object.keys(P).forEach(k=>{if(P[k]&&P[k].p&&Object.keys(P[k].p).length)done[k]={p:P[k].p}});
+let csT;function cloudSave(){if(!CLOUD.on||!CLOUD.user||CLOUD.admin)return;clearTimeout(csT);csT=setTimeout(async()=>{const done={};Object.keys(P).forEach(k=>{const x=P[k];if(!x)return;const hp=x.p&&Object.keys(x.p).length,hs=x.s&&Object.keys(x.s).length;if(hp||hs)done[k]={p:x.p||{},...(hs?{s:x.s}:{})}});
   const {error}=await CLOUD.sb.from('progress').upsert({email:CLOUD.email,name:CLOUD.student?.name||CLOUD.user.user_metadata?.full_name||'',section_id:CLOUD.student?.section_id||null,done,last:new Date().toISOString()});if(error)console.warn(error)},1200)}
 function isUnlocked(u){return !window.UNLOCKED||window.UNLOCKED.includes(u.id)}
 function renderUser(){const b=$('#suser');if(!b||!CLOUD.user)return;const m=CLOUD.user.user_metadata||{};b.hidden=false;b.innerHTML=`<img src="${m.avatar_url||m.picture||''}" alt=""><span><b>${CLOUD.student?.name||m.full_name||''}</b><small dir="ltr">${CLOUD.email}</small></span>${CLOUD.admin?'<a href="admin.html" class="adm">لوحة المعلّمة</a>':''}<button id="sOut">خروج</button>`;$('#sOut').onclick=signOut}

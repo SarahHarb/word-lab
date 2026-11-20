@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة المعلّمة — برنامج وورد</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=11201500">
+<link rel="stylesheet" href="css/app.css?v=11201508">
 <style>
 body{overflow:auto;height:auto;min-height:100vh}
 .atop{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--side);color:#fff;position:sticky;top:0;z-index:5}
@@ -31,6 +31,17 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 .empty{color:var(--mute);text-align:center;padding:30px}
 .pbar{height:7px;background:#eef1f6;border-radius:9px;overflow:hidden;min-width:80px}.pbar i{display:block;height:100%;background:var(--ok)}
 .notice{background:var(--goldL);border:1px solid #f1d38a;border-radius:12px;padding:14px;line-height:1.8}
+.seg{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}.seg button{border:1px solid var(--line);background:#f8fafc;border-radius:10px;padding:8px 14px;font-weight:800;font-size:14px;color:var(--mute)}.seg button.on{background:#e8f0fe;border-color:var(--blue);color:var(--blue)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0 14px}.kpis>div{border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;background:#fbfcfe}.kpis b{display:block;font-size:24px}.kpis span{font-size:12.5px;color:var(--mute)}.kpis .k2{background:#e7f7ec}.kpis .k1{background:#fff4d6}.kpis .k0{background:#f1f3f7}
+.card2{border:1px solid #f1d38a;background:#fffaf0;border-radius:14px;padding:10px 14px;margin-bottom:14px}.card2 h3{margin:4px 0 8px;font-size:15px}.hrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:7px 4px;border-top:1px solid #f3e3bd;cursor:pointer;font-size:13.5px}.hrow:hover{background:#fff1cf}
+a.stu,a.th{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:700}a.stu:hover,a.th:hover{text-decoration:underline}
+.card table th{position:static}.card table th.ih{top:0}.tt td:first-child{position:sticky;right:0;background:#fff;z-index:1}.tt tr.foot td:first-child{background:#f8fafc}
+.tt td.tc,.tt th.ih{text-align:center;padding:6px 3px;min-width:34px;position:relative}.tt th.gh{text-align:center;background:#eef3fb;color:var(--ink);border-inline:2px solid #fff}
+.dot{display:inline-grid;place-items:center;min-width:26px;height:24px;border-radius:7px;font-size:11.5px;font-weight:800;padding:0 3px}.d2{background:#22a35a;color:#fff}.d1{background:#ffe7a3;color:#7a5600}.d0{background:#f1f3f7}
+.eye{position:absolute;top:0;left:1px;font-size:10px;font-style:normal}.foot td{background:#f8fafc;font-weight:700}.foot small{color:var(--mute)}
+.legend{columns:2;font-size:13.5px;line-height:1.9;margin-top:12px}@media(max-width:700px){.legend{columns:1}}
+.mbg{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:20;display:grid;place-items:center;padding:14px}.mdl{background:#fff;border-radius:16px;padding:18px;width:min(900px,100%);max-height:90vh;overflow:auto}.mdl h3{margin:16px 0 6px;font-size:16px}
+table.mini{font-size:13px}table.mini th{position:static}table.mini tr.r2 td:nth-child(2){color:#137a37;font-weight:800}table.mini tr.r1 td:nth-child(2){color:#8a6200;font-weight:800}
 </style>
 </head>
 <body>
@@ -38,8 +49,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px
 <div class="atop"><span class="logo">W</span><b>لوحة المعلّمة</b><span class="sp"></span><span id="who" class="muted" style="color:#93a2ba"></span><a href="index.html">فتح الموقع</a><button id="out">خروج</button></div>
 <div class="atabs" id="atabs"><button data-v="track" class="on">📊 المتابعة</button><button data-v="unlock">🔓 فتح الدروس</button><button data-v="students">👩‍🎓 الطلاب</button><button data-v="sections">🏫 الشعب</button></div>
 <div class="wrap" id="view"></div>
-<script src="js/config.js?v=11201500"></script>
-<script src="js/topics-meta.js?v=11201500"></script>
+<script src="js/config.js?v=11201508"></script>
+<script src="js/topics-meta.js?v=11201508"></script>
 <script>
 const inSec=(st,id)=>st.section_id===id||(st.extra||[]).includes(id);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=(window.ONLY_TOPICS?window.TOPICS_META.filter(t=>ONLY_TOPICS.includes(t.id)):window.TOPICS_META);
@@ -55,7 +66,7 @@ async function init(){
   if(!session){gateMsg('<p>سجّلي الدخول بحساب Google الخاص بالمعلّمة.</p><button class="gbtn" id="gi">تسجيل الدخول بحساب Google</button>');$('#gi').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});return}
   const em=session.user.email.toLowerCase();const ad=await sb.from('admins').select('email').eq('email',em).maybeSingle();
   if(!ad.data){gateMsg(`<div class="gwarn">الحساب <b dir="ltr">${em}</b> ليس حساب المعلّمة.</div><button class="gbtn alt" id="go">خروج</button>`);$('#go').onclick=()=>sb.auth.signOut().then(()=>location.reload());return}
-  $('#gate').hidden=true;$('#who').textContent=em;await load();setInterval(()=>{if(view==='track')load()},20000);
+  $('#gate').hidden=true;$('#who').textContent=em;await load();setInterval(()=>{if(view==='track'&&!stuOpen&&!document.querySelector('select:focus'))load()},30000);
 }
 $('#out').onclick=()=>sb&&sb.auth.signOut().then(()=>location.reload());
 $('#atabs').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;view=b.dataset.v;$$('#atabs button').forEach(x=>x.classList.toggle('on',x===b));render()};
@@ -81,17 +92,71 @@ function render(){const v=$('#view');
     $('#sec').onchange=e=>{selSec=e.target.value;render()};
     $$('[data-u]').forEach(c=>c.onchange=async()=>{const set=new Set(un);c.checked?set.add(c.dataset.u):set.delete(c.dataset.u);if(ok(await sb.from('sections').update({unlocked:[...set]}).eq('id',s.id)))load()});
     $('#cpy').onclick=async()=>{if(!confirm('نسخ الدروس المفتوحة لهذه الشعبة إلى كل الشعب؟'))return;for(const x of SEC)await sb.from('sections').update({unlocked:un}).eq('id',x.id);load()};return}
-  if(view==='track'){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];const TT=T.filter(t=>un.includes(t.id));const list=STU.filter(x=>inSec(x,s.id)).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
-    const cell=(p,t)=>{const d=(p?.done?.[t.id]?.p)||{};const dn=t.learn.filter(k=>d[k]).length+t.tasks.filter(k=>d[k[0]]).length,tot=t.learn.length+t.tasks.length;const ex=t.tasks.filter(k=>k[2]);const exd=ex.filter(k=>d[k[0]]).length;return `<td><span class="chip c${dn===0?0:dn<tot?1:2}">${dn}/${tot}</span>${ex.length?`<div class="muted" style="font-size:11.5px;margin-top:3px">نفّذ: ${exd}/${ex.length}</div>`:''}</td>`};
-    const fmt=ts=>ts?new Date(ts).toLocaleString('ar',{dateStyle:'short',timeStyle:'short'}):'لم يدخل بعد';
-    v.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">متابعة شعبة ${s.name}</h2><div class="row" style="margin:0">الشعبة: ${secSel('sec')}<button class="btn g" id="rf">↻ تحديث</button><button class="btn g" id="csv">نسخ الجدول (CSV)</button></div></div>
-     ${!TT.length?'<p class="notice">لم تفتحي أي موضوع لهذه الشعبة بعد — من تبويب «🔓 فتح الدروس».</p>':''}
-     <div style="overflow:auto"><table><tr><th>الطالب/ة</th><th>الإنجاز</th>${TT.map(t=>`<th>${t.title}</th>`).join('')}<th>آخر دخول</th></tr>
-     ${list.map(st=>{const p=PRO[st.email];let dn=0,tot=0;TT.forEach(t=>{const d=(p?.done?.[t.id]?.p)||{};tot+=t.learn.length+t.tasks.length;dn+=t.learn.filter(k=>d[k]).length+t.tasks.filter(k=>d[k[0]]).length});const pc=tot?Math.round(dn/tot*100):0;
-       return `<tr><td><b>${st.name||'—'}</b><div class="muted ltr" style="font-size:11.5px">${st.email}</div></td><td><div class="pbar"><i style="width:${pc}%"></i></div><small>${pc}%</small></td>${TT.map(t=>cell(p,t)).join('')}<td class="muted">${fmt(p?.last)}</td></tr>`}).join('')||`<tr><td colspan="${TT.length+3}" class="empty">لا يوجد طلاب في هذه الشعبة — أضيفيهم من تبويب «👩‍🎓 الطلاب».</td></tr>`}</table></div></div>`;
-    $('#sec').onchange=e=>{selSec=e.target.value;render()};$('#rf').onclick=load;
-    $('#csv').onclick=()=>{const rows=[['الاسم','الإيميل',...TT.map(t=>t.title)]];list.forEach(st=>{const p=PRO[st.email];rows.push([st.name||'',st.email,...TT.map(t=>{const d=(p?.done?.[t.id]?.p)||{};return t.learn.filter(k=>d[k]).length+t.tasks.filter(k=>d[k[0]]).length+'/'+(t.learn.length+t.tasks.length)})])});navigator.clipboard.writeText(rows.map(r=>r.join(',')).join('\n')).then(()=>alert('تم النسخ — الصقيه في Excel'))};}
+  if(view==='track')renderTrack(v);
 }
+/* ================= المتابعة ================= */
+let tmode='all',selT='',selI='',stuOpen=null;
+const ITEMS=t=>(t.items&&t.items.map(i=>({...i,t:String(i.t).replace(/^\d+\.\s*/,'')})))||[...t.learn.map(k=>({k,t:k,g:'',n:0,x:0})),...t.tasks.map(k=>({k:k[0],t:k[1],g:'',n:0,x:1}))];
+const DD=(p,t)=>p?.done?.[t.id]||{};
+const stOf=(p,t,k)=>{const d=DD(p,t);const s=d.s?.[k]||null;const done=!!d.p?.[k];return {done,s,st:done?2:s&&((s.t||0)>0||(s.r||0)>0||(s.a||0)>0||(s.w||0)>0)?1:0}};
+const fmtT=sec=>{sec=+sec||0;if(!sec)return '—';if(sec<60)return sec+' ث';const m=Math.round(sec/60);return m<60?m+' د':Math.floor(m/60)+' س '+(m%60)+' د'};
+const fmtD=ts=>ts?new Date(ts).toLocaleString('ar',{dateStyle:'short',timeStyle:'short'}):'—';
+const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+const topicPct=(p,t)=>{const it=ITEMS(t);const dn=it.filter(i=>stOf(p,t,i.k).done).length;return [dn,it.length]};
+function renderTrack(v){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];const TT=T.filter(t=>un.includes(t.id));const list=STU.filter(x=>inSec(x,s.id)).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
+  if(!selT||!T.find(t=>t.id===selT))selT=(TT[0]||T[0])?.id;const t=T.find(x=>x.id===selT);const its=t?ITEMS(t):[];if(!its.find(i=>i.k===selI))selI=its[0]?.k||'';
+  const modes=`<div class="seg">${[['all','📋 عامة'],['topic','📚 حسب الموضوع'],['task','🎯 حسب المهمة']].map(([m,l])=>`<button data-tm="${m}" class="${tmode===m?'on':''}">${l}</button>`).join('')}</div>`;
+  const tSel=`<select id="tsel">${T.map(x=>`<option value="${x.id}" ${x.id===selT?'selected':''}>${x.title}${un.includes(x.id)?'':' (مغلق)'}</option>`).join('')}</select>`;
+  const iSel=`<select id="isel">${its.map((i,n)=>`<option value="${i.k}" ${i.k===selI?'selected':''}>${n+1}. ${esc(i.t)}</option>`).join('')}</select>`;
+  let body='';
+  if(!list.length)body=`<p class="empty">لا يوجد طلاب في هذه الشعبة — أضيفيهم من تبويب «👩‍🎓 الطلاب».</p>`;
+  else if(tmode==='all'){
+    let started=0,act=0,sum=0;const day=Date.now()-864e5;
+    const rows=list.map(st=>{const p=PRO[st.email];let dn=0,tot=0;TT.forEach(t=>{const [a,b]=topicPct(p,t);dn+=a;tot+=b});const pc=tot?Math.round(dn/tot*100):0;sum+=pc;if(p&&Object.keys(p.done||{}).length)started++;if(p?.last&&new Date(p.last)>day)act++;
+      return `<tr><td><a class="stu" data-stu="${st.email}">${esc(st.name||'—')}</a><div class="muted ltr" style="font-size:11.5px">${st.email}</div></td><td><div class="pbar"><i style="width:${pc}%"></i></div><small>${pc}%</small></td>${TT.map(t=>{const [a,b]=topicPct(p,t);return `<td><span class="chip c${a===0?0:a<b?1:2}">${a}/${b}</span></td>`}).join('')}<td class="muted">${fmtD(p?.last)}</td></tr>`}).join('');
+    const hard=[];TT.forEach(t=>ITEMS(t).forEach((i,n)=>{let inp=0,w=0,dn=0;list.forEach(st=>{const o=stOf(PRO[st.email],t,i.k);if(o.st===1)inp++;if(o.done)dn++;if(o.s&&(o.s.w||o.s.ws))w++});if(inp||w)hard.push({t,i,n,inp,w,dn})}));hard.sort((a,b)=>(b.inp*2+b.w)-(a.inp*2+a.w));
+    body=`<div class="kpis"><div><b>${list.length}</b><span>طالب/ة</span></div><div><b>${started}</b><span>بدؤوا العمل</span></div><div><b>${act}</b><span>نشِطون آخر 24 ساعة</span></div><div><b>${list.length?Math.round(sum/list.length):0}%</b><span>متوسط الإنجاز</span></div></div>
+     ${hard.length?`<div class="card2"><h3>⚠️ مهام يتعثّر فيها الطلاب</h3>${hard.slice(0,6).map(h=>`<div class="hrow" data-go="${h.t.id}|${h.i.k}"><span><b>${esc(h.t.title)}</b> ← ${h.n+1}. ${esc(h.i.t)}</span><span class="muted">بدأ ولم ينهِ: <b>${h.inp}</b> · شاهد الحل: <b>${h.w}</b> · أنجز: <b>${h.dn}</b></span></div>`).join('')}</div>`:''}
+     <div style="overflow:auto"><table><tr><th>الطالب/ة</th><th>الإنجاز</th>${TT.map(t=>`<th><a class="th" data-topic="${t.id}">${t.title}</a></th>`).join('')}<th>آخر دخول</th></tr>${rows}</table></div>`}
+  else if(tmode==='topic'&&t){
+    const groups=[];its.forEach((i,n)=>{const g=groups.at(-1);if(g&&g.g===i.g)g.c++;else groups.push({g:i.g,c:1})});
+    const hasG=groups.some(g=>g.g);
+    const cell=(p,i)=>{const o=stOf(p,t,i.k);const s=o.s||{};const tip=`${i.t}\nالوقت: ${fmtT(s.t)} · تحقّق: ${s.a||0} · أرني أين: ${s.h||0} · شاهد الحل: ${(s.w||0)+(s.ws||0)}`;const eye=(s.w||s.ws)?'<i class="eye">👁</i>':'';
+      return `<td class="tc" title="${esc(tip)}">${o.done?`<span class="dot d2">✓</span>`:o.st?`<span class="dot d1">${s.n?(s.r||0)+'/'+s.n:'…'}</span>`:'<span class="dot d0"></span>'}${eye}</td>`};
+    body=`<div class="row">الموضوع: ${tSel}<span class="muted">✓ أنجز · <span class="dot d1" style="display:inline-grid">2/5</span> بدأ (الخطوات المنجزة) · 👁 شاهد الحل · مرّري الماوس على الخانة للتفاصيل، واضغطي رقم المهمة لفتحها</span></div>
+     <div style="overflow:auto"><table class="tt"><tr>${hasG?`<th rowspan="2">الطالب/ة</th><th rowspan="2">أنجز</th>${groups.map(g=>`<th colspan="${g.c}" class="gh">${esc(g.g)}</th>`).join('')}</tr><tr>`:'<th>الطالب/ة</th><th>أنجز</th>'}${its.map((i,n)=>`<th class="ih"><a class="th" data-item="${i.k}" title="${esc(i.t)}">${n+1}</a></th>`).join('')}</tr>
+     ${list.map(st=>{const p=PRO[st.email];const [a,b]=topicPct(p,t);return `<tr><td><a class="stu" data-stu="${st.email}">${esc(st.name||st.email)}</a></td><td><span class="chip c${a===0?0:a<b?1:2}">${a}/${b}</span></td>${its.map(i=>cell(p,i)).join('')}</tr>`}).join('')}
+     <tr class="foot"><td>عدد من أنجز</td><td></td>${its.map(i=>{const n=list.filter(st=>stOf(PRO[st.email],t,i.k).done).length;return `<td class="tc"><b>${n}</b><small>/${list.length}</small></td>`}).join('')}</tr></table></div>
+     <ol class="legend">${its.map(i=>`<li><a class="th" data-item="${i.k}">${esc(i.t)}</a>${i.x?' <span class="chip c1" style="display:inline">تحدٍّ</span>':''}</li>`).join('')}</ol>`}
+  else if(tmode==='task'&&t){const i=its.find(x=>x.k===selI);
+    const R=list.map(stu=>{const o=stOf(PRO[stu.email],t,selI);return {stu,done:o.done,s:o.s,st:o.st}});const dn=R.filter(r=>r.st===2),ip=R.filter(r=>r.st===1),no=R.filter(r=>r.st===0);
+    const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;const tms=dn.map(r=>r.s?.t||0).filter(Boolean);
+    R.sort((a,b)=>b.st-a.st||(a.st===2?(a.s?.d||0)-(b.s?.d||0):(b.s?.r||0)-(a.s?.r||0)));
+    const lab=['<span class="chip c0">لم يبدأ</span>','<span class="chip c1">بدأ ولم ينهِ</span>','<span class="chip c2">✓ أنجز</span>'];
+    body=`<div class="row">الموضوع: ${tSel} المهمة: ${iSel}</div>
+     <div class="kpis"><div class="k2"><b>${dn.length}</b><span>أنجزوا</span></div><div class="k1"><b>${ip.length}</b><span>بدؤوا ولم ينهوا</span></div><div class="k0"><b>${no.length}</b><span>لم يبدؤوا</span></div><div><b>${fmtT(avg(tms))}</b><span>متوسط وقت الإنجاز</span></div><div><b>${R.filter(r=>r.s&&(r.s.w||r.s.ws)).length}</b><span>شاهدوا الحل</span></div></div>
+     <div style="overflow:auto"><table><tr><th>الطالب/ة</th><th>الحالة</th><th>الخطوات</th><th>الوقت</th><th>تحقّق</th><th>أرني أين</th><th>شاهد الحل</th><th>أول دخول</th><th>آخر نشاط</th><th>وقت الإنجاز</th></tr>
+     ${R.map(r=>{const s=r.s||{};const n=s.n||i?.n||0;return `<tr><td><a class="stu" data-stu="${r.stu.email}">${esc(r.stu.name||r.stu.email)}</a></td><td>${lab[r.st]}</td><td>${n?`<div class="pbar" style="min-width:60px"><i style="width:${Math.round((r.done?n:(s.r||0))/n*100)}%"></i></div><small>${r.done?n:(s.r||0)}/${n}</small>`:'—'}</td><td>${fmtT(s.t)}</td><td>${s.a||0}</td><td>${s.h||0}</td><td>${(s.w||0)+(s.ws||0)?`👁 ${(s.w||0)} كامل · ${(s.ws||0)} خطوة`:'0'}</td><td class="muted">${fmtD(s.f)}</td><td class="muted">${fmtD(s.l)}</td><td class="muted">${fmtD(s.d)}</td></tr>`}).join('')}</table></div>
+     <p class="muted">«الخطوات» = عدد بنود المهمة المحقّقة. «شاهد الحل» = مرات تشغيل الحل الكامل أو حل خطوة واحدة. التفاصيل الدقيقة (الوقت والمحاولات) تُسجَّل من الآن فصاعدًا.</p>`}
+  v.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">متابعة شعبة ${s.name}</h2><div class="row" style="margin:0">الشعبة: ${secSel('sec')}<button class="btn g" id="rf">↻ تحديث</button><button class="btn g" id="csv">نسخ الجدول (CSV)</button></div></div>${modes}
+    ${!TT.length?'<p class="notice">لم تفتحي أي موضوع لهذه الشعبة بعد — من تبويب «🔓 فتح الدروس».</p>':''}${body}</div>${stuOpen?stuHTML(stuOpen,TT):''}`;
+  $('#sec').onchange=e=>{selSec=e.target.value;render()};$('#rf').onclick=load;
+  $$('[data-tm]').forEach(b=>b.onclick=()=>{tmode=b.dataset.tm;render()});
+  $('#tsel')&&($('#tsel').onchange=e=>{selT=e.target.value;selI='';render()});$('#isel')&&($('#isel').onchange=e=>{selI=e.target.value;render()});
+  $$('[data-topic]').forEach(a=>a.onclick=()=>{selT=a.dataset.topic;tmode='topic';render()});
+  $$('[data-item]').forEach(a=>a.onclick=()=>{selI=a.dataset.item;tmode='task';render()});
+  $$('[data-go]').forEach(a=>a.onclick=()=>{const [x,y]=a.dataset.go.split('|');selT=x;selI=y;tmode='task';render()});
+  $$('[data-stu]').forEach(a=>a.onclick=()=>{stuOpen=a.dataset.stu;render()});
+  $('#mx')&&($('#mx').onclick=()=>{stuOpen=null;render()});$('#mbg')&&($('#mbg').onclick=e=>{if(e.target.id==='mbg'){stuOpen=null;render()}});
+  $('#csv').onclick=()=>{let rows;if(tmode==='task'&&t){rows=[['الاسم','الإيميل','الحالة','الخطوات','الوقت (د)','تحقق','أرني أين','شاهد الحل']];list.forEach(st=>{const o=stOf(PRO[st.email],t,selI);const q=o.s||{};rows.push([st.name||'',st.email,['لم يبدأ','بدأ','أنجز'][o.st],(o.done?q.n:(q.r||0))+'/'+(q.n||''),Math.round((q.t||0)/60),q.a||0,q.h||0,(q.w||0)+(q.ws||0)])})}
+    else if(tmode==='topic'&&t){rows=[['الاسم','الإيميل',...its.map(i=>i.t)]];list.forEach(st=>{const p=PRO[st.email];rows.push([st.name||'',st.email,...its.map(i=>{const o=stOf(p,t,i.k);return o.done?'✓':o.st?((o.s?.r||0)+'/'+(o.s?.n||'')):''})])})}
+    else{rows=[['الاسم','الإيميل',...TT.map(t=>t.title)]];list.forEach(st=>{const p=PRO[st.email];rows.push([st.name||'',st.email,...TT.map(t=>topicPct(p,t).join('/'))])})}
+    navigator.clipboard.writeText(rows.map(r=>r.map(c=>/[,"\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n')).then(()=>alert('تم النسخ — الصقيه في Excel'))};
+}
+function stuHTML(em,TT){const st=STU.find(x=>x.email===em);const p=PRO[em];if(!st)return '';
+  return `<div class="mbg" id="mbg"><div class="mdl"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(st.name||em)}</h2><button class="btn g" id="mx">✕ إغلاق</button></div><div class="muted ltr">${em} · آخر دخول: ${fmtD(p?.last)}</div>
+   ${TT.map(t=>{const [a,b]=topicPct(p,t);return `<h3>${t.title} <span class="chip c${a===0?0:a<b?1:2}">${a}/${b}</span></h3><table class="mini"><tr><th>المهمة</th><th>الحالة</th><th>الخطوات</th><th>الوقت</th><th>تحقّق</th><th>أرني</th><th>شاهد</th><th>آخر نشاط</th></tr>${ITEMS(t).map((i,n)=>{const o=stOf(p,t,i.k),s=o.s||{};return `<tr class="r${o.st}"><td>${n+1}. ${esc(i.t)}</td><td>${['—','بدأ','✓'][o.st]}</td><td>${s.n?(o.done?s.n:(s.r||0))+'/'+s.n:''}</td><td>${fmtT(s.t)}</td><td>${s.a||''}</td><td>${s.h||''}</td><td>${(s.w||0)+(s.ws||0)||''}</td><td class="muted">${fmtD(s.l)}</td></tr>`}).join('')}</table>`}).join('')||'<p class="empty">لا توجد مواضيع مفتوحة</p>'}</div></div>`}
+
 init();
 </script>
 </body>
