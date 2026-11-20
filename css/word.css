@@ -511,3 +511,4 @@ body.tool-eraser #doc table.wt td{cursor:url("data:image/svg+xml,%3Csvg xmlns='h
 .bd-fills{display:grid;grid-template-columns:repeat(7,22px);gap:4px;margin-top:6px}.bdf,.bdpc{width:22px;height:22px;border:1px solid #999;border-radius:3px;font-size:11px;padding:0}.bdf.on,.bdpc.on{outline:2px solid #2b579a;outline-offset:1px}
 .shprev{height:90px;border:1px solid #bbb;display:grid;place-items:center;margin-top:6px;font-size:18px}
 body:has(#dlgs.show) #tblhandle,body:has(.ddw.open) #tblhandle{display:none!important}
+#doc.colline .pg-body{column-rule:1px solid #444}

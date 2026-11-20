@@ -6,7 +6,7 @@ const GP={
  tab:(tab)=>({el:()=>$(`#wtabs [data-tab="${tab}"]`),say:`افتح تبويب «${$(`#wtabs [data-tab="${tab}"]`)?.textContent.trim()||tab}»`,done:()=>!!$(`#wtabs [data-tab="${tab}"]`)?.classList.contains('on')}),
  btn:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,click:1}),
  dd:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,done:()=>!!$('.ddw.open')}),
- mi:(cmd,arg,say)=>({avoid:1,el:()=>$(`.ddw.open .mi[data-cmd="${cmd}"][data-arg="${arg}"]`)||$(`.ddw.open [data-cmd="${cmd}"][data-arg="${arg}"]`),say,click:1}),
+ mi:(cmd,arg,say)=>{const A=arg==null||arg==='null'?'':`[data-arg="${arg}"]`;return {avoid:1,el:()=>$(`.ddw.open .mi[data-cmd="${cmd}"]${A}`)||$(`.ddw.open [data-cmd="${cmd}"]${A}`),say,click:1}},
  menu:(say)=>({el:()=>$('.ddw.open > .dd')||$('.ddw.open'),say,click:1,avoid:1}),
  sel:(q,say,done)=>({el:()=>$(q),say,done,click:done?0:1}),
 };
@@ -21,12 +21,17 @@ function guideArg(r){const f=(r.fix||'')+'';const c=r.cmd;
  return null}
 function buildGuide(r){if(r.path)return (typeof r.path==='function'?r.path():r.path).slice();const st=[];let where=null;try{where=r.where&&r.where()}catch(e){}
  if(where&&doc.contains(where)&&where.tagName!=='TABLE'&&where.closest&&where.closest('table'))st.push(GP.cell(()=>{try{return r.where()}catch(e){return null}},where.tagName==='TR'?'انقر في هذا الصف (أو حدّده)':'انقر في الخلية المضيئة'));
- if(r.cmd){const tab=tabOfCmd(r.cmd);const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`);
+ if(where&&doc.contains(where)&&where.classList&&where.classList.contains('obj'))st.push({el:()=>{try{return r.where()}catch(e){return null}},say:where.classList.contains('pic')?'انقر على الصورة لتحديدها':'انقر على حدّ الشكل لتحديده',done:()=>{let w=null;try{w=r.where()}catch(e){}return !!w&&S.obj===w}});
+ if(r.hfFirst)st.push({el:()=>pages()[r.hfPage||0]?.querySelector(r.hfFirst==='ftr'?'.pg-ftr':'.pg-hdr'),say:'انقر نقرًا مزدوجًا هنا لفتح '+(r.hfFirst==='ftr'?'التذييل':'الرأس'),done:()=>S.hfMode});
+ if(r.tab==='eqdesign'){if(doc.querySelector('.pg-body .eq'))st.push({el:()=>doc.querySelector('.pg-body .eq'),say:'انقر داخل المعادلة',done:()=>!!curEq()});
+   else{const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:'انقر في السطر الفارغ',done:()=>{const e=w(),g=S.range;return !!curEq()||(!!e&&!!g&&e.contains(g.startContainer))}},{...GP.tab('insert'),done:()=>!!curEq()||!!$('#wtabs [data-tab="insert"]')?.classList.contains('on')},{el:()=>$('#ribbon [data-panel="insert"] [data-hid="equation"]'),say:'انقر «معادلة»',done:()=>!!curEq()})}}
+ if(r.cmd&&r.gal&&(r.tab||tabOfCmd(r.cmd))){const tab=r.tab||tabOfCmd(r.cmd);st.push(GP.tab(tab));st.push({avoid:1,el:()=>$(`#ribbon [data-panel="${tab}"] ${r.gal[0]}`),say:r.gal[1],click:1})}
+ else if(r.cmd){const tab=r.tab||tabOfCmd(r.cmd);const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`);
    if(tab&&b){st.push(GP.tab(tab));const lbl=(b.dataset.tip||b.textContent||'').trim().replace(/▾/g,'');
-     if(b.dataset.dd){st.push(GP.dd(tab,r.cmd,`افتح قائمة «${lbl}» ▾`));const a=guideArg(r);if(a)st.push(GP.mi(r.cmd,a,`اختر: «${(ARGLBL[r.cmd]||{})[a]||a}»`));else st.push(GP.menu(DDSAY[r.cmd]||'اختر من القائمة'))}
+     if(b.dataset.dd){st.push(GP.dd(tab,r.cmd,`افتح قائمة «${lbl}» ▾`));const a=guideArg(r);if(r.sub)st.push({avoid:1,el:()=>$(`.ddw.open [data-sub="${r.sub[0]}"]`),say:`مرّر على «${r.sub[1]}» ◂`,done:()=>!!$(`.ddw.open .subm[data-subm="${r.sub[0]}"].open`)});if(r.mi)st.push(GP.mi(r.mi[0],r.mi[1],`اختر: «${r.mi[2]}»`));else if(a)st.push(GP.mi(r.cmd,a,`اختر: «${(ARGLBL[r.cmd]||{})[a]||a}»`));else st.push(GP.menu(DDSAY[r.cmd]||'اختر من القائمة'))}
      else if(b.querySelector('input[type=checkbox]')||b.matches('label'))st.push({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`),say:`${/أزل|ألغِ/.test(r.fix||'')?'أزل':'ضع'} ✓ على «${lbl}»`,done:()=>{try{return r.check()}catch(e){return false}}});
      else if(b.querySelector('input'))st.push({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"] input`),say:`«${lbl}»: اكتب الرقم ثم Enter`,done:()=>{try{return r.check()}catch(e){return false}}});
-     else st.push(GP.btn(tab,r.cmd,`انقر «${lbl}»`))}}
+     else st.push(GP.btn(tab,r.cmd,`انقر «${lbl}»`))}else if(tab&&r.gal){st.push(GP.tab(tab));st.push({avoid:1,el:()=>$(`#ribbon [data-panel="${tab}"] ${r.gal[0]}`),say:r.gal[1],click:1})}}
  return st}
 function startGuide(i){const r=CO.item&&CO.item.reqs&&CO.item.reqs[i];if(!r)return false;const st=buildGuide(r);if(!st.length)return false;
  st.push({el:()=>{let e=null;try{e=r.where&&r.where()}catch(x){}return e||PT_()},say:fixOf(r),done:()=>false,last:1});

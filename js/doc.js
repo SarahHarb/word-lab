@@ -186,7 +186,7 @@ function applyPage(){
   const {w,h}=pageDims(), m=MARGINS.find(x=>x.id===S.page.margin)||S.page.customM||MARGINS[0];
   const st=doc.style;st.setProperty('--pw',w*CM+'px');st.setProperty('--ph',h*CM+'px');st.setProperty('--mt',m.t*CM+'px');st.setProperty('--mb',m.b*CM+'px');st.setProperty('--mr',m.r*CM+'px');st.setProperty('--ml',m.l*CM+'px');
   const th=THEMES[S.theme]||THEMES[0];st.setProperty('--hc',S.themeColor||'#2f5496');st.setProperty('--df',S.themeFont||'Arial');
-  doc.classList.toggle('cols2',S.page.cols==='2');doc.classList.toggle('cols3',S.page.cols==='3');doc.classList.toggle('colsR',S.page.cols==='right');doc.classList.toggle('colsL',S.page.cols==='left');
+  doc.classList.toggle('colline',!!S.page.colLine&&S.page.cols!=='1');doc.classList.toggle('cols2',S.page.cols==='2');doc.classList.toggle('cols3',S.page.cols==='3');doc.classList.toggle('colsR',S.page.cols==='right');doc.classList.toggle('colsL',S.page.cols==='left');
   doc.classList.toggle('lnums',S.page.lineNums!=='none');doc.classList.toggle('grid',S.grid);doc.classList.toggle('marks',S.marks);doc.classList.toggle('multi',S.multi);doc.classList.toggle('web',S.view==='web');
   pages().forEach(p=>{p.style.background=S.page.color||'';p.querySelector('.pg-wm').innerHTML=S.page.wm?`<b>${S.page.wm}</b>`:'';const b=p.querySelector('.pg-border');b.style.border=S.page.border?`${S.page.border.w}px ${S.page.border.s} ${S.page.border.c}`:'';});
   doc.style.zoom=S.zoom/100;renderRuler();

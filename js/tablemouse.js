@@ -61,3 +61,13 @@
  document.addEventListener('touchmove',e=>{if(!active)return;e.preventDefault();hover(spanAt(e.touches[0]))},{passive:false,capture:true});
  document.addEventListener('touchend',e=>{if(!active)return;active=false;e.preventDefault();if(last){const r=+last.dataset.r,c=+last.dataset.c;last=null;closeMenus();insertTable(r,c)}},{passive:false,capture:true});
 })();
+/* touch on pictures/shapes: drag to move, handles to resize/rotate/crop, draw new shapes — like the mouse */
+(function(){let act=false;
+ const fire=(type,t,el)=>{(el||document).dispatchEvent(new MouseEvent(type,{bubbles:true,cancelable:true,clientX:t.clientX,clientY:t.clientY,button:0,buttons:type==='mouseup'?0:1}))};
+ document.addEventListener('touchstart',e=>{if(e.touches.length!==1||!e.target.closest)return;const t=e.target;if(!t.closest('#doc'))return;
+   const o=t.closest('.obj');const drawing=S.drawKind&&t.closest('.page');if(!o&&!drawing)return;
+   const st=t.closest('.stxt');if(o&&st&&st.isContentEditable&&o.classList.contains('sel'))return;
+   e.preventDefault();act=true;fire('mousedown',e.touches[0],t)},{passive:false,capture:true});
+ document.addEventListener('touchmove',e=>{if(!act)return;e.preventDefault();fire('mousemove',e.touches[0])},{passive:false,capture:true});
+ document.addEventListener('touchend',e=>{if(!act)return;act=false;e.preventDefault();fire('mouseup',e.changedTouches[0])},{passive:false,capture:true});
+})();
