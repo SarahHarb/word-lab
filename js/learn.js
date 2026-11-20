@@ -187,7 +187,7 @@ function showSimCard(kind){const it=CO.item,o=$('#simcard');if(!it)return;const 
 function hideSimCard(){$('#simcard').className='simcard'}
 /* fit simulator to any screen */
 window.SIMSCALE=1;
-function fitSim(){const wrap=$('.simwrap'),sim=$('#sim');if(!wrap||!sim)return;const W=wrap.clientWidth,H=wrap.clientHeight;const base=W<700?Math.max(W,560):W<900?Math.max(W,880):(W<1180?1180:0);
+function fitSim(){const wrap=$('.simwrap'),sim=$('#sim');if(!wrap||!sim)return;const cs=getComputedStyle(wrap);const W=wrap.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0),H=wrap.clientHeight-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.paddingTop)||0);const base=W<700?Math.max(W,560):W<900?Math.max(W,880):(W<1180?1180:0);
   if(base&&base>W){const s=W/base;SIMSCALE=s;Object.assign(sim.style,{position:'absolute',top:'0',right:'0',width:base+'px',height:(H/s)+'px',transform:`scale(${s})`,transformOrigin:'top right',flex:'none'})}
   else{SIMSCALE=1;Object.assign(sim.style,{position:'',top:'',right:'',width:'',height:'',transform:'',transformOrigin:'',flex:''})}}
 let _lay=LW()+'x'+LH();addEventListener('resize',()=>{const k=LW()+'x'+LH();if(k===_lay)return;_lay=k;fitSim();closeMenus()});
@@ -222,10 +222,11 @@ function showRef(src,title){let p=$('#refpanel');const w=$('.simwrap');if(!w)ret
   const isH=src.trim().startsWith('<');p.className='refpanel';p.innerHTML=`<div class="rp-h"><b>${isH?'🎯 '+(title||''):'🖼️ صمّم مثل الصورة'}<small class="rp-mini" id="rpMini"></small></b><span><button data-r="big" title="تكبير">⤢</button><button data-r="min" title="إخفاء">–</button></span></div>${isH?`<div class="goalbox rp-goal">${src}</div>`:`<img src="${src}" alt="الصورة المطلوبة">`}${!isH&&CO.item&&(CO.item.intro||CO.item.skills)?`<div class="rp-intro">${CO.item.skills?`<div class="rp-sk">${CO.item.skills.map(k=>`<span>${k}</span>`).join('')}</div>`:''}${CO.item.intro?`<p>${CO.item.intro}</p>`:''}</div>`:''}<div class="rp-lh"><b>${isH?'خطوات المشروع':'للمطابقة'}</b><span id="rpCount"></span></div><ol class="rp-list" id="rplist"></ol><button class="rp-tab" data-r="min">🖼️ الصورة المطلوبة</button>`;CO.rpSig='';
   p.querySelectorAll('[data-r]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=b.dataset.r;if(r==='big'){p.classList.toggle('big');p.classList.remove('min')}else p.classList.toggle('min')});
   const im=p.querySelector('img,.rp-goal');if(im)im.onclick=()=>{p.classList.toggle('big')};
-  const h=p.querySelector('.rp-h');if(isPhone()){p.classList.add('mcol');document.body.classList.add('hasref');h.onclick=e=>{if(e.target.closest('button'))return;p.classList.toggle('mcol')}}else document.body.classList.remove('hasref');h.onmousedown=e=>{if(isPhone()||e.target.closest('button'))return;const wr=w.getBoundingClientRect(),pr=p.getBoundingClientRect(),dx=e.clientX-pr.left,dy=e.clientY-pr.top;
+  const h=p.querySelector('.rp-h');if(isPhone()){p.classList.add('mcol');document.body.classList.add('hasref');setTimeout(padForSheet,30);h.onclick=e=>{if(e.target.closest('button'))return;p.classList.toggle('mcol')}}else document.body.classList.remove('hasref');h.onmousedown=e=>{if(isPhone()||e.target.closest('button'))return;const wr=w.getBoundingClientRect(),pr=p.getBoundingClientRect(),dx=e.clientX-pr.left,dy=e.clientY-pr.top;
     const mv=ev=>{p.style.left=Math.max(0,Math.min(wr.width-pr.width,ev.clientX-wr.left-dx))+'px';p.style.top=Math.max(0,Math.min(wr.height-40,ev.clientY-wr.top-dy))+'px';p.style.bottom='auto'};
     const up=()=>{removeEventListener('mousemove',mv);removeEventListener('mouseup',up)};addEventListener('mousemove',mv);addEventListener('mouseup',up);e.preventDefault()}}
-function hideRef(){const p=$('#refpanel');if(p)p.remove();document.body.classList.remove('hasref')}
+function hideRef(){const p=$('#refpanel');if(p)p.remove();document.body.classList.remove('hasref');const w=$('.simwrap');if(w)w.style.paddingBottom='';fitSim()}
+function padForSheet(){const p=$('#refpanel'),w=$('.simwrap');if(!p||!w||!isPhone())return;const was=p.classList.contains('mcol');if(!was)p.classList.add('mcol');const h=p.offsetHeight;if(!was)p.classList.remove('mcol');w.style.paddingBottom=(h+4)+'px';fitSim()}
 function isPhone(){return LW()<=900}
 
 function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)return;
