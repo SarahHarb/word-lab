@@ -59,8 +59,13 @@ function hideCoach(){$('#ring').style.display='none';$('#bubble').style.display=
 /* visible area in page px (works with pinch-zoom on phones) */
 function OX(){const h=document.getElementById('ovl');const o=h?h.getBoundingClientRect():{left:-scrollX,top:-scrollY};return{x:-o.left,y:-o.top}}
 function VP(){const O=OX(),v=window.visualViewport;if(v)return{l:v.offsetLeft+O.x,t:v.offsetTop+O.y,w:v.width,h:v.height,s:v.scale||1};return{l:O.x,t:O.y,w:LW(),h:LH(),s:1}}
+/* rect that really lies under the element (self-check with hit-testing; fixes browser zoom quirks) */
+function realRect(el){const R=el.getBoundingClientRect();if(typeof doc==="undefined"||!doc||!doc.contains(el))return R;
+  const hits=r=>{const x=r.left+r.width/2,y=r.top+r.height/2;if(x<0||y<0||x>LW()||y>LH())return null;const h=document.elementFromPoint(x,y);return !!h&&(h===el||el.contains(h))};
+  const h0=hits(R);if(h0!==false)return R;const z=parseFloat(doc.style.zoom)||1;if(z===1)return R;
+  for(const [p,q] of [[z,1],[z,z],[1,z],[1/z,1],[1/z,1/z]]){const c=new DOMRect(R.left*p,R.top*p,R.width*q,R.height*q);if(hits(c))return c}return R}
 function placeCoach(el,html,num){
-  const R=el.getBoundingClientRect(),ring=$('#ring'),b=$('#bubble'),V=VP(),O=OX();
+  const R=realRect(el),ring=$('#ring'),b=$('#bubble'),V=VP(),O=OX();
   const r={left:R.left+O.x,top:R.top+O.y,width:R.width,height:R.height,right:R.right+O.x,bottom:R.bottom+O.y};
   ring.style.display='block';Object.assign(ring.style,{left:(r.left-4)+'px',top:(r.top-4)+'px',width:(r.width+8)+'px',height:(r.height+8)+'px'});
   const h=(num!=null?`<b>${num}</b>`:'')+html;if(b.dataset.h!==h){b.innerHTML=h;b.dataset.h=h}b.style.display='block';
