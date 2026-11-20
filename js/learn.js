@@ -199,6 +199,7 @@ function openWorkspace(){hideRef();CO.ws=true;CO.mode='free';CO.unit=null;CO.ite
 SIM.on('change',()=>{if(!CO.ws||S.app!=='doc')return;clearTimeout(wsT);wsT=setTimeout(()=>{try{localStorage.setItem(PKEY+'-ws',JSON.stringify(docData()))}catch(e){}},800)});
 function initApp(){
   if(window.ONLY_TOPICS){const keep=TOPICS.filter(t=>ONLY_TOPICS.includes(t.id));if(keep.length)TOPICS.splice(0,TOPICS.length,...keep)}
+  TOPICS.forEach((t,i)=>{t.num=String(i+1)});
   buildTips();if(window.applyTableTips)applyTableTips();if(typeof applyMoreTips==='function')applyMoreTips();$('#stopDemo').onclick=stopDemo;$('#scrim').onclick=()=>document.body.classList.remove('drawer');
   const open=TOPICS.filter(isUnlocked);if(!open.length){openWorkspace();setTimeout(()=>{$('#simcard').innerHTML=`<div class="ocard"><div class="big">🔒</div><h2>لم تُفتح دروس بعد</h2><p>ستفتح المعلّمة الدروس بعد كل محاضرة.<br>حتى ذلك الحين جرّب Word بحرية في «مساحتي الحرة».</p><div class="cbtns"><button class="try" onclick="hideSimCard()">حسنًا</button></div></div>`;$('#simcard').className='simcard show'},200);return}
   if((localStorage.getItem(PKEY+'-last')||'')==='ws'){openWorkspace();return}

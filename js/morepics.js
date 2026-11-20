@@ -586,7 +586,9 @@ MORE_PICS_T2=[['الكتابة',[TX1,MK1,RD1,TX2]],['التحديد',[SL1,SL2]],
 
 /* ---------- topics ---------- */
 const MORE_PICS={
- t4:[['الصور: الإدراج والحجم',[IM1,IM2,IM6]],['الصور: أنماط الصورة',[IM4,IM7]],['الصور: الترتيب',[IM3,IM5,IM8]],['الأشكال',[SH1,SH2,SH3,SH4,SH5,SH6]],['WordArt',[WA1,WA2,WA3]]],
+ t4:[['الرسم',[SH1,SH2,SH3]],['الأسهم ومربع النص والترتيب',[SH4,SH5,SH6]]],
+ t10:[['الإدراج والحجم',[IM1,IM2,IM6]],['أنماط الصورة',[IM4,IM7]],['الترتيب',[IM3,IM5,IM8]]],
+ t11:[['WordArt',[WA1,WA2,WA3]]],
  t6:[['الرأس والتذييل',[HF1,HF2,HF6,HF5]],['ترقيم الصفحات',[HF3,HF4]]],
  t8:[['الرموز',[SY1,SY2]],['التاريخ',[DT1,DT2]],['المعادلات',[EQ1,EQ2,EQ3]]],
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
@@ -599,10 +601,12 @@ var MORE_PICS_T2;
  {const t2=TOPICS.find(t=>t.id==='t2');if(t2&&typeof TXT_HW!=='undefined')t2.tasks=[['S',TXT_HW]]}
  if(typeof BA1!=='undefined')MORE_PICS.t1=[['البرنامج والمستند',[BA1,BA2,BA3]],['الواجهة',[BA0,BA4]],['الحفظ',[BA5,BA6,BA7]]];
  const byId=id=>TOPICS.find(t=>t.id===id);
+ {const i4=TOPICS.findIndex(t=>t.id==='t4');if(!byId('t10'))TOPICS.splice(i4+1,0,{id:'t10',num:'',title:'الصور',sub:'إدراج، حجم، أنماط، ترتيب',icon:'pictures',learn:()=>[],tasks:[]},{id:'t11',num:'',title:'WordArt',sub:'كتابة فنية ملوّنة بتأثيرات',icon:'wordart',learn:()=>[],tasks:[]})}
  if(!byId('t9'))TOPICS.push({id:'t9',num:'9',title:'الأعمدة',sub:'عمودان أو ثلاثة كالجريدة، وفاصل العمود',icon:'columns'});
  Object.entries(MORE_PICS).forEach(([id,groups])=>{const t=byId(id);if(!t)return;t.learnTitle='🖼️ صمّم مثل الصورة';
   t.learn=()=>groups.flatMap(([g,arr])=>arr.map(p=>{const r=['S',p];r.g=g;return r}));
-  if(id==='t9')t.tasks=[];
+  if(id==='t9'||id==='t10'||id==='t11')t.tasks=[];
  });
- const t4=byId('t4');if(t4){t4.title='الصور والأشكال وWordArt';t4.sub='صورة، شكل، مربع نص، WordArt'}
+ const t4=byId('t4');if(t4){t4.title='الأشكال';t4.sub='شكل، تعبئة وحدود، أسهم، مربع نص';t4.icon='shapes';t4.tasks=[]}
+ TOPICS.forEach((t,i)=>{t.num=String(i+1)})
 })();
