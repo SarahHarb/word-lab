@@ -227,3 +227,7 @@ body.demo #lhead{position:relative;z-index:1005}
  body.hasref .simwrap{padding-bottom:58px}
  body.hasref #bubble{z-index:1200}
 }
+
+#bubble.free::after,#bubble.free::before{display:none}
+@media (max-width:700px){#bubble{max-width:72vw;font-size:13px;padding:9px 12px}#bubble .bt{font-size:13px}}
+@media (max-width:900px){.simwrap:has(.ddw.open) .refpanel,.simwrap:has(#dlgs.show) .refpanel{visibility:hidden}}

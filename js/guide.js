@@ -6,8 +6,8 @@ const GP={
  tab:(tab)=>({el:()=>$(`#wtabs [data-tab="${tab}"]`),say:`افتح تبويب «${$(`#wtabs [data-tab="${tab}"]`)?.textContent.trim()||tab}»`,done:()=>!!$(`#wtabs [data-tab="${tab}"]`)?.classList.contains('on')}),
  btn:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,click:1}),
  dd:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,done:()=>!!$('.ddw.open')}),
- mi:(cmd,arg,say)=>({el:()=>$(`.ddw.open .mi[data-cmd="${cmd}"][data-arg="${arg}"]`)||$(`.ddw.open [data-cmd="${cmd}"][data-arg="${arg}"]`),say,click:1}),
- menu:(say)=>({el:()=>$('.ddw.open'),say,click:1}),
+ mi:(cmd,arg,say)=>({avoid:1,el:()=>$(`.ddw.open .mi[data-cmd="${cmd}"][data-arg="${arg}"]`)||$(`.ddw.open [data-cmd="${cmd}"][data-arg="${arg}"]`),say,click:1}),
+ menu:(say)=>({el:()=>$('.ddw.open > .dd')||$('.ddw.open'),say,click:1,avoid:1}),
  sel:(q,say,done)=>({el:()=>$(q),say,done,click:done?0:1}),
 };
 const GD={on:false,steps:[],i:0,r:null,clicked:false};
@@ -39,7 +39,11 @@ function gTick(){if(!GD.on)return;const r=GD.r;if(!CO.item||!CO.item.reqs.includ
  let d=false;try{d=!!(s.done&&s.done())}catch(e){}
  if((d||GD.clicked)&&!s.last){GD.i++;GD.clicked=false;return}
  if(doc.contains(el)&&canvas&&canvas.contains(el)){const rr=el.getBoundingClientRect();if(rr.bottom<0||rr.top>innerHeight)el.scrollIntoView({block:'center'})}
- placeCoach(el,`<span class="bt">${s.last?'الآن':`الخطوة ${GD.i+1} من ${GD.steps.length-1}`}</span>${s.say}<br><button class="gstop" onmousedown="event.stopPropagation();stopGuide()">إيقاف الإرشاد</button>`)}
+ placeCoach(el,`<span class="bt">${s.last?'الآن':`الخطوة ${GD.i+1} من ${GD.steps.length-1}`}</span>${s.say}<br><button class="gstop" onmousedown="event.stopPropagation();stopGuide()">إيقاف الإرشاد</button>`);avoidCover(s.avoid?($('.ddw.open > .dd')||el):($('#dlgs.show .dlg')&&$('#dlgs.show .dlg').contains(el)?null:null))}
+function avoidCover(box){if(!box)return;const b=$('#bubble');if(!b||b.style.display==='none')return;const r=box.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,W=innerWidth,H=innerHeight;
+ const cand=[[r.left-bw-14,Math.max(8,Math.min(H-bh-8,r.top))],[r.right+14,Math.max(8,Math.min(H-bh-8,r.top))],[Math.max(8,Math.min(W-bw-8,r.left)),r.bottom+12],[Math.max(8,Math.min(W-bw-8,r.left)),r.top-bh-12],[8,H-bh-8]];
+ for(const [x,y] of cand){if(x>=4&&y>=4&&x+bw<=W-4&&y+bh<=H-4&&(x+bw<=r.left||x>=r.right||y+bh<=r.top||y>=r.bottom)){b.style.left=x+'px';b.style.top=y+'px';b.className='free';return}}
+ b.style.left=Math.max(8,W-bw-8)+'px';b.style.top=(H-bh-8)+'px';b.className='free'}
 setInterval(gTick,220);
 document.addEventListener('mousedown',e=>{if(!GD.on||!e.target.closest)return;if(e.target.closest('.gstop'))return;const s=GD.steps[GD.i];let el=null;try{el=s&&s.el()}catch(x){}if(el&&(el===e.target||el.contains(e.target))&&!s.last){if(s.click){GD.i=Math.min(GD.i+1,GD.steps.length-1);GD.clicked=false;GD.hold=Date.now()}else GD.clicked=true}},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&GD.on)stopGuide()},true);
