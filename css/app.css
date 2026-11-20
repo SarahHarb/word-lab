@@ -222,7 +222,11 @@ body.demo #lhead{position:relative;z-index:1005}
  .refpanel.mcol img,.refpanel.mcol .rp-goal,.refpanel.mcol .rp-intro,.refpanel.mcol .rp-lh,.refpanel.mcol .rp-list{display:none}
  .refpanel.mcol .rp-mini{display:block;font-weight:600;font-size:12px;color:#ffd77a;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
  .refpanel img{max-height:30vh;object-fit:contain}
- .refpanel .rp-list{max-height:none}
+ .refpanel{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;max-height:72vh}
+ .refpanel>*{flex:none!important}
+ .refpanel .rp-h{position:sticky;top:0;z-index:2}
+ .refpanel .rp-list{max-height:none;overflow:visible;min-height:0;padding-bottom:18px}
+ .refpanel img{max-height:26vh}
  .refpanel.min{display:none}
  body.hasref .simwrap{padding-bottom:58px}
  body.hasref #bubble{z-index:1200}
