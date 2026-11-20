@@ -604,18 +604,22 @@ MORE_PICS_T2=[['الكتابة',[TX1,MK1,RD1,TX2]],['التحديد',[SL1,SL2]],
  CO2.reqs[0].path=()=>COLP('3',true);CO2.reqs[1].path=()=>COLP('3',true);}
 
 
-const picBy=i=>picsAll().find(o=>imgIdx(o)===i)||null;
-const IM9=PIC({t:'أنواع التفاف النص',goalImg:'img/m-pic9.png',skills:['مربع','خلف النص','أمام النص','مع النص'],
- intro:'في الصفحة 4 صور، ولكل صورة التفاف مختلف. انظر جيدًا إلى الصورة: الشجرة والكلام بجانبها، البحر تحت الكلام كخلفية، الجبال فوق الكلام تغطيه، والوردة الصغيرة بين الكلمات. (تنسيق الصورة ← التفاف النص)',
- setup:{html:`<p class="wtitle">التفاف النص</p><p id="pa"><br></p><p>${PLONG2} ${PLONG}</p><p id="pb"><br></p><p>${PLONG} ${PLONG2}</p><p id="pc"><br></p><p>${PLONG2}</p><p id="pd">أحبّ الزهور كثيرًا لأنها جميلة.</p>`,
-  after:()=>{intoP('#pa',PIC_IN(1,150))();intoP('#pb',PIC_IN(2,260))();intoP('#pc',PIC_IN(0,200))();const p=firstBody().querySelector('#pd');const t=document.createElement('div');t.innerHTML=PIC_IN(3,36);const o=t.firstChild;const tn=[...p.childNodes].find(n=>n.nodeType===3);const i=tn.data.indexOf('كثيرًا');const rest=tn.splitText(i);p.insertBefore(o,rest);rest.data=' '+rest.data;applyObj(o)}},
- reqs:[Q('الشجرة: مربع (الكلام بجانبها)',()=>['square','tight','through'].includes(picBy(1)?.dataset.wrap),()=>picBy(1),'انقر على الشجرة ← تنسيق الصورة ← التفاف النص ← مربع','wrap',{tab:'pformat',mi:['wrap','square','مربع']}),
-  Q('البحر: خلف النص',()=>picBy(2)?.dataset.wrap==='behind',()=>picBy(2),'انقر على صورة البحر ← التفاف النص ← خلف النص','wrap',{tab:'pformat',mi:['wrap','behind','خلف النص']}),
-  Q('الجبال: أمام النص',()=>picBy(0)?.dataset.wrap==='front',()=>picBy(0),'انقر على الجبال ← التفاف النص ← أمام النص','wrap',{tab:'pformat',mi:['wrap','front','أمام النص']}),
-  N(Q('الوردة: مع النص (بين الكلمات)',()=>picBy(3)?.dataset.wrap==='inline'&&!!picBy(3)?.closest('p')?.textContent.includes('الزهور'),()=>picBy(3),'الوردة يجب أن تبقى «مع النص» بين الكلمات'),2)]});
-IM9.reqs[0].fixFn=()=>{const w=picBy(1)?.dataset.wrap;return w==='topBottom'?'«أعلى وأسفل» يجعل الكلام فوق الصورة وتحتها فقط — المطلوب الكلام بجانبها: «مربع».':null};
-IM9.reqs[1].fixFn=()=>picBy(2)?.dataset.wrap==='front'?'هذا «أمام النص» (الصورة تغطي الكلام). المطلوب أن يظهر الكلام فوق الصورة: «خلف النص».':null;
-IM9.reqs[2].fixFn=()=>picBy(0)?.dataset.wrap==='behind'?'هذا «خلف النص». المطلوب أن تغطي الصورة الكلام: «أمام النص».':null;
+const picBy=k=>doc.querySelector(`.pg-body .obj.pic[data-pid="${({1:'tree',2:'sea',0:'mount',3:'fs'})[k]??k}"]`);
+const IM9=PIC({t:'أنواع التفاف النص',goalImg:'img/m-pic9.png',skills:['مع النص','مربع','أعلى وأسفل','خلف النص','أمام النص'],
+ intro:'في الصفحة 5 صور، ولكل صورة التفاف مختلف. انظر جيدًا إلى الصورة:\n• الشجرة والكلام بجانبها ← مربع\n• الوردة الكبيرة وحدها في سطر، والكلام فوقها وتحتها فقط ← أعلى وأسفل\n• البحر تحت الكلام كخلفية ← خلف النص\n• الجبال فوق الكلام تغطيه ← أمام النص\n• الوردة الصغيرة بين الكلمات ← مع النص\n(انقر على الصورة ← تنسيق الصورة ← التفاف النص)',
+ setup:{html:`<p class="wtitle">التفاف النص</p><p id="pa"><br></p><p>${PLONG2} ${PLONG}</p><p id="pe">${PLONG2}</p><p id="pb"><br></p><p>${PLONG} ${PLONG2}</p><p id="pc"><br></p><p>${PLONG2}</p><p id="pd">أحبّ الزهور كثيرًا لأنها جميلة.</p>`,
+  after:()=>{const tag=(sel,html,pid)=>{intoP(sel,html)();const o=firstBody().querySelector(sel+' .obj');if(o)o.dataset.pid=pid};tag('#pa',PIC_IN(1,150),'tree');tag('#pb',PIC_IN(2,260),'sea');tag('#pc',PIC_IN(0,200),'mount');
+   {const p=firstBody().querySelector('#pe');const t=document.createElement('div');t.innerHTML=PIC_IN(3,120);const o=t.firstChild;o.dataset.pid='fb';const tn=[...p.childNodes].find(n=>n.nodeType===3);const i=tn.data.indexOf('وفيها');const rest=tn.splitText(i);p.insertBefore(o,rest);applyObj(o)}
+   {const p=firstBody().querySelector('#pd');const t=document.createElement('div');t.innerHTML=PIC_IN(3,36);const o=t.firstChild;o.dataset.pid='fs';const tn=[...p.childNodes].find(n=>n.nodeType===3);const i=tn.data.indexOf('كثيرًا');const rest=tn.splitText(i);p.insertBefore(o,rest);rest.data=' '+rest.data;applyObj(o)}}},
+ reqs:[Q('الشجرة: مربع (الكلام بجانبها)',()=>['square','tight','through'].includes(picBy('tree')?.dataset.wrap),()=>picBy('tree'),'انقر على الشجرة ← تنسيق الصورة ← التفاف النص ← مربع','wrap',{tab:'pformat',mi:['wrap','square','مربع']}),
+  Q('الوردة الكبيرة: أعلى وأسفل',()=>picBy('fb')?.dataset.wrap==='topbottom',()=>picBy('fb'),'انقر على الوردة الكبيرة ← التفاف النص ← أعلى وأسفل','wrap',{tab:'pformat',mi:['wrap','topbottom','أعلى وأسفل']}),
+  Q('البحر: خلف النص',()=>picBy('sea')?.dataset.wrap==='behind',()=>picBy('sea'),'انقر على صورة البحر ← التفاف النص ← خلف النص','wrap',{tab:'pformat',mi:['wrap','behind','خلف النص']}),
+  Q('الجبال: أمام النص',()=>picBy('mount')?.dataset.wrap==='front',()=>picBy('mount'),'انقر على الجبال ← التفاف النص ← أمام النص','wrap',{tab:'pformat',mi:['wrap','front','أمام النص']}),
+  N(Q('الوردة الصغيرة: مع النص (بين الكلمات)',()=>picBy('fs')?.dataset.wrap==='inline'&&!!picBy('fs')?.closest('p')?.textContent.includes('الزهور'),()=>picBy('fs'),'الوردة الصغيرة يجب أن تبقى «مع النص» بين الكلمات'),3)]});
+IM9.reqs[0].fixFn=()=>{const w=picBy('tree')?.dataset.wrap;return w==='topbottom'?'«أعلى وأسفل» يجعل الكلام فوق الصورة وتحتها فقط — المطلوب الكلام بجانبها: «مربع».':null};
+IM9.reqs[1].fixFn=()=>{const w=picBy('fb')?.dataset.wrap;return ['square','tight','through'].includes(w)?'هذا «مربع»: الكلام بجانب الوردة. المطلوب لا كلام بجانبها — فوقها وتحتها فقط: «أعلى وأسفل».':w==='inline'?'هي الآن «مع النص» (جزء من السطر). المطلوب «أعلى وأسفل».':null};
+IM9.reqs[2].fixFn=()=>picBy('sea')?.dataset.wrap==='front'?'هذا «أمام النص» (الصورة تغطي الكلام). المطلوب أن يظهر الكلام فوق الصورة: «خلف النص».':null;
+IM9.reqs[3].fixFn=()=>picBy('mount')?.dataset.wrap==='behind'?'هذا «خلف النص». المطلوب أن تغطي الصورة الكلام: «أمام النص».':null;
 
 /* ---------- topics ---------- */
 const MORE_PICS={

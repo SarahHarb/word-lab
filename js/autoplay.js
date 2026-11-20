@@ -3,7 +3,10 @@
 const PL={on:false,stop:false,k:1};
 const W=ms=>new Promise(r=>setTimeout(r,ms*PL.k));
 const rectOf=el=>typeof realRect==='function'?realRect(el):el.getBoundingClientRect();
-async function moveTo(el,ms=700){const r=rectOf(el);const c=$('#cursor');c.style.display='block';c.style.transitionDuration=(ms*PL.k)+'ms';c.style.left=(r.left+Math.min(r.width/2,60))+'px';c.style.top=(r.top+Math.min(r.height/2,18))+'px';await W(ms)}
+async function ensureVis(el){if(!el||!el.getBoundingClientRect)return;const cv=$('#canvas');if(!cv||!cv.contains(el))return;const r=rectOf(el),c=cv.getBoundingClientRect();if(r.top>=c.top+20&&r.bottom<=c.bottom-20)return;
+  if(PL.k<.05){el.scrollIntoView({block:'center'});return}el.scrollIntoView({block:'center',behavior:'smooth'});await W(450)}
+window.ensureVis=ensureVis;
+async function moveTo(el,ms=700){await ensureVis(el);const r=rectOf(el);const c=$('#cursor');c.style.display='block';c.style.transitionDuration=(ms*PL.k)+'ms';c.style.left=(r.left+Math.min(r.width/2,60))+'px';c.style.top=(r.top+Math.min(r.height/2,18))+'px';await W(ms)}
 function clickFx(){const c=$('#cursor');c.classList.remove('clk');void c.offsetWidth;c.classList.add('clk')}
 function realClick(el){const r=el.getBoundingClientRect();const o={bubbles:true,cancelable:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2,button:0};
   try{el.dispatchEvent(new PointerEvent('pointerdown',o))}catch(e){}el.dispatchEvent(new MouseEvent('mousedown',o));el.dispatchEvent(new MouseEvent('mouseup',o));el.dispatchEvent(new MouseEvent('click',o))}
@@ -43,14 +46,14 @@ async function ribbonCmd(cmd,arg,say){bar(say||'');const tab=tabOfCmd(cmd);if(ta
   const r0=S.range;if(r0){setSel(r0)}run(cmd,arg);await W(500);try{hideCoach()}catch(e){}}
 async function demoOp(o){if(PL.stop)return;
   if(o.say)bar(o.say);
-  if(o.caret!=null){const f=findText(o.caret);if(!f)return;const [n,i]=f;const r=document.createRange();const pos=o.at==='end'?i+o.caret.length:i+(o.off||0);r.setStart(n,pos);r.collapse(true);
+  if(o.caret!=null){const f0=findText(o.caret);if(!f0)return;await ensureVis(f0[0].parentElement);const f=findText(o.caret);const [n,i]=f;const r=document.createRange();const pos=o.at==='end'?i+o.caret.length:i+(o.off||0);r.setStart(n,pos);r.collapse(true);
     const tmp=document.createRange();tmp.setStart(n,Math.max(0,pos-1));tmp.setEnd(n,Math.min(n.data.length,pos+1));const rc=tmp.getBoundingClientRect();const c=$('#cursor');c.style.display='block';c.style.transitionDuration=(600*PL.k)+'ms';c.style.left=rc.left+'px';c.style.top=(rc.top+rc.height/2)+'px';await W(600);clickFx();setSel(r);await W(250);return}
   if(o.caretIn){const f=findText(o.caretIn);if(!f)return;const b=blkOf(f[0]);await showAt(b);placeCaretIn(b,o.at!=='end');S.range=curRange();await W(250);return}
-  if(o.sel||o.selFrom){const a=findText(o.sel||o.selFrom);if(!a)return;let z=a,zl=(o.sel||o.selFrom).length;if(o.selTo){const f=findText(o.selTo);if(f){z=f;zl=o.selTo.length}}
+  if(o.sel||o.selFrom){const a0=findText(o.sel||o.selFrom);if(!a0)return;await ensureVis(a0[0].parentElement);const a=findText(o.sel||o.selFrom);let z=a,zl=(o.sel||o.selFrom).length;if(o.selTo){const f=findText(o.selTo);if(f){z=f;zl=o.selTo.length}}
     const r=document.createRange();if(o.lines){r.setStart(blkOf(a[0]),0);const bz=blkOf(z[0]);r.setEnd(bz,bz.childNodes.length)}else{r.setStart(a[0],a[1]);const e=endPos(o.selTo||o.sel||o.selFrom);if(e)r.setEnd(e[0],e[1]);else r.setEnd(z[0],z[1]+zl)}
     const rc=r.getClientRects();const c=$('#cursor');if(rc.length){c.style.display='block';c.style.transitionDuration=(500*PL.k)+'ms';c.style.left=rc[0].right+'px';c.style.top=(rc[0].top+rc[0].height/2)+'px';await W(500)}
     setSel(r);if(rc.length){const L=rc[rc.length-1];c.style.left=L.left+'px';c.style.top=(L.top+L.height/2)+'px'}await W(600);return}
-  if(o.selPart){/* selPart:[text, from, len] */const f=findText(o.selPart[0]);if(!f)return;const r=document.createRange();r.setStart(f[0],f[1]+o.selPart[1]);r.setEnd(f[0],f[1]+o.selPart[1]+o.selPart[2]);setSel(r);const rc=r.getBoundingClientRect();const c=$('#cursor');c.style.display='block';c.style.left=rc.left+'px';c.style.top=(rc.top+rc.height/2)+'px';await W(600);return}
+  if(o.selPart){/* selPart:[text, from, len] */const f=findText(o.selPart[0]);if(!f)return;await ensureVis(f[0].parentElement);const r=document.createRange();r.setStart(f[0],f[1]+o.selPart[1]);r.setEnd(f[0],f[1]+o.selPart[1]+o.selPart[2]);setSel(r);const rc=r.getBoundingClientRect();const c=$('#cursor');c.style.display='block';c.style.left=rc.left+'px';c.style.top=(rc.top+rc.height/2)+'px';await W(600);return}
   if(o.obj){const el=o.obj();if(!el)return;await showAt(el);selectObj(el);try{updateCtx()}catch(e){}await W(300);return}
   if(o.type!=null){await typeText(o.type);return}
   if(o.key){const k=o.key;bar(o.say||('اضغط '+({Enter:'Enter',Tab:'Tab',ShiftEnter:'Shift + Enter',CtrlA:'Ctrl + A',Backspace:'Backspace',ShiftTab:'Shift + Tab'}[k]||k)));
@@ -81,13 +84,15 @@ async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)re
     if(!s.done){/* زر نهائي */}}
   try{hideCoach()}catch(e){}
   let ok=false;try{ok=r.check()}catch(e){}if(!ok&&!PL.stop){bar('بقيت خطوة كتابة: '+fixOf(r));await W(2600)}}
-async function play(list){if(PL.on)return;if(typeof stopGuide==='function')try{stopGuide()}catch(e){}
+async function play(list,pre){if(PL.on)return;if(typeof stopGuide==='function')try{stopGuide()}catch(e){}
   const it=CO.item;if(!it||!it.reqs)return;PL.on=true;PL.stop=false;PL.didAll=false;const st0=snapState();shield(true);
   try{if(isPhone&&isPhone()){const p=$('#refpanel');if(p)p.classList.add('mcol')}}catch(e){}
-  try{for(const i of list){if(PL.stop)break;await playReq(i,list.length>1);await W(400)}}catch(e){console.warn(e)}
+  try{if(pre&&pre.length){const k0=PL.k;PL.k=Math.min(PL.k,.02);bar('تجهيز الخطوات السابقة…');const c=$('#cursor');for(const j of pre){if(PL.stop)break;await playReq(j,true)}PL.k=k0;try{hideCoach()}catch(e){}const cv=$('#canvas');await W(300)}
+    for(const i of list){if(PL.stop)break;await playReq(i,list.length>1);await W(400)}}catch(e){console.warn(e)}
   bar(PL.stop?'أُوقف العرض':'انتهى العرض — الآن جرّب أنت ✍️');await W(PL.stop?400:1600);
   try{hideCoach();closeMenus();closeDialog()}catch(e){}restore(st0);$('#cursor').style.display='none';shield(false);const b=$('#playbar');if(b)b.style.display='none';PL.on=false;
   try{CO.rpSig='';renderRefList()}catch(e){}simToast('شاهدتَ الحل ▶ — الآن نفّذه بنفسك');logAct('watchSolution')}
-window.playSolution=i=>play(i==null?CO.item.reqs.map((_,k)=>k):[i]);
+window.playSolution=i=>{if(i==null)return play(CO.item.reqs.map((_,k)=>k));const it=CO.item;if(it.demoAll)return play([i]);
+  const prev=[];for(let j=0;j<i;j++){let ok=false;try{ok=it.reqs[j].check()}catch(e){}if(!ok)prev.push(j)}return play([i],prev)};
 window.PLAY=PL;
 })();
