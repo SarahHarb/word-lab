@@ -88,7 +88,7 @@ setInterval(()=>{
     if(!el||!vis(el)){hideCoach();return}if(CO.lastI!==i){CO.lastI=i;if(canvas.contains(el)){const cr=canvas.getBoundingClientRect(),er=el.getBoundingClientRect();if(er.bottom<cr.top||er.top>cr.bottom)el.scrollIntoView({block:'center'})}}placeCoach(el,s.say,i+1);
   }else if(CO.mode==='explore'&&CO.exEl){if(vis(CO.exEl))placeCoach(CO.exEl,CO.exHtml);else{hideCoach();CO.exEl=null}}
 },180);
-function checkItem(){let ok=false;try{ok=!!CO.item.check()}catch(e){}if(!ok)return false;
+function checkItem(){if(window.PLAY&&PLAY.on)return false;let ok=false;try{ok=!!CO.item.check()}catch(e){}if(!ok)return false;
   CO.mode='won';hideCoach();clearHints();const u=UP(CO.unit.id);u.p[CO.item.key]=true;saveP();renderDots(99);confetti();renderNav2();renderHead();okToast();return true}
 function okToast(){let t=$('#oktoast');if(!t){t=document.createElement('div');t.id='oktoast';document.body.appendChild(t)}t.innerHTML='✓ أحسنت — حلّك صحيح';t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(okToast.tm);okToast.tm=setTimeout(()=>t.classList.remove('show'),1800)}
 function showWonBar(){let b=$('#wonbar');const w=$('.simwrap');if(!w)return;if(!b){b=document.createElement('div');b.id='wonbar';w.appendChild(b)}

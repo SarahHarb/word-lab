@@ -12,10 +12,10 @@ function selectIn(el,text){const tw=document.createTreeWalker(el,NodeFilter.SHOW
 function bar(msg){let b=$('#playbar');if(!b){b=document.createElement('div');b.id='playbar';b.innerHTML='<span class="pb-dot"></span><b>▶ عرض الحل</b><span class="pb-msg"></span><button type="button">⏹ إيقاف</button>';document.body.appendChild(b);b.querySelector('button').onclick=()=>{PL.stop=true}}
   b.querySelector('.pb-msg').textContent=msg||'';b.style.display='flex'}
 function shield(on){let s=$('#playshield');if(!s){s=document.createElement('div');s.id='playshield';document.body.appendChild(s)}s.style.display=on?'block':'none'}
-function snapState(){return {ruler:S.ruler,html:doc.innerHTML,page:JSON.stringify(S.page),hf:JSON.stringify(S.hf),marks:S.marks,view:S.view,zoom:S.zoom,app:S.app,log:SIM.log.slice()}}
+function snapState(){return {pen:JSON.stringify(S.pen||null),grid:S.gridOn,vg:doc.classList.contains('vgrid'),ruler:S.ruler,html:doc.innerHTML,page:JSON.stringify(S.page),hf:JSON.stringify(S.hf),marks:S.marks,view:S.view,zoom:S.zoom,app:S.app,log:SIM.log.slice()}}
 function restore(st){try{if(window.SELSEEN)SELSEEN.clear();if(window.PARTS_SEEN)PARTS_SEEN.clear()}catch(e){}if(S.app!==st.app){/* تمارين الأساسيات: أعِد التمرين من بدايته */try{applySetup(CO.item.setup)}catch(e){}return}
   try{closeDialog();closeMenus();clearObjSel();if(S.hfMode)exitHF()}catch(e){}doc.innerHTML=st.html;S.page=JSON.parse(st.page);S.hf=JSON.parse(st.hf);S.marks=st.marks;
-  try{applyPage();renderHF&&renderHF();doc.querySelectorAll('.obj').forEach(applyObj);if(window.markSpaces)markSpaces(S.marks)}catch(e){}SIM.log=st.log;S.range=null;try{if(S.zoom!==st.zoom)setZoom(st.zoom);if(S.ruler!==st.ruler){S.ruler=st.ruler;applyPage();typeof syncRibbon==='function'&&syncRibbon()}const fb=$('#backstage');if(fb&&!fb.hidden&&S.app==='doc')closeBackstage()}catch(e){}try{SIM.emit('change')}catch(e){}}
+  try{applyPage();renderHF&&renderHF();doc.querySelectorAll('.obj').forEach(applyObj);if(window.markSpaces)markSpaces(S.marks)}catch(e){}SIM.log=st.log;S.range=null;try{S.pen=JSON.parse(st.pen);S.gridOn=st.grid;doc.classList.toggle('vgrid',st.vg);clearCells&&clearCells();S.curCell=null;typeof syncRibbon==='function'&&syncRibbon()}catch(e){}try{if(S.zoom!==st.zoom)setZoom(st.zoom);if(S.ruler!==st.ruler){S.ruler=st.ruler;applyPage();typeof syncRibbon==='function'&&syncRibbon()}const fb=$('#backstage');if(fb&&!fb.hidden&&S.app==='doc')closeBackstage()}catch(e){}try{SIM.emit('change')}catch(e){}}
 async function doStep(st,r,k){let el=null;try{el=st.el()}catch(e){}if(!el)return false;
   if(st.done&&(()=>{try{return st.done()}catch(e){return false}})())return true;
   bar(st.say.replace(/<[^>]+>/g,''));try{placeCoach(el,st.say,k+1)}catch(e){}await moveTo(el);if(PL.stop)return false;clickFx();await W(250);
@@ -59,7 +59,7 @@ async function demoOp(o){if(PL.stop)return;
     else if(k==='CtrlA'){run('selectAll')}else{tg.dispatchEvent(new KeyboardEvent('keydown',{key:k==='ShiftEnter'?'Enter':k==='ShiftTab'?'Tab':k,shiftKey:/Shift/.test(k),bubbles:true,cancelable:true}))}
     S.range=curRange()||S.range;try{SIM.emit('change')}catch(e){}await W(650);return}
   if(o.cmd){await ribbonCmd(o.cmd,o.arg,o.say);return}
-  if(o.show){const tab=tabOfCmd(o.show);const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${o.show}"]`);if(b&&b.offsetParent){try{placeCoach(b,o.say||'')}catch(e){}await showAt(b)}else await W(900);await W(400);try{hideCoach()}catch(e){}return}
+  if(o.show){const tab=tabOfCmd(o.show);{const t=tab&&$(`#wtabs [data-tab="${tab}"]`);if(t&&!t.classList.contains('on')&&t.offsetParent){await showAt(t);realClick(t);await W(300)}}const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${o.show}"]`);if(b&&b.offsetParent){try{placeCoach(b,o.say||'')}catch(e){}await showAt(b)}else await W(900);await W(400);try{hideCoach()}catch(e){}return}
   if(o.click){const el=typeof o.click==='function'?o.click():$(o.click);if(!el)return;await showAt(el);realClick(el);await W(450);return}
   if(o.dbl){const el=typeof o.dbl==='function'?o.dbl():$(o.dbl);if(!el)return;await showAt(el);el.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));await W(450);return}
   if(o.fill){const el=$(o.fill);if(!el)return;await showAt(el);el.focus();el.value='';for(const ch of o.value){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}));await W(50)}return}
@@ -67,7 +67,8 @@ async function demoOp(o){if(PL.stop)return;
   if(o.wait){await W(o.wait)}}
 async function runDemo(list){for(const o of list){if(PL.stop)break;await demoOp(o)}}
 window.runDemo=runDemo;
-async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
+window.APL={showAt,ribbonCmd,typeText,W,bar};
+async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;if(it.demoAll&&!r.demo){if(PL.didAll)return;PL.didAll=true;await runDemo(typeof it.demoAll==='function'?it.demoAll():it.demoAll);try{hideCoach()}catch(e){}return}let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
   if(r.demo){await runDemo(typeof r.demo==='function'?r.demo():r.demo);try{hideCoach()}catch(e){}return}
   if(!r.path&&(r.mi||r.cmd)){let w=null;try{w=r.where&&r.where()}catch(e){}const ops=[];
     if(r.selText)ops.push({sel:r.selText});else if(w&&w.classList&&w.classList.contains('obj'))ops.push({obj:()=>w});else if(w&&doc.contains(w)&&w!==firstBody()&&!r.cmd?.startsWith('ins'))ops.push({js:async()=>{await showAt(w);placeCaretIn(w,true);S.range=curRange()}});
@@ -81,7 +82,7 @@ async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)re
   try{hideCoach()}catch(e){}
   let ok=false;try{ok=r.check()}catch(e){}if(!ok&&!PL.stop){bar('بقيت خطوة كتابة: '+fixOf(r));await W(2600)}}
 async function play(list){if(PL.on)return;if(typeof stopGuide==='function')try{stopGuide()}catch(e){}
-  const it=CO.item;if(!it||!it.reqs)return;PL.on=true;PL.stop=false;const st0=snapState();shield(true);
+  const it=CO.item;if(!it||!it.reqs)return;PL.on=true;PL.stop=false;PL.didAll=false;const st0=snapState();shield(true);
   try{if(isPhone&&isPhone()){const p=$('#refpanel');if(p)p.classList.add('mcol')}}catch(e){}
   try{for(const i of list){if(PL.stop)break;await playReq(i,list.length>1);await W(400)}}catch(e){console.warn(e)}
   bar(PL.stop?'أُوقف العرض':'انتهى العرض — الآن جرّب أنت ✍️');await W(PL.stop?400:1600);

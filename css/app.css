@@ -274,3 +274,5 @@ body.demo #lhead{position:relative;z-index:1005}
 #objbar{display:none;gap:6px}
 #objbar .ob-txt{background:#2563eb;margin-inline-end:6px}
 #objbar .ob-txt:hover{background:#1d4ed8}
+.lay-g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.lay-g button{border:1px solid #d0d7de;background:#fff;border-radius:6px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}.lay-g button b{font-size:20px}.lay-g button.on{background:#cce4f7;border-color:#2b579a}
+.chg-g{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.chg-g button{border:1px solid #e1e4e8;background:#fff;border-radius:6px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;cursor:pointer}.chg-g button:hover{background:#eef5fc}.chg-g svg{fill:#4472c4;stroke:#2f528f;stroke-width:3}

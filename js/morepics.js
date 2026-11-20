@@ -603,16 +603,30 @@ MORE_PICS_T2=[['الكتابة',[TX1,MK1,RD1,TX2]],['التحديد',[SL1,SL2]],
   ST2('#dlgs .df .pri','اضغط «موافق»',null,1)];
  CO2.reqs[0].path=()=>COLP('3',true);CO2.reqs[1].path=()=>COLP('3',true);}
 
+
+const picBy=i=>picsAll().find(o=>imgIdx(o)===i)||null;
+const IM9=PIC({t:'أنواع التفاف النص',goalImg:'img/m-pic9.png',skills:['مربع','خلف النص','أمام النص','مع النص'],
+ intro:'في الصفحة 4 صور، ولكل صورة التفاف مختلف. انظر جيدًا إلى الصورة: الشجرة والكلام بجانبها، البحر تحت الكلام كخلفية، الجبال فوق الكلام تغطيه، والوردة الصغيرة بين الكلمات. (تنسيق الصورة ← التفاف النص)',
+ setup:{html:`<p class="wtitle">التفاف النص</p><p id="pa"><br></p><p>${PLONG2} ${PLONG}</p><p id="pb"><br></p><p>${PLONG} ${PLONG2}</p><p id="pc"><br></p><p>${PLONG2}</p><p id="pd">أحبّ الزهور كثيرًا لأنها جميلة.</p>`,
+  after:()=>{intoP('#pa',PIC_IN(1,150))();intoP('#pb',PIC_IN(2,260))();intoP('#pc',PIC_IN(0,200))();const p=firstBody().querySelector('#pd');const t=document.createElement('div');t.innerHTML=PIC_IN(3,36);const o=t.firstChild;const tn=[...p.childNodes].find(n=>n.nodeType===3);const i=tn.data.indexOf('كثيرًا');const rest=tn.splitText(i);p.insertBefore(o,rest);rest.data=' '+rest.data;applyObj(o)}},
+ reqs:[Q('الشجرة: مربع (الكلام بجانبها)',()=>['square','tight','through'].includes(picBy(1)?.dataset.wrap),()=>picBy(1),'انقر على الشجرة ← تنسيق الصورة ← التفاف النص ← مربع','wrap',{tab:'pformat',mi:['wrap','square','مربع']}),
+  Q('البحر: خلف النص',()=>picBy(2)?.dataset.wrap==='behind',()=>picBy(2),'انقر على صورة البحر ← التفاف النص ← خلف النص','wrap',{tab:'pformat',mi:['wrap','behind','خلف النص']}),
+  Q('الجبال: أمام النص',()=>picBy(0)?.dataset.wrap==='front',()=>picBy(0),'انقر على الجبال ← التفاف النص ← أمام النص','wrap',{tab:'pformat',mi:['wrap','front','أمام النص']}),
+  N(Q('الوردة: مع النص (بين الكلمات)',()=>picBy(3)?.dataset.wrap==='inline'&&!!picBy(3)?.closest('p')?.textContent.includes('الزهور'),()=>picBy(3),'الوردة يجب أن تبقى «مع النص» بين الكلمات'),2)]});
+IM9.reqs[0].fixFn=()=>{const w=picBy(1)?.dataset.wrap;return w==='topBottom'?'«أعلى وأسفل» يجعل الكلام فوق الصورة وتحتها فقط — المطلوب الكلام بجانبها: «مربع».':null};
+IM9.reqs[1].fixFn=()=>picBy(2)?.dataset.wrap==='front'?'هذا «أمام النص» (الصورة تغطي الكلام). المطلوب أن يظهر الكلام فوق الصورة: «خلف النص».':null;
+IM9.reqs[2].fixFn=()=>picBy(0)?.dataset.wrap==='behind'?'هذا «خلف النص». المطلوب أن تغطي الصورة الكلام: «أمام النص».':null;
+
 /* ---------- topics ---------- */
 const MORE_PICS={
  t4:[['الرسم',[SH1,SH2,SH3]],['الأسهم ومربع النص والترتيب',[SH4,SH5,SH6]]],
- t10:[['الإدراج والحجم',[IM1,IM2,IM6]],['أنماط الصورة',[IM4,IM7]],['الترتيب',[IM3,IM5,IM8]]],
+ t10:[['الإدراج والحجم',[IM1,IM2,IM6]],['أنماط الصورة',[IM4,IM7]],['الترتيب',[IM3,IM9,IM5,IM8]]],
  t11:[['WordArt',[WA1,WA2,WA3]]],
  t6:[['الرأس والتذييل',[HF1,HF2,HF6,HF5]],['ترقيم الصفحات',[HF3,HF4]]],
  t8:[['الرموز',[SY1,SY2]],['التاريخ',[DT1,DT2]],['المعادلات',[EQ1,EQ2,EQ3]]],
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
-const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',IM7:'m-pic7',IM8:'m-pic8',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
+const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',IM7:'m-pic7',IM8:'m-pic8',IM9:'m-pic9',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
 Object.assign(MORE_IMG,{TXT_HW:'m-hw',MK1:'m-mk1',RD1:'m-rd1',SL1:'m-sl1',SL2:'m-sl2',PG1:'m-pg1',PG2:'m-pg2',PG3:'m-pg3',LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 var MORE_PICS_T2;
 (function(){

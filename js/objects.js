@@ -66,7 +66,7 @@ Object.assign(OPS,{
   pstyle(id){const o=picOnly();if(!o)return;snap();o.dataset.ps=id;applyObj(o);logAct('pstyle:'+id)},
   picBorder(c){const o=picOnly();if(!o)return;if(c==='more'){colorDlg(v=>OPS.picBorder(v));return}snap();o.dataset.border=c;applyObj(o);logAct('picBorder')},
   picEffects(f){const o=picOnly();if(!o)return;snap();o.dataset.fx=f;applyObj(o);logAct('picEffects:'+f)},
-  picLayout(){simToast('تخطيط الصورة: للعرض فقط')},
+  picLayout(){const o=picOnly();if(!o)return;snap();let c=o.querySelector('.pcap');if(c){c.remove();logAct('picLayout:off');return}c=document.createElement('div');c.className='pcap';c.contentEditable='true';c.textContent='اكتب التسمية هنا';o.appendChild(c);logAct('picLayout');simToast('تخطيط الصورة: تسمية تحت الصورة — انقر عليها واكتب')},
   crop(){const o=picOnly();if(!o)return;o.classList.toggle('cropping');if(o.classList.contains('cropping')){snap();simToast('اسحب المقابض السوداء لاقتصاص الصورة، ثم انقر خارجها')}logAct('crop:'+o.classList.contains('cropping'))},
   /* shape format */
   sstyle(i){const o=shpOnly();if(!o)return;snap();const s=SSTYLES[i];o.dataset.fill=s.fill;o.dataset.line=s.line;o.dataset.tcol=s.text;applyObj(o);logAct('sstyle')},
@@ -79,14 +79,14 @@ Object.assign(OPS,{
   textOutline(c){const o=shpOnly();if(!o)return;snap();o.dataset.tout=c;applyObj(o);logAct('textOutline')},
   textEffects(f){const o=shpOnly();if(!o)return;snap();o.dataset.tfx=f;applyObj(o);logAct('textEffects:'+f)},
   wastyle(i){const o=shpOnly();if(!o)return;snap();const s=WA_STYLES[i];o.dataset.tfill=s.fill;o.dataset.tout=s.out;o.dataset.tfx=s.fx;applyObj(o)},
-  editShape(){simToast('تحرير الشكل: للعرض فقط')},alignText(){const o=shpOnly();if(!o)return;const t=o.querySelector('.stxt');t.style.alignItems=t.style.alignItems==='flex-start'?'center':'flex-start'},createLink(){simToast('إنشاء ارتباط: للعرض فقط')},
+  editShape(){const o=shpOnly();if(!o)return;const ks=Object.keys(SHAPE_NAMES).filter(k=>!['textbox','wordart','line'].includes(k));dialog({title:'تحرير الشكل ← تغيير الشكل',w:420,body:`<div class="chg-g">${ks.map(k=>`<button data-k="${k}" title="${SHAPE_NAMES[k]}"><svg viewBox="0 0 100 100" width="34" height="34"><path d="${typeof shapePath==='function'?shapePath(k,100,100):''}"/></svg><small>${SHAPE_NAMES[k]}</small></button>`).join('')}</div>`,onOpen:d=>d.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{snap();o.dataset.kind=b.dataset.k;applyObj(o);logAct('changeShape:'+b.dataset.k);closeDialog()}),buttons:[{label:'إغلاق'}]})},alignText(){const o=shpOnly();if(!o)return;const t=o.querySelector('.stxt');t.style.alignItems=t.style.alignItems==='flex-start'?'center':'flex-start'},createLink(){simToast('إنشاء ارتباط: للعرض فقط')},
   addShapeText(){const o=shpOnly();if(!o)return;startShapeText(o)},
   /* arrange (shared) */
   wrap(a){const o=objOnly();if(!o)return;snap();const d=o.dataset;const was=d.wrap;
     if(['behind','front'].includes(a)&&!['behind','front'].includes(was)){const body=bodyOf(o);const br=body.getBoundingClientRect(),or=o.getBoundingClientRect(),z=(S.zoom/100*(window.SIMSCALE||1));d.x=Math.round((or.left-br.left)/z);d.y=Math.round((or.top-br.top)/z);if(o.parentElement!==body){body.appendChild(o)}}
     if(!['behind','front'].includes(a)&&['behind','front'].includes(was)){const body=bodyOf(o);const blocks=[...body.children].filter(b=>b!==o&&!b.classList.contains('obj'));const y=+d.y||0;let tgt=blocks.find(b=>b.offsetTop+b.offsetHeight>y)||blocks.at(-1);if(a==='inline'){const p=document.createElement('p');p.appendChild(o);tgt?tgt.before(p):body.appendChild(p)}else{tgt?tgt.prepend(o):body.prepend(o)}}
     d.wrap=a;if(a!=='inline')delete d.align;applyObj(o);logAct('wrap:'+a)},
-  wrapMore(){simToast('خيارات تخطيط إضافية: للعرض فقط')},
+  wrapMore(){layoutDlg()},
   position(p){const o=objOnly();if(!o)return;snap();const d=o.dataset;const body=bodyOf(o);const [v,h]=[p[0],p[1]];
     d.wrap='square';d.side=h==='l'?'left':'right';if(h==='c'){d.wrap='topbottom';d.side='center'}
     const blocks=[...body.children].filter(b=>b!==o&&!b.contains(o));const tgt=v==='t'?blocks[0]:v==='m'?blocks[Math.floor(blocks.length/2)]:blocks.at(-1);if(tgt){if(o.parentElement.tagName==='P'&&!o.parentElement.textContent.trim()&&o.parentElement.children.length===1){const pp=o.parentElement;tgt.prepend(o);pp.remove()}else tgt.prepend(o)}
@@ -97,7 +97,11 @@ Object.assign(OPS,{
     if(d.wrap==='inline'){if(['right','center','left'].includes(a))d.align=a}else if(['square','tight','through','topbottom'].includes(d.wrap)){if(a==='center'){d.wrap='topbottom';d.side='center'}else if(['right','left'].includes(a))d.side=a}
     else{if(a==='right')d.x=body.clientWidth-o.offsetWidth;if(a==='left')d.x=0;if(a==='center')d.x=(body.clientWidth-o.offsetWidth)/2;if(a==='top')d.y=0;if(a==='middle')d.y=Math.max(0,(body.clientHeight-o.offsetHeight)/2);if(a==='bottom')d.y=Math.max(0,body.clientHeight-o.offsetHeight)}
     applyObj(o);logAct('alignObj:'+a)},
-  groupObj(){simToast('تجميع: حدّد عدة كائنات أولًا')},
+  groupObj(a){const o=S.obj;if(!o){simToast('حدّد شكلًا أولًا');return}
+    if(a==='ungroup'||(!a&&o.dataset.grp&&!doc.querySelector('.obj.sel2:not([data-grp="'+o.dataset.grp+'"])'))){const g=o.dataset.grp;if(!g){simToast('هذا الكائن غير مُجمَّع');return}snap();doc.querySelectorAll(`.obj[data-grp="${g}"]`).forEach(x=>{delete x.dataset.grp;x.classList.remove('sel2')});simToast('تم إلغاء التجميع');logAct('ungroup');return}
+    const list=[o,...doc.querySelectorAll('.obj.sel2')].filter((x,i,a)=>a.indexOf(x)===i);if(list.length<2){simToast('للتجميع: حدّد شكلًا، ثم اضغط Ctrl (أو Shift) وانقر على شكل آخر، ثم «تجميع»');return}
+    if(list.some(x=>!['front','behind'].includes(x.dataset.wrap))){simToast('اجعل التفاف النص «أمام النص» أو «خلف النص» لكل الكائنات أولًا');return}
+    snap();const g='g'+Date.now().toString(36);list.forEach(x=>{x.dataset.grp=g;x.classList.add('sel2')});o.classList.remove('sel2');simToast('تم التجميع — تتحرك معًا الآن');logAct('group');SIM.emit('change')},
   rotate(a){const o=objOnly();if(!o)return;snap();const d=o.dataset;if(a==='reset'){d.rot=0;delete d.flipH;delete d.flipV}else if(a==='flipH')d.flipH=d.flipH?'':'1';else if(a==='flipV')d.flipV=d.flipV?'':'1';else d.rot=((+d.rot||0)+(+a))%360;applyObj(o);logAct('rotate:'+a)},
   delObj(){delSelObj()},
   objH(v){const o=objOnly();if(!o)return;snap();const d=o.dataset;const nh=+v*CM;if(o.classList.contains('pic')){scaleObj(o,nh/+d.h)}else{d.h=nh;applyObj(o)}logAct('objH')},
@@ -121,13 +125,13 @@ document.addEventListener('mousedown',e=>{
   e.preventDefault();selectObj(o);const d=o.dataset,z=(S.zoom/100*(window.SIMSCALE||1));
   const h=e.target.closest('.h');
   if(h&&!h.classList.contains('anchor')){const cls=[...h.classList].find(c=>c!=='h');snap();drag={mode:h.classList.contains('rot')?'rot':o.classList.contains('cropping')?'crop':'resize',o,h:cls,x0:e.clientX,y0:e.clientY,d0:{...d},z,c:o.getBoundingClientRect()};return}
-  snap();drag={mode:'move',o,x0:e.clientX,y0:e.clientY,d0:{...d},z,moved:false};
+  snap();drag={mode:'move',o,x0:e.clientX,y0:e.clientY,d0:{...d},z,moved:false,mates:d.grp?[...doc.querySelectorAll(`.obj[data-grp="${d.grp}"]`)].filter(x=>x!==o).map(m=>[m,{...m.dataset}]):[]};
 });
 document.addEventListener('mousemove',e=>{
   if(!drag)return;const z=drag.z;
   if(drag.mode==='draw'){const br=drag.br;let x=(e.clientX-br.left)/z,y=(e.clientY-br.top)/z;let w=Math.abs(x-drag.x0),h=Math.abs(y-drag.y0);if(e.shiftKey){w=h=Math.max(w,h)}const L=x<drag.x0?drag.x0-w:drag.x0,T=y<drag.y0?drag.y0-h:drag.y0;Object.assign(drag.box.style,{left:L+'px',top:T+'px',width:w+'px',height:h+'px'});drag.r={L,T,w,h,shift:e.shiftKey};return}
   const o=drag.o,d=o.dataset,d0=drag.d0;const dx=(e.clientX-drag.x0)/z,dy=(e.clientY-drag.y0)/z;
-  if(drag.mode==='move'){if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;if(['behind','front'].includes(d.wrap)){d.x=Math.round(+d0.x+dx);d.y=Math.round(+d0.y+dy);applyObj(o)}return}
+  if(drag.mode==='move'){if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;if(['behind','front'].includes(d.wrap)){d.x=Math.round(+d0.x+dx);d.y=Math.round(+d0.y+dy);applyObj(o);(drag.mates||[]).forEach(([m,m0])=>{m.dataset.x=Math.round(+m0.x+dx);m.dataset.y=Math.round(+m0.y+dy);applyObj(m)})}return}
   if(drag.mode==='rot'){const r=o.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;let a=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;if(e.shiftKey)a=Math.round(a/15)*15;d.rot=Math.round(a);applyObj(o);return}
   const hd=drag.h;const isPic=o.classList.contains('pic');
   if(drag.mode==='crop'){let w=+d0.w,h=+d0.h,ix=+d0.ix,iy=+d0.iy;
@@ -193,7 +197,7 @@ document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const eq=curEq()
 /* زر «حذف» يظهر فوق الصورة/الشكل المحدّد (مفيد خاصة على الجوال حيث لا يوجد زر Delete) */
 function delSelObj(){if(!S.obj)return;snap();const o=S.obj,p=o.parentElement;o.remove();if(p&&p.tagName==='P'&&!p.textContent.trim()&&!p.querySelector('.obj,img'))p.innerHTML='<br>';clearObjSel();updateCtx();logAct('objDelete');SIM.emit('change');placeObjBar()}
 function placeObjBar(){let b=document.getElementById('objbar');const o=S.obj;
-  if(!o||!doc.contains(o)||S.drawKind||o.classList.contains('cropping')){if(b)b.style.display='none';return}
+  if(!o||!doc.contains(o)||S.drawKind||o.classList.contains('cropping')||document.querySelector('#dlgs .dlg')||(window.PLAY&&PLAY.on)){if(b)b.style.display='none';return}
   if(!b){b=document.createElement('div');b.id='objbar';b.innerHTML='<button type="button" class="ob-txt" data-hid="obj-text">✏️ اكتب</button><button type="button" data-hid="obj-delete">🗑 حذف</button>';(document.getElementById('ovl')||document.body).appendChild(b);
     const btn=b.querySelector('[data-hid="obj-delete"]');const go=e=>{e.preventDefault();e.stopPropagation();delSelObj()};btn.addEventListener('mousedown',go);btn.addEventListener('touchstart',go,{passive:false});const bt=b.querySelector('.ob-txt');const gt=e=>{e.preventDefault();e.stopPropagation();if(S.obj)startShapeText(S.obj)};bt.addEventListener('mousedown',gt);bt.addEventListener('touchstart',gt,{passive:false})}
   {const bt=b.querySelector('.ob-txt');const st=o.querySelector('.stxt');bt.style.display=o.classList.contains('shp')&&!(st&&st.isContentEditable)?'':'none'}
@@ -207,3 +211,14 @@ setInterval(placeObjBar,250);
 function startShapeText(o){const t=o&&o.querySelector('.stxt');if(!t)return null;selectObj(o);t.contentEditable='true';if(!t.querySelector('p')&&!t.textContent.trim())t.innerHTML='<p><br></p>';t.focus();placeCaretIn(t.querySelector('p')||t,false);S.range=curRange()||S.range;logAct('addShapeText');return t}
 document.addEventListener('keydown',e=>{if(!S.obj||e.ctrlKey||e.metaKey||e.altKey)return;const o=S.obj;if(!o.classList.contains('shp'))return;const t=o.querySelector('.stxt');if(!t||t.isContentEditable&&t.contains(document.activeElement))return;
   if(e.key.length===1||e.key==='Enter'){if(e.target.closest&&e.target.closest('input,select,textarea'))return;e.preventDefault();startShapeText(o);if(e.key.length===1)document.execCommand('insertText',false,e.key)}},true);
+
+/* تحديد عدة كائنات: Ctrl أو Shift + نقرة */
+document.addEventListener('mousedown',e=>{if(!(e.ctrlKey||e.shiftKey||e.metaKey)||e.button!==0)return;const o=e.target.closest&&e.target.closest('#doc .obj');if(!o||!S.obj||o===S.obj)return;e.preventDefault();e.stopPropagation();o.classList.toggle('sel2')},true);
+document.addEventListener('mousedown',e=>{const o=e.target.closest&&e.target.closest('#doc .obj');if(e.ctrlKey||e.shiftKey||e.metaKey)return;doc.querySelectorAll('.obj.sel2').forEach(x=>{if(!o||!x.dataset.grp||x.dataset.grp!==o.dataset.grp)x.classList.remove('sel2')});if(o&&o.dataset.grp)doc.querySelectorAll(`.obj[data-grp="${o.dataset.grp}"]`).forEach(x=>{if(x!==o)x.classList.add('sel2')})},true);
+/* خيارات تخطيط إضافية: التفاف النص + الموضع */
+function layoutDlg(){const o=S.obj;if(!o){simToast('حدّد صورة أو شكلًا أولًا');return}const d=o.dataset;
+  const W=[['inline','مع النص','⬚▬'],['square','مربع','▣'],['tight','ضيق','◈'],['through','خلال','◇'],['topBottom','أعلى وأسفل','☰'],['behind','خلف النص','▤'],['front','أمام النص','▦']];
+  dialog({title:'التخطيط',w:520,body:`<div class="bdtabs"><button class="on">التفاف النص</button></div><p class="sm" style="margin:6px 0">نمط الالتفاف:</p><div class="lay-g">${W.map(([k,l,i])=>`<button data-w="${k}" class="${d.wrap===k?'on':''}"><b>${i}</b><small>${l}</small></button>`).join('')}</div>
+   <p class="sm" style="margin:10px 0 4px">التفاف النص على:</p><label class="row"><input type="radio" name="ls" value="both" ${!d.side||d.side==='both'?'checked':''}> كلا الجانبين</label><label class="row"><input type="radio" name="ls" value="right" ${d.side==='right'?'checked':''}> الأيمن فقط (الصورة يسارًا)</label><label class="row"><input type="radio" name="ls" value="left" ${d.side==='left'?'checked':''}> الأيسر فقط (الصورة يمينًا)</label>`,
+   onOpen:dd=>dd.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{dd.querySelectorAll('[data-w]').forEach(x=>x.classList.toggle('on',x===b))}),
+   buttons:[{label:'موافق',pri:1,act:dd=>{const w=dd.querySelector('[data-w].on')?.dataset.w||d.wrap;OPS.wrap(w);const sd=dd.querySelector('input[name="ls"]:checked')?.value;if(['square','tight','through'].includes(w)&&sd&&sd!=='both'){d.side=sd==='right'?'left':'right';applyObj(o)}logAct('layoutDlg')}},{label:'إلغاء'}]})}
