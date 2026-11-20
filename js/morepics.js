@@ -382,6 +382,90 @@ const BA0=PIC({t:'أجزاء البرنامج',goalImg:'img/m-b0.png',skills:UI_
 const PART_BLOCK=['win','qat','cmd','group','views','title','status'];
 ['mousedown','click','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(!CO.item||!CO.item.parts)return;const k=partOf(e.target);if(k&&PART_BLOCK.includes(k)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}},true));
 
+/* ======================= الكتابة والتنسيق (النص) ======================= */
+const charMap=()=>{const out=[];doc.querySelectorAll('.pg-body').forEach(b=>{const w=document.createTreeWalker(b,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('.obj,.eq')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});let n;while(n=w.nextNode())for(const ch of n.data)out.push([ch,n.parentElement]);out.push(['\n',b])});return out};
+const fmtOf=(word,pred,nth)=>{const M=charMap(),T=M.map(x=>x[0]).join('').replace(/ /g,' ');let i=-1,k=0;do{i=T.indexOf(word,i+1);k++}while(i>=0&&k<=(nth||0));if(i<0)return false;for(let j=i;j<i+word.length;j++){if(/\s/.test(M[j][0]))continue;if(!pred(M[j][1]))return false}return true};
+const anc=(e,f)=>{for(let x=e;x&&!(x.classList&&x.classList.contains('pg-body'));x=x.parentElement){const v=f(x);if(v)return v}return null};
+const isB=e=>+getComputedStyle(e).fontWeight>=600, isI=e=>getComputedStyle(e).fontStyle==='italic';
+const isU=e=>!!anc(e,x=>/underline/.test(getComputedStyle(x).textDecorationLine));
+const hiOf=e=>anc(e,x=>{const b=getComputedStyle(x).backgroundColor;return b&&!/rgba\(0, 0, 0, 0\)|transparent/.test(b)&&!x.matches('p,h1,h2,h3,li,ul,ol')?b:null});
+const ptOf=e=>parseFloat(getComputedStyle(e).fontSize)*.75;
+const isSup=e=>!!e.closest('sup')||getComputedStyle(e).verticalAlign==='super', isSub=e=>!!e.closest('sub')||getComputedStyle(e).verticalAlign==='sub';
+const blk=t=>[...firstBody().querySelectorAll('p,h1,h2,h3,li')].find(b=>b.textContent.includes(t))||null;
+const TSEL=(t)=>({selText:t});
+const TX1=PIC({t:'اكتب كما في الصورة',goalImg:'img/m-tx1.png',skills:['الكتابة بالعربية','Enter لسطر جديد'],
+ intro:'اكتب العنوان في السطر الأول، ثم اضغط Enter واكتب الجملة في السطر الثاني. الأخطاء الصغيرة مقبولة.',
+ setup:{html:'<p><br></p>',caret:'.pg-body > p'},
+ reqs:[Q('السطر الأول: رحلتي إلى أريحا',()=>{const ps=paras().filter(p=>p.textContent.trim());return !!ps[0]&&txtEq(ps[0].textContent.trim(),'رحلتي إلى أريحا')},()=>paras()[0],'انقر في الصفحة واكتب: رحلتي إلى أريحا'),
+  Q('السطر الثاني: الجملة',()=>{const ps=paras().filter(p=>p.textContent.trim());return !!ps[1]&&fuzzyHas(ps[1].textContent,'زرنا أريحا يوم الخميس مع معلمتنا')},()=>paras()[1]||paras()[0],'اضغط Enter ثم اكتب: زرنا أريحا يوم الخميس مع معلمتنا، وشاهدنا قصر هشام.'),
+  N(Q('كل جملة في سطر',()=>paras().filter(p=>p.textContent.trim()).length>=2,()=>paras()[0],'اضغط Enter بعد العنوان لتنزل سطرًا'),0)]});
+const STEPS=['أولًا نغلي الماء.','ثم نضع الشاي في الكوب.','أخيرًا نضيف السكر.'];
+const TX2=PIC({t:'قص ولصق: رتّب الجمل',goalImg:'img/m-tx2.png',skills:['تحديد سطر','قص (Ctrl + X)','لصق (Ctrl + V)'],
+ intro:'الجمل غير مرتبة. انقلها بالقص واللصق حتى تصير كما في الصورة: أولًا ← ثم ← أخيرًا.',
+ setup:{html:`<p class="wtitle">تحضير الشاي</p><p>${STEPS[1]}</p><p>${STEPS[2]}</p><p>${STEPS[0]}</p>`},
+ reqs:[Q('الترتيب: أولًا ← ثم ← أخيرًا',()=>{const T=firstBody().textContent;const ix=STEPS.map(x=>T.indexOf(x.slice(0,8)));return ix.every(i=>i>=0)&&ix[0]<ix[1]&&ix[1]<ix[2]},()=>blk('أولًا'),'حدّد سطر «أولًا…» ← الصفحة الرئيسية ← قص ← انقر في أول سطر «ثم…» ← لصق','cut',{selText:'أولًا نغلي الماء.'}),
+  Q('كل جملة مرة واحدة فقط',()=>{const T=firstBody().textContent;return STEPS.every(x=>T.split(x.slice(0,8)).length===2)},()=>firstBody(),'استخدم «قص» وليس «نسخ» — احذف الجملة المكررة')]});
+const TX3=PIC({t:'غامق ومائل وتحته خط',goalImg:'img/m-tx3.png',skills:['تحديد كلمة','غامق B','مائل I','تسطير U'],
+ intro:'حدّد الكلمة أولًا (انقر عليها نقرًا مزدوجًا)، ثم اختر الأمر. اجعل «نور» غامقة، و«مفتاح» مائلة، و«الإيمان» تحتها خط.',
+ setup:{html:'<p>العلم نور</p><p>الصبر مفتاح الفرج</p><p>النظافة من الإيمان</p>'},
+ reqs:[Q('«نور» غامقة',()=>fmtOf('نور',isB),()=>blk('نور'),'حدّد «نور» ← الصفحة الرئيسية ← B (Ctrl + B)','bold',TSEL('نور')),
+  Q('«مفتاح» مائلة',()=>fmtOf('مفتاح',isI),()=>blk('مفتاح'),'حدّد «مفتاح» ← I (Ctrl + I)','italic',TSEL('مفتاح')),
+  Q('«الإيمان» تحتها خط',()=>fmtOf('الإيمان',isU),()=>blk('الإيمان'),'حدّد «الإيمان» ← U (Ctrl + U)','underline',TSEL('الإيمان')),
+  N(Q('باقي الكلمات عادية',()=>!fmtOf('العلم',isB)&&!fmtOf('الصبر',isI)&&!fmtOf('الفرج',isI)&&!fmtOf('النظافة',isU),()=>firstBody(),'نسّقتَ كلمات زائدة — حدّدها واضغط الأمر مرة ثانية لإلغائه'),1)]});
+const TX4=PIC({t:'نوع الخط وحجمه',goalImg:'img/m-tx4.png',skills:['نوع الخط','حجم الخط'],
+ intro:'حدّد العنوان «يوم العلوم» واجعل خطه Times New Roman وحجمه 28. ثم اجعل الفقرة بحجم 14.',
+ setup:{html:`<p>يوم العلوم</p><p>${PLONG2}</p>`},
+ reqs:[Q('العنوان: Times New Roman',()=>fmtOf('يوم العلوم',e=>/times/i.test(getComputedStyle(e).fontFamily)),()=>blk('يوم العلوم'),'حدّد العنوان ← الصفحة الرئيسية ← مربع الخط ← Times New Roman','fontName',TSEL('يوم العلوم')),
+  Q('العنوان: حجم 28',()=>fmtOf('يوم العلوم',e=>Math.abs(ptOf(e)-28)<=1),()=>blk('يوم العلوم'),'حدّد العنوان ← حجم الخط ← 28','fontSize',TSEL('يوم العلوم')),
+  Q('الفقرة: حجم 14',()=>fmtOf('تشتهر أريحا',e=>Math.abs(ptOf(e)-14)<=.6)&&fmtOf('المدن الفلسطينية',e=>Math.abs(ptOf(e)-14)<=.6),()=>blk('تشتهر'),'حدّد الفقرة كلها (انقر 3 مرات عليها) ← حجم الخط ← 14','fontSize',TSEL('تشتهر أريحا'))]});
+TX4.reqs[1].fixFn=()=>{const b=blk('يوم العلوم');if(!b)return null;const M=charMap();const i=M.map(x=>x[0]).join('').indexOf('يوم');return i>=0?`حجمه الآن ${Math.round(ptOf(M[i][1]))} — المطلوب 28.`:null};
+const TX5=PIC({t:'لون الخط والتمييز',goalImg:'img/m-tx5.png',skills:['لون الخط','لون تمييز النص'],
+ intro:'اجعل «تذكير:» باللون الأحمر، وميّز «يوم الأحد» بالأصفر، واجعل «أزرق» باللون الأزرق.',
+ setup:{html:'<p>تذكير: الامتحان يوم الأحد، أحضر قلمًا أزرق.</p>'},
+ reqs:[Q('«تذكير:» حمراء',()=>fmtOf('تذكير',e=>isCol(getComputedStyle(e).color,C_RED)),()=>blk('تذكير'),'حدّد «تذكير:» ← سهم «لون الخط» A ▾ ← أحمر','fontcolor',TSEL('تذكير')),
+  Q('«يوم الأحد» مميّزة بالأصفر',()=>fmtOf('يوم الأحد',e=>isCol(hiOf(e),C_YEL)),()=>blk('يوم الأحد'),'حدّد «يوم الأحد» ← سهم «لون تمييز النص» ▾ ← أصفر','highlight',TSEL('يوم الأحد')),
+  Q('«أزرق» زرقاء',()=>fmtOf('أزرق',e=>isCol(getComputedStyle(e).color,C_BLUE)),()=>blk('أزرق'),'حدّد «أزرق» ← لون الخط ← أزرق','fontcolor',TSEL('أزرق'))]});
+TX5.reqs[1].fixFn=()=>fmtOf('يوم الأحد',e=>isCol(getComputedStyle(e).color,C_YEL))?'هذا لون الخط وليس التمييز — استخدم زر «لون تمييز النص» (القلم الأصفر).':null;
+const TX6=PIC({t:'مرتفع ومنخفض',goalImg:'img/m-tx6.png',skills:['منخفض x₂','مرتفع x²'],
+ intro:'حدّد الرقم 2 فقط واجعله صغيرًا: في H2O منخفض (تحت)، وفي م2 و x2 و y2 مرتفع (فوق).',
+ setup:{html:'<p style="font-size:18pt">صيغة الماء: H2O</p><p style="font-size:18pt">مساحة الغرفة 20 م2</p><p style="font-size:18pt">المعادلة: <span dir="ltr">x2 + y2 = 25</span></p>'},
+ reqs:[Q('H₂O: الرقم منخفض',()=>{const M=charMap(),T=M.map(x=>x[0]).join('');const i=T.indexOf('H2O');return i>=0&&isSub(M[i+1][1])&&!isSub(M[i][1])},()=>blk('H2O'),'حدّد 2 في H2O ← الصفحة الرئيسية ← x₂ منخفض (Ctrl + =)','sub',TSEL('2')),
+  Q('م²: الرقم مرتفع',()=>{const M=charMap(),T=M.map(x=>x[0]).join('');const i=T.indexOf('م2');return i>=0&&isSup(M[i+1][1])},()=>blk('مساحة'),'حدّد 2 بعد م ← x² مرتفع (Ctrl + Shift + =)','sup'),
+  Q('x² و y²: مرتفعان',()=>{const M=charMap(),T=M.map(x=>x[0]).join('');const a=T.indexOf('x2'),b=T.indexOf('y2');return a>=0&&b>=0&&isSup(M[a+1][1])&&isSup(M[b+1][1])&&!isSup(M[a][1])},()=>blk('25'),'حدّد 2 بعد x ← مرتفع، ثم 2 بعد y ← مرتفع','sup')]});
+const TX7=PIC({t:'المحاذاة',goalImg:'img/m-tx7.png',skills:['توسيط','ضبط (محاذاة لليمين واليسار)','محاذاة لليسار'],
+ intro:'العنوان في الوسط، والفقرة مضبوطة من الجهتين، والتوقيع على اليسار. (انقر في السطر ثم اختر المحاذاة — لا تحتاج تحديد)',
+ setup:{html:`<p style="font-size:16pt">دعوة</p><p style="font-size:14pt">${PLONG2}</p><p style="font-size:14pt">إدارة المدرسة</p>`},
+ reqs:[Q('العنوان في الوسط',()=>getComputedStyle(blk('دعوة')).textAlign==='center',()=>blk('دعوة'),'انقر في «دعوة» ← الصفحة الرئيسية ← توسيط (Ctrl + E)','alignC',{caretIn:1}),
+  Q('الفقرة مضبوطة',()=>getComputedStyle(blk('تشتهر')).textAlign==='justify',()=>blk('تشتهر'),'انقر في الفقرة ← ضبط (Ctrl + J)','justify',{caretIn:1}),
+  Q('التوقيع على اليسار',()=>['left','end'].includes(getComputedStyle(blk('إدارة المدرسة')).textAlign),()=>blk('إدارة المدرسة'),'انقر في «إدارة المدرسة» ← محاذاة لليسار (Ctrl + L)','alignL',{caretIn:1})]});
+const TX8=PIC({t:'تباعد الأسطر',goalImg:'img/m-tx8.png',skills:['تباعد الأسطر والفقرات','2.0'],
+ intro:'الأسطر متلاصقة. اجعل تباعد الأسطر 2.0 في الفقرتين.',
+ setup:{html:`<p class="wtitle">البحر الميت</p><p>${PLONG}</p><p>${PLONG}</p>`},
+ reqs:[Q('تباعد 2.0 في الفقرتين',()=>{const ps=paras().filter(p=>p.textContent.includes('البحر الميت أخفض'));return ps.length===2&&ps.every(p=>(+p.style.lineHeight||0)>=1.9*1.08-.05&&(+p.style.lineHeight||0)<=2.2*1.08)},()=>blk('أخفض'),'حدّد الفقرتين ← الصفحة الرئيسية ← تباعد الأسطر ← 2.0','linespacing',{selText:'البحر الميت أخفض',mi:['linespacing','2.0','2.0']})]});
+TX8.reqs[0].fixFn=()=>{const ps=paras().filter(p=>p.textContent.includes('البحر الميت أخفض'));const n=ps.filter(p=>(+p.style.lineHeight||0)>=2).length;return n===1?'غيّرتَ فقرة واحدة فقط — حدّد الفقرتين معًا.':null};
+const TX9=PIC({t:'التعداد النقطي والرقمي',goalImg:'img/m-tx9.png',skills:['تعداد نقطي','تعداد رقمي'],
+ intro:'حوّل الأدوات إلى تعداد نقطي (•)، والخطوات إلى تعداد رقمي (1، 2، 3).',
+ setup:{html:['<b>أدوات الرحلة:</b>','قبعة','ماء','طعام','كاميرا','<b>خطوات التجربة:</b>','املأ الكأس بالماء','ضع الملح','حرّك جيدًا'].map(t=>`<p style="font-size:14pt">${t}</p>`).join('')},
+ reqs:[Q('الأدوات نقطية',()=>{const u=[...firstBody().querySelectorAll('ul')];return u.some(l=>['قبعة','ماء','طعام','كاميرا'].every(t=>[...l.children].some(li=>li.textContent.includes(t))))},()=>blk('قبعة'),'حدّد الأسطر الأربعة ← الصفحة الرئيسية ← تعداد نقطي','bullets',{selText:'قبعة'}),
+  Q('الخطوات مرقّمة',()=>{const o=[...firstBody().querySelectorAll('ol')];return o.some(l=>['املأ','الملح','حرّك'].every(t=>[...l.children].some(li=>li.textContent.includes(t))))},()=>blk('املأ'),'حدّد الخطوات الثلاث ← تعداد رقمي','numbering',{selText:'املأ'}),
+  N(Q('العنوانان خارج القائمة',()=>!(blk('أدوات الرحلة')?.closest('ul,ol'))&&!(blk('خطوات التجربة')?.closest('ul,ol')),()=>blk('أدوات الرحلة'),'لا تحدّد العنوان مع القائمة — انقر فيه واضغط زر التعداد لإلغائه'),1)]});
+const TX10=PIC({t:'الأنماط',goalImg:'img/m-tx10.png',skills:['الأنماط: العنوان','عنوان 1'],
+ intro:'استخدم الأنماط الجاهزة: «تقرير عن الماء» بنمط «العنوان»، و«المقدمة» و«الخاتمة» بنمط «عنوان 1».',
+ setup:{html:`<p>تقرير عن الماء</p><p>المقدمة</p><p>${PLONG2}</p><p>الخاتمة</p><p>${PLONG}</p>`},
+ reqs:[Q('«تقرير عن الماء»: نمط العنوان',()=>!!blk('تقرير عن الماء')?.classList.contains('wtitle'),()=>blk('تقرير عن الماء'),'انقر في السطر ← الصفحة الرئيسية ← الأنماط ← العنوان','styles',{caretIn:1,gal:['[data-cmd="style"][data-arg="title"]','اختر «العنوان»']}),
+  Q('«المقدمة»: عنوان 1',()=>blk('المقدمة')?.tagName==='H1',()=>blk('المقدمة'),'انقر في «المقدمة» ← الأنماط ← عنوان 1','styles',{caretIn:1,gal:['[data-cmd="style"][data-arg="h1"]','اختر «عنوان 1»']}),
+  Q('«الخاتمة»: عنوان 1',()=>blk('الخاتمة')?.tagName==='H1',()=>blk('الخاتمة'),'انقر في «الخاتمة» ← الأنماط ← عنوان 1','styles',{caretIn:1,gal:['[data-cmd="style"][data-arg="h1"]','اختر «عنوان 1»']})]});
+const TX11=PIC({t:'نسخ التنسيق',goalImg:'img/m-tx11.png',skills:['نسخ التنسيق (الفرشاة)','نقرة مزدوجة لتكراره'],
+ intro:'«الشمس» منسّقة (أحمر غامق كبير). انسخ تنسيقها إلى «القمر» و«النجوم» بالفرشاة: انقر في «الشمس» ← نسخ التنسيق ← حدّد «القمر». (نقرتان على الفرشاة تبقيها شغالة)',
+ setup:{html:'<p><span style="color:#c00000;font-size:18pt;font-weight:bold">الشمس</span></p><p>القمر</p><p>النجوم</p>'},
+ reqs:[...['القمر','النجوم'].map(w=>Q(`«${w}» بنفس التنسيق`,()=>fmtOf(w,e=>isB(e)&&isCol(getComputedStyle(e).color,C_RED)&&Math.abs(ptOf(e)-18)<=1),()=>blk(w),`انقر في «الشمس» ← الصفحة الرئيسية ← نسخ التنسيق 🖌 ← حدّد «${w}»`,'painter'))]});
+const TX12=PIC({t:'بحث واستبدال',goalImg:'img/m-tx12.png',skills:['استبدال (Ctrl + H)','استبدال الكل'],
+ intro:'الرحلة صارت إلى نابلس! استبدل كل «أريحا» بـ«نابلس» مرة واحدة — لا تعدّلها كلمة كلمة.',
+ setup:{html:'<p class="wtitle">رحلة إلى أريحا</p><p>سنزور أريحا يوم السبت. نصل أريحا صباحًا، ونتناول الغداء في أريحا، ثم نعود من أريحا مساءً.</p>'},
+ reqs:[Q('لا توجد «أريحا»',()=>!firstBody().textContent.includes('أريحا'),()=>blk('سنزور'),'الصفحة الرئيسية ← استبدال ← البحث عن: أريحا ← استبدال بـ: نابلس ← استبدال الكل','replace'),
+  Q('«نابلس» في مكانها (5 مرات)',()=>firstBody().textContent.split('نابلس').length-1===5,()=>blk('سنزور'),'اكتب «نابلس» صحيحة في خانة «استبدال بـ»','replace')]});
+MORE_PICS_T2=[['الكتابة',[TX1,TX2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة',[TX7,TX8,TX9,TX10]],['التحرير',[TX12]]];
+
 /* ---------- topics ---------- */
 const MORE_PICS={
  t4:[['الصور',[IM1,IM2,IM3,IM4,IM5,IM6]],['الأشكال',[SH1,SH2,SH3,SH4,SH5,SH6]],['WordArt',[WA1,WA2,WA3]]],
@@ -390,8 +474,10 @@ const MORE_PICS={
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
 const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
-Object.assign(MORE_IMG,{BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
+Object.assign(MORE_IMG,{TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
+var MORE_PICS_T2;
 (function(){
+ if(MORE_PICS_T2)MORE_PICS.t2=MORE_PICS_T2;
  if(typeof BA1!=='undefined')MORE_PICS.t1=[['البرنامج والمستند',[BA1,BA2,BA3]],['الواجهة',[BA0,BA4]],['الحفظ',[BA5,BA6,BA7]]];
  const byId=id=>TOPICS.find(t=>t.id===id);
  if(!byId('t9'))TOPICS.push({id:'t9',num:'9',title:'الأعمدة',sub:'عمودان أو ثلاثة كالجريدة، وفاصل العمود',icon:'columns'});
