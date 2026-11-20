@@ -219,8 +219,9 @@ window.bordersDlg=function(tab){if(!needCell())return;const t=S.curCell.closest(
      const sp=q('.shprev');sp.style.backgroundColor=st.fill||'#fff';sp.style.backgroundImage=patCSS(st.pat,st.pcol);qa('.bdApply').forEach(x=>x.value=st.apply)};
    qa('.bdtabs button').forEach(b=>b.onclick=()=>{qa('.bdtabs button').forEach(x=>x.classList.toggle('on',x===b));qa('.bdpane').forEach(x=>x.hidden=x.dataset.p!==b.dataset.t)});
    qa('.bset').forEach(b=>b.onclick=()=>{setting=b.dataset.set;touched.clear();if(PRE[setting])sides={...PRE[setting]};bChanged=true;paint()});
-   qa('.bp').forEach(b=>b.onclick=()=>{sides[b.dataset.s]=sides[b.dataset.s]?0:1;touched.add(b.dataset.s);setting='custom';bChanged=true;paint()});
-   q('.bp-in').onclick=e=>{const r=q('.bp-in').getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const dd2={top:y,bottom:r.height-y,left:x,right:r.width-x,ih:Math.abs(y-r.height/2),iv:Math.abs(x-r.width/2)};let k='top';for(const z in dd2)if(dd2[z]<dd2[k])k=z;sides[k]=sides[k]?0:1;touched.add(k);setting='custom';bChanged=true;paint()};
+   const sig=()=>st.style+st.color+st.w,sideSig={};const flip=k=>{if(sides[k]&&touched.has(k)&&sideSig[k]===sig()){sides[k]=0}else if(sides[k]&&!touched.has(k)&&sideSig[k]===undefined&&sig()===initSig){sides[k]=0}else{sides[k]=1;sideSig[k]=sig()}touched.add(k);setting='custom';bChanged=true;paint()};const initSig=sig();
+   qa('.bp').forEach(b=>b.onclick=()=>flip(b.dataset.s));
+   q('.bp-in').onclick=e=>{const r=q('.bp-in').getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const dd2={top:y,bottom:r.height-y,left:x,right:r.width-x,ih:Math.abs(y-r.height/2),iv:Math.abs(x-r.width/2)};let k='top';for(const z in dd2)if(dd2[z]<dd2[k])k=z;flip(k)};
    qa('.bln').forEach(b=>b.onclick=()=>{st.style=b.dataset.s;bChanged=true;if(!setting)setting='custom';paint()});
    qa('.bdc').forEach(b=>b.onclick=()=>{st.color=b.dataset.c;bChanged=true;if(!setting)setting='custom';paint()});
    q('.bdW').value=st.w;q('.bdW').onchange=e=>{st.w=e.target.value;bChanged=true;if(!setting)setting='custom';paint()};
