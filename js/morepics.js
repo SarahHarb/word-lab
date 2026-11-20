@@ -97,14 +97,22 @@ const IM4=PIC({t:'أنماط الصورة وحدودها',goalImg:'img/m-pic4.pn
   Q('حدّ أخضر',()=>isCol(pic0()?.dataset.border,C_GRN),pic0,'تنسيق الصورة ← حد الصورة ← أخضر','picBorder',{tab:'pformat'})]});
 IM4.reqs[0].fixFn=()=>{const p=pic0()?.dataset.ps;const n=PSTYLES.find(x=>x.id===p);return p&&p!=='none'&&p!=='rounded'?`اخترتَ «${n?.name}» — المطلوب «مستطيل مستدير مظلل».`:null};
 
-const IM5=PIC({t:'ألوان الصورة وتدويرها',goalImg:'img/m-pic5.png',skills:['لون الصورة (إعادة التلوين)','قلب أفقي'],
- intro:'اجعل الصورة رمادية كالصور القديمة، واقلبها أفقيًا فتصير الشمس على اليسار.',
- setup:DOCP(`<p class="wtitle">صورة قديمة</p><p style="text-align:center">${PIC_IN(0,320)}</p><p><br></p>`),
- reqs:[Q('الصورة رمادية',()=>/grayscale\(1\)$/.test(pic0()?.dataset.pcol||'')||pic0()?.dataset.pcol==='grayscale(1)',pic0,'انقر على الصورة ← تنسيق الصورة ← لون ← تدرّج رمادي','picColor',{tab:'pformat',mi:['picColor','grayscale(1)','تدرّج رمادي']}),
-  Q('مقلوبة أفقيًا (الشمس على اليسار)',()=>{const d=pic0()?.dataset;return !!d&&!!d.flipH&&!d.flipV&&(+d.rot||0)%360===0},pic0,'تنسيق الصورة ← تدوير ← قلب أفقي','rotate',{tab:'pformat',mi:['rotate','flipH','قلب أفقي']})]});
-IM5.reqs[0].fixFn=()=>{const c=pic0()?.dataset.pcol;return c&&c!=='none'&&c!=='grayscale(1)'?'هذا لون آخر — اختر «تدرّج رمادي» (الثاني).':null};
-IM5.reqs[1].fixFn=()=>{const d=pic0()?.dataset;if(!d)return null;if(+d.rot)return 'هذا تدوير وليس قلبًا. اختر «إعادة التعيين» ثم «قلب أفقي».';if(d.flipV)return 'هذا قلب رأسي (الصورة مقلوبة رأسًا على عقب). المطلوب «قلب أفقي».';return null};
-
+const IM5=PIC({t:'التدوير والقلب',goalImg:'img/m-pic5.png',skills:['ترتيب ← تدوير','قلب أفقي'],
+ intro:'اقلب الصورة أفقيًّا (مثل المرآة) فتصير الشمس على اليسار. (مجموعة «ترتيب» ← تدوير)',
+ setup:DOCP(`<p class="wtitle">صورة في المرآة</p><p style="text-align:center">${PIC_IN(0,320)}</p><p><br></p>`),
+ reqs:[Q('مقلوبة أفقيًّا (الشمس على اليسار)',()=>{const d=pic0()?.dataset;return !!d&&!!d.flipH&&!d.flipV&&(+d.rot||0)%360===0},pic0,'انقر على الصورة ← تنسيق الصورة ← تدوير ← قلب أفقي','rotate',{tab:'pformat',mi:['rotate','flipH','قلب أفقي']})]});
+IM5.reqs[0].fixFn=()=>{const d=pic0()?.dataset;if(!d)return null;if(+d.rot)return 'هذا تدوير وليس قلبًا. اختر «تدوير» ← «إعادة التعيين» ثم «قلب أفقي».';if(d.flipV)return 'هذا قلب رأسي (رأسًا على عقب). المطلوب «قلب أفقي».';return null};
+const IM7=PIC({t:'تأثيرات الصورة',goalImg:'img/m-pic7.png',skills:['أنماط الصورة ← تأثيرات الصورة','انعكاس'],
+ intro:'أعطِ الصورة تأثير «انعكاس» كأنها فوق الماء.',
+ setup:DOCP(`<p class="wtitle">صورة على الماء</p><p style="text-align:center">${PIC_IN(2,300)}</p><p><br></p><p><br></p>`),
+ reqs:[Q('تأثير «انعكاس»',()=>pic0()?.dataset.fx==='reflection',pic0,'انقر على الصورة ← تنسيق الصورة ← تأثيرات الصورة ← انعكاس','picEffects',{tab:'pformat',mi:['picEffects','reflection','انعكاس']})]});
+IM7.reqs[0].fixFn=()=>{const f=pic0()?.dataset.fx;return f&&f!=='none'&&f!=='reflection'?'هذا تأثير آخر — اختر «انعكاس».':null};
+const zOf=o=>!o?0:o.dataset.wrap==='behind'?-100:(+o.dataset.z||0);
+const IM8=PIC({t:'إحضار للأمام وإرسال للخلف',goalImg:'img/m-pic8.png',skills:['ترتيب ← إحضار للأمام','إرسال للخلف'],
+ intro:'الوردة مختفية خلف صورة الجبال. أحضرها للأمام حتى تظهر فوق الجبال كما في الصورة.',
+ setup:{html:`<p class="wtitle">من في الأمام؟</p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p>`,after:()=>{const b=firstBody();const t=document.createElement('div');t.innerHTML=picHTML(SAMPLE_IMGS[0],340,null,'')+picHTML(SAMPLE_IMGS[3],180,null,'');const [m,f]=[...t.children];[[m,40,60,1],[f,250,110,0]].forEach(([o,x,y,z])=>{o.dataset.wrap='front';o.dataset.z=z;placeFloat(o,b,x,y);applyObj(o)})}},
+ reqs:[Q('الوردة فوق الجبال',()=>{const ps=picsAll();const f=ps.find(o=>imgIdx(o)===3),m=ps.find(o=>imgIdx(o)===0);return !!f&&!!m&&zOf(f)>zOf(m)},()=>picsAll().find(o=>imgIdx(o)===3),'انقر على الوردة ← تنسيق الصورة ← إحضار للأمام (أو انقر على الجبال ← إرسال للخلف)','forward',{tab:'pformat'}),
+  N(Q('الصورتان في مكانهما',()=>picsAll().length===2,()=>pic0(),'لا تحذف أيًّا من الصورتين'),0)]});
 const IM6=PIC({t:'اقتصاص الصورة',goalImg:'img/m-pic6.png',skills:['اقتصاص','المقابض السوداء'],
  intro:'أظهِر الوردة فقط: قصّ الأطراف الفارغة من اليمين واليسار والأعلى. (اقتصاص ← اسحب المقابض السوداء إلى الداخل ← انقر خارج الصورة)',
  setup:DOCP(`<p class="wtitle">الوردة فقط</p><p style="text-align:center">${PIC_IN(3,360)}</p><p><br></p>`),
@@ -578,12 +586,12 @@ MORE_PICS_T2=[['الكتابة',[TX1,MK1,RD1,TX2]],['التحديد',[SL1,SL2]],
 
 /* ---------- topics ---------- */
 const MORE_PICS={
- t4:[['الصور',[IM1,IM2,IM3,IM4,IM5,IM6]],['الأشكال',[SH1,SH2,SH3,SH4,SH5,SH6]],['WordArt',[WA1,WA2,WA3]]],
+ t4:[['الصور: الإدراج والحجم',[IM1,IM2,IM6]],['الصور: أنماط الصورة',[IM4,IM7]],['الصور: الترتيب',[IM3,IM5,IM8]],['الأشكال',[SH1,SH2,SH3,SH4,SH5,SH6]],['WordArt',[WA1,WA2,WA3]]],
  t6:[['الرأس والتذييل',[HF1,HF2,HF6,HF5]],['ترقيم الصفحات',[HF3,HF4]]],
  t8:[['الرموز',[SY1,SY2]],['التاريخ',[DT1,DT2]],['المعادلات',[EQ1,EQ2,EQ3]]],
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
-const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
+const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',IM7:'m-pic7',IM8:'m-pic8',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
 Object.assign(MORE_IMG,{TXT_HW:'m-hw',MK1:'m-mk1',RD1:'m-rd1',SL1:'m-sl1',SL2:'m-sl2',PG1:'m-pg1',PG2:'m-pg2',PG3:'m-pg3',LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 var MORE_PICS_T2;
 (function(){
