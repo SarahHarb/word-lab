@@ -148,7 +148,7 @@ function newDocument(t='blank',name){
   setTimeout(()=>placeCaretIn(firstBody(),true),20);logAct('newdoc');SIM.emit('change');
 }
 let docCounter=1;function nextName(){return 'مستند'+(docCounter++)}
-function docData(){return {html:doc.innerHTML,page:JSON.parse(JSON.stringify(S.page)),hf:JSON.parse(JSON.stringify(S.hf)),comments:JSON.parse(JSON.stringify(S.comments))}}
+function docData(){return {html:doc.innerHTML.replace(/ ?\bg-tgt\b/g,""),page:JSON.parse(JSON.stringify(S.page)),hf:JSON.parse(JSON.stringify(S.hf)),comments:JSON.parse(JSON.stringify(S.comments))}}
 function loadData(d){doc.innerHTML=d.html;S.page=JSON.parse(JSON.stringify(d.page));S.hf=JSON.parse(JSON.stringify(d.hf));S.comments=JSON.parse(JSON.stringify(d.comments||[]));applyPage();renderHF();renderComments();updateStatus()}
 function saveFile(){const f=FS.find(x=>x.name===S.file.name&&x.where===S.file.where);const d=docData();if(f){f.data=d;f.time='الآن'}else FS.unshift({name:S.file.name,where:S.file.where,time:'الآن',data:d});S.dirty=false;updateTitle();logAct('save:'+S.file.name+'@'+S.file.where);simToast('تم الحفظ ✓');SIM.emit('change')}
 function saveAsDialog(where='المستندات'){

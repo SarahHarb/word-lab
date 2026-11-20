@@ -236,3 +236,6 @@ body.demo #lhead{position:relative;z-index:1005}
 
 #bubble{transform-origin:0 0}
 #ovl #bubble,#ovl #rtip{width:max-content}
+.g-tgt{outline:3px solid #f5b301 !important;outline-offset:-1px;box-shadow:0 0 0 5px rgba(245,179,1,.35) !important;animation:gtp 1.1s ease-in-out infinite}
+@keyframes gtp{50%{outline-color:#ffd36b;box-shadow:0 0 0 9px rgba(245,179,1,.18)}}
+@media print{.g-tgt{outline:none !important;box-shadow:none !important}}

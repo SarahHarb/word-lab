@@ -55,7 +55,8 @@ SIM.on('tab',t=>S.tabsSeen[t]=1);
 
 /* ---------- coach overlay ---------- */
 const CO={mode:'idle',unit:null,item:null,idx:0};
-function hideCoach(){$('#ring').style.display='none';$('#bubble').style.display='none'}
+function gMark(el){const o=window.__gEl;if(o&&o!==el)o.classList.remove('g-tgt');window.__gEl=el;if(el)el.classList.add('g-tgt')}
+function hideCoach(){gMark(null);$('#ring').style.display='none';$('#bubble').style.display='none'}
 /* visible area in page px (works with pinch-zoom on phones) */
 function OX(){const h=document.getElementById('ovl');const o=h?h.getBoundingClientRect():{left:-scrollX,top:-scrollY};return{x:-o.left,y:-o.top}}
 function VP(){const O=OX(),v=window.visualViewport;if(v)return{l:v.offsetLeft+O.x,t:v.offsetTop+O.y,w:v.width,h:v.height,s:v.scale||1};return{l:O.x,t:O.y,w:LW(),h:LH(),s:1}}
@@ -67,12 +68,13 @@ function realRect(el){const R=el.getBoundingClientRect();if(typeof doc==="undefi
 function placeCoach(el,html,num){
   const R=realRect(el),ring=$('#ring'),b=$('#bubble'),V=VP(),O=OX();
   const r={left:R.left+O.x,top:R.top+O.y,width:R.width,height:R.height,right:R.right+O.x,bottom:R.bottom+O.y};
-  ring.style.display='block';Object.assign(ring.style,{left:(r.left-4)+'px',top:(r.top-4)+'px',width:(r.width+8)+'px',height:(r.height+8)+'px'});
+  gMark(el);const pz=V.s>1.04;
+  ring.style.display=pz?'none':'block';Object.assign(ring.style,{left:(r.left-4)+'px',top:(r.top-4)+'px',width:(r.width+8)+'px',height:(r.height+8)+'px'});
   const h=(num!=null?`<b>${num}</b>`:'')+html;if(b.dataset.h!==h){b.innerHTML=h;b.dataset.h=h}b.style.display='block';
   const k=1/Math.max(1,V.s);b.style.transform=k<1?`scale(${k})`:'';b.dataset.k=k;
   const bw=b.offsetWidth*k,bh=b.offsetHeight*k;const inV=r.right>V.l&&r.left<V.l+V.w&&r.bottom>V.t&&r.top<V.t+V.h;if(!inV){V.l=O.x;V.t=O.y;V.w=LW();V.h=LH()}const vb=V.t+V.h,vr=V.l+V.w;
   const below=r.bottom+bh+20<vb||r.top-bh-12<V.t;let x=r.left+r.width/2-bw/2;x=Math.max(V.l+6,Math.min(vr-bw-6,x));
-  b.style.left=x+'px';b.style.top=(below?r.bottom+12*k:Math.max(V.t+6,r.top-bh-12*k))+'px';b.className=below?'down':'up';b.style.setProperty('--ax',Math.max(14,Math.min(bw/k-14,(r.left+r.width/2-x)/k))+'px');
+  b.style.left=x+'px';b.style.top=(below?r.bottom+12*k:Math.max(V.t+6,r.top-bh-12*k))+'px';b.className=pz?'free':below?'down':'up';b.style.setProperty('--ax',Math.max(14,Math.min(bw/k-14,(r.left+r.width/2-x)/k))+'px');
 }
 const cur=()=>$('#cursor');
 function moveCursorTo(el,ms=650){if(!el)return wait(0);const r=el.getBoundingClientRect();const c=cur();c.style.display='block';c.style.transitionDuration=ms+'ms';c.style.left=(r.left+r.width/2)+'px';c.style.top=(r.top+r.height/2)+'px';return wait(ms)}
