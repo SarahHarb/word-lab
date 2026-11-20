@@ -388,9 +388,16 @@ function globalKeys(e){
   if(k==='escape'){closeMenus();if(!$('#readmode').hidden){OPS.exitRead();return}if(window.cancelDraw)cancelDraw();if(!$('#backstage').hidden&&S.app==='doc'){closeBackstage();return}if(S.hfMode){exitHF();return}}
   if(e.target.closest&&e.target.closest('input,select,textarea')&&!e.target.closest('#sim .rnum'))return;
   if(c&&!e.altKey){
-    const map={s:'save',z:'undo',y:'redo',e:'alignC',r:'alignR',l:'alignL',j:'justify',f:'find',h:'replace',p:'print',o:'openCmd',n:'newCmd'};
-    if(k==='z'&&!lastCmd)return; // native undo for typing
-    if(map[k]&&S.app!=='desktop'){e.preventDefault();run(map[k]);return}
+    const L=(e.code||'').startsWith('Key')?e.code.slice(3).toLowerCase():k; // يعمل مع لوحة المفاتيح العربية أيضًا
+    const map={s:'save',z:'undo',y:'redo',e:'alignC',r:'alignR',l:'alignL',j:'justify',f:'find',h:'replace',p:'print',o:'openCmd',n:'newCmd',b:'bold',i:'italic',u:'underline'};
+    const inDoc=S.app==='doc'&&e.target.closest&&e.target.closest('#doc');
+    if(L==='v'&&inDoc&&S.clip&&!e.shiftKey){e.preventDefault();S.range=curRange()||S.range;run('paste',e.shiftKey?'text':undefined);return}
+    if(L==='v'&&inDoc&&S.clip&&e.shiftKey){e.preventDefault();S.range=curRange()||S.range;run('paste','text');return}
+    if((L==='x'||L==='c')&&inDoc){const r=curRange();if(r&&!r.collapsed){e.preventDefault();S.range=r.cloneRange();run(L==='x'?'cut':'copy');return}}
+    if(L==='a'&&S.app==='doc'&&!e.target.closest('.stxt,.eq')){e.preventDefault();run('selectAll');return}
+    if(e.code==='Equal'&&inDoc){e.preventDefault();run(e.shiftKey?'sup':'sub');return}
+    if(L==='z'&&!lastCmd)return; // native undo for typing
+    if(map[L]&&S.app!=='desktop'){if(['bold','italic','underline'].includes(map[L])&&!inDoc)return;e.preventDefault();if(['bold','italic','underline'].includes(map[L]))S.range=curRange()||S.range;run(map[L]);return}
     if(k==='enter'){return}
   }
   if(e.altKey&&k==='='&&!c){e.preventDefault();run('insEq');return}
