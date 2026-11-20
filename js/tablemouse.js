@@ -10,6 +10,9 @@
  const C_ROW=cur("<svg xmlns='http://www.w3.org/2000/svg' width='20' height='16'><path d='M1 8l8-6v4h10v4H9v4z' fill='#000' stroke='#fff'/></svg>",1,8,'w-resize');
  const C_CELL=cur("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path d='M2 14L14 2M14 2H7M14 2v7' stroke='#000' stroke-width='2.2' fill='none'/></svg>",14,2,'pointer');
  let zone=null,rs=null;
+ const touchy=()=>Date.now()-(window.__lastTouch||0)<1200;
+ document.addEventListener('touchstart',()=>{window.__lastTouch=Date.now()},{passive:true,capture:true});
+ document.addEventListener('touchend',()=>{window.__lastTouch=Date.now()},{passive:true,capture:true});
  function edgeZone(td,x,y){const r=td.getBoundingClientRect();if(x-r.left<=4)return {kind:'col',side:'left',td,r};if(r.right-x<=4)return {kind:'col',side:'right',td,r};if(r.bottom-y<=4)return {kind:'row',td,r};
    const rtl=isRTLt(td.closest('table'));const din=rtl?r.right-x:x-r.left;if(din>4&&din<=11)return {kind:'cell',td};return null}
  function outerZone(x,y){for(const t of docTables()){const r=t.getBoundingClientRect();const rtl=isRTLt(t);
@@ -17,9 +20,9 @@
    if(y>=r.top&&y<=r.bottom&&(rtl?(x>r.right&&x<=r.right+16):(x<r.left&&x>=r.left-16)))return {kind:'rowsel',t,y}}return null}
  function setCursor(z){const v=!z?'':z.kind==='col'?'col-resize':z.kind==='row'?'row-resize':z.kind==='colsel'?C_DOWN:z.kind==='rowsel'?C_ROW:z.kind==='cell'?C_CELL:'';
    const pg=$('#doc');if(pg)pg.style.cursor=v;docTables().forEach(t=>t.style.cursor=v)}
- document.addEventListener('mousemove',e=>{if(rs){resizeMove(e);return}if(S.tool||e.buttons)return;if(!e.target.closest||!e.target.closest('#doc')){if(zone){zone=null;setCursor(null)}return}
+ document.addEventListener('mousemove',e=>{if(touchy()){if(zone){zone=null;setCursor(null)}return}if(rs){resizeMove(e);return}if(S.tool||e.buttons)return;if(!e.target.closest||!e.target.closest('#doc')){if(zone){zone=null;setCursor(null)}return}
    const td=e.target.closest('#doc table.wt:not(.prev) td');zone=td?edgeZone(td,e.clientX,e.clientY):outerZone(e.clientX,e.clientY);setCursor(zone);showHandle(e)},true);
- document.addEventListener('mousedown',e=>{if(S.tool||!zone||e.button!==0)return;const z=zone;
+ document.addEventListener('mousedown',e=>{if(touchy()){zone=null;return}if(S.tool||!zone||e.button!==0)return;const z=zone;
    if(z.kind==='col'||z.kind==='row'){e.preventDefault();e.stopPropagation();startResize(z,e);return}
    e.preventDefault();e.stopPropagation();
    if(z.kind==='cell'){clearCells();setCur(z.td);setCells([z.td]);logAct('mouse:cell')}
