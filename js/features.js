@@ -58,7 +58,7 @@ Object.assign(OPS,{
   indentDec(){if(!needSel())return;snap();if(listOf()){ex('outdent');return}selBlocks().forEach(b=>b.style.marginRight=Math.max(0,(parseFloat(b.style.marginRight)||0)-48)+'px')},
   sort(){if(!needSel())return;const bs=selBlocks();if(bs.length<2){simToast('حدِّد عدة فقرات أو عناصر قائمة لفرزها');return}snap();const par=bs[0].parentElement;const sorted=[...bs].sort((a,b)=>a.textContent.localeCompare(b.textContent,'ar'));const anchor=document.createComment('');bs[0].before(anchor);sorted.forEach(b=>anchor.before(b));anchor.remove();simToast('تم الفرز تصاعديًا (أ ← ي)');logAct('sort')},
   marks(){S.marks=!S.marks;applyPage();logAct('marks:'+S.marks)},
-  alignR(){if(needSel()){ex('justifyRight');logAct('align:right')}},alignC(){if(needSel()){ex('justifyCenter');logAct('align:center')}},alignL(){if(needSel()){ex('justifyLeft');logAct('align:left')}},justify(){if(needSel()){ex('justifyFull');logAct('align:justify')}},
+  alignR(){setAlign('right','justifyRight')},alignC(){setAlign('center','justifyCenter')},alignL(){setAlign('left','justifyLeft')},justify(){setAlign('justify','justifyFull')},
   rtl(){if(needSel())selBlocks().forEach(b=>{b.dir='rtl';b.style.textAlign=''})},ltr(){if(needSel())selBlocks().forEach(b=>{b.dir='ltr'})},
   linespacing(v){if(!needSel())return;snap();selBlocks().forEach(b=>b.style.lineHeight=(+v*1.08).toFixed(2));logAct('linespacing:'+v)},
   spaceBefore(){if(needSel())selBlocks().forEach(b=>b.style.marginTop='12pt')},spaceAfter(){if(needSel())selBlocks().forEach(b=>b.style.marginBottom='0')},
@@ -199,6 +199,8 @@ document.addEventListener('copy',e=>{const r=curRange();if(r&&!r.collapsed){S.cl
 document.addEventListener('cut',e=>{const r=curRange();if(r&&!r.collapsed){S.clip=clipOf(r);logAct('cut')}});
 document.addEventListener('paste',e=>{if(curRange())logAct('paste:keep')});
 /* =rand() / =lorem() */
+function setAlign(v,cmd){if(!needSel())return;let bs=[];try{bs=selBlocks().filter(b=>b&&b.nodeType===1&&b.closest('#doc')&&!b.matches('.pg-body,table,tr,ul,ol'))}catch(e){}
+  if(!bs.length){ex(cmd)}else{snap();bs.forEach(b=>{b.style.textAlign=v})}logAct('align:'+v);SIM.emit('change')}
 function tryRand(){
   const r=curRange();if(!r||!r.collapsed)return false;let n=r.startContainer;n=n.nodeType===1?n:n.parentElement;const b=n.closest('p');if(!b||!bodyOf(b))return false;
   const t=b.textContent.trim().replace(/[‎‏]/g,'');const m=t.match(/^=(rand|lorem)\((\d*)\s*,?\s*(\d*)\)$/i);if(!m)return false;

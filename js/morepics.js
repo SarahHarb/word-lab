@@ -518,7 +518,63 @@ const PG3=PIC({t:'علامات التنسيق',goalImg:'img/m-pg3.png',skills:['
  setup:{html:`<p style="font-size:16pt">الماء   سرّ  الحياة،  فلا    تسرف   فيه.</p>`},
  reqs:[Q('علامات التنسيق ظاهرة',()=>!!S.marks,()=>$('#ribbon [data-panel="home"] [data-hid="marks"]'),'الصفحة الرئيسية ← ¶ (إظهار/إخفاء)','marks'),
   Q('مسافة واحدة بين الكلمات',()=>{const t=(blk('الماء')?.textContent||'').replace(/ /g,' ');return /الماء سرّ الحياة، فلا تسرف فيه/.test(t)&&!/  /.test(t.trim())},()=>blk('الماء'),'انقر بعد كل · زائدة واضغط Backspace')]});
-MORE_PICS_T2=[['الكتابة',[TX1,TX2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة: التعداد',[LS1,LS2,LS3,LS4,LS5]],['الفقرة: المحاذاة والاتجاه والحدود',[TX7,PG2,PG1,PG3]]];
+
+/* ---- علامات التنسيق ↵ ¶ → ---- */
+const MK1=PIC({t:'Enter و Shift+Enter و Tab',goalImg:'img/m-mk1.png',skills:['¶ فقرة جديدة = Enter','↵ سطر جديد في نفس الفقرة = Shift + Enter','→ جدولة = Tab','· مسافة'],
+ intro:'أظهر علامات التنسيق ¶ لترى ما يحدث: ¶ نهاية فقرة (Enter)، ↵ سطر جديد داخل الفقرة نفسها (Shift + Enter)، → جدولة (Tab)، · مسافة. ثم: ضع Tab قبل «الصف»، وانزل بـ Shift + Enter قبل «شارع القدس»، وافصل «الفقرة الثانية» بـ Enter.',
+ setup:{html:'<p style="font-size:16pt">الاسم: سارة الصف: السابع</p><p style="font-size:16pt">مدرسة الأمل شارع القدس</p><p style="font-size:16pt">الفقرة الأولى الفقرة الثانية</p>'},
+ reqs:[Q('علامات التنسيق ظاهرة',()=>!!S.marks,()=>$('#ribbon [data-panel="home"] [data-hid="marks"]'),'الصفحة الرئيسية ← ¶ إظهار/إخفاء','marks'),
+  Q('→ Tab قبل «الصف»',()=>{const b=blk('الاسم');if(!b)return false;const t=b.querySelector('.tabc');if(!t)return false;const r=document.createRange();r.selectNodeContents(b);r.setEndBefore(t);const before=r.toString();return before.includes('سارة')&&!before.includes('الصف')},()=>blk('الاسم'),'انقر قبل «الصف» مباشرة ← اضغط Tab'),
+  Q('↵ «شارع القدس» في سطر جديد من نفس الفقرة',()=>{const b=blk('مدرسة الأمل');return !!b&&b.textContent.includes('شارع القدس')&&!!b.querySelector('br')},()=>blk('مدرسة الأمل'),'انقر قبل «شارع» ← اضغط Shift + Enter (وليس Enter وحدها)'),
+  Q('¶ «الفقرة الثانية» فقرة مستقلة',()=>{const a=blk('الفقرة الأولى'),b=blk('الفقرة الثانية');return !!a&&!!b&&a!==b},()=>blk('الفقرة الأولى'),'انقر قبل «الفقرة الثانية» ← اضغط Enter')]});
+MK1.reqs[2].fixFn=()=>{const a=blk('مدرسة الأمل'),b=blk('شارع القدس');return a&&b&&a!==b?'هذه فقرة جديدة (Enter) — ترى ¶ بعد «الأمل». تراجع (Ctrl + Z) واستخدم Shift + Enter.':null};
+/* ---- النص التجريبي =rand و =lorem ---- */
+const RD1=PIC({t:'نص تجريبي: ‎=rand و ‎=lorem',goalImg:'img/m-rd1.png',skills:['‎=rand(فقرات، جمل)','‎=lorem(فقرات، جمل)','Enter لتنفيذها'],
+ intro:'حيلة في Word لتجربة التنسيق دون كتابة طويلة: اكتب في سطر فارغ ‎=rand(2,3)‎ ثم Enter → فقرتان في كل منهما 3 جمل. و ‎=lorem(1,2)‎ ثم Enter → فقرة بنص لاتيني تجريبي («لوريم إيبسوم»). اكتبها بلوحة المفاتيح الإنجليزية.',
+ setup:{html:'<p><br></p>',caret:'.pg-body > p'},
+ reqs:[Q('‎=rand(2,3)‎: فقرتان × 3 جمل',()=>logHas('rand:2,3')&&paras().filter(p=>p.textContent.trim()&&p.dir!=='ltr').length>=2,()=>paras()[0],'في السطر الفارغ اكتب ‎=rand(2,3)‎ ثم Enter'),
+  Q('‎=lorem(1,2)‎: فقرة لاتينية',()=>logHas('rand:1,2')&&paras().some(p=>p.dir==='ltr'&&p.textContent.trim()),()=>paras().at(-1),'في السطر الفارغ الأخير اكتب ‎=lorem(1,2)‎ ثم Enter')]});
+RD1.reqs[0].fixFn=()=>paras().some(p=>/^=?\s*(rand|ق)/i.test(p.textContent.trim())&&!/\)$/.test(p.textContent.trim()))?'اكتبها كاملة بالأقواس: ‎=rand(2,3)‎ — بلوحة إنجليزية.':null;
+/* ---- التحديد ---- */
+const SL1=PIC({t:'التحديد: كلمة، سطر، فقرة، الكل',goalImg:'img/m-sl1.png',skills:['كلمة: نقرتان عليها','سطر: نقرة في الهامش الأيمن بجانبه','فقرة: 3 نقرات داخلها (أو نقرتان في الهامش)','الكل: Ctrl + A'],
+ intro:'تدرّب على التحديد — كل تحديد صحيح يُشطب وحده:\n• كلمة: انقر عليها نقرتين.\n• سطر: حرّك الفأرة إلى الهامش الأيمن حتى يصير السهم مائلًا ↖ ثم انقر بجانب السطر.\n• فقرة: انقر داخلها 3 نقرات سريعة (أو نقرتين في الهامش).\n• المستند كله: Ctrl + A.',
+ setup:{html:`<p style="font-size:14pt">${PLONG}</p><p style="font-size:14pt">${PLONG2}</p>`,after:()=>SELSEEN.clear()},selTask:1,
+ reqs:[Q('كلمة «الملوحة»',()=>SELSEEN.has('text:الملوحة'),()=>blk('الملوحة'),'انقر نقرتين على كلمة «الملوحة»'),
+  Q('السطر الأول من الفقرة الأولى',()=>[...SELSEEN].some(k=>k.startsWith('line1:البحر')),()=>blk('البحر الميت'),'حرّك الفأرة إلى الهامش الأيمن بجانب السطر الأول (يصير السهم مائلًا) ثم انقر مرة'),
+  Q('الفقرة الثانية كاملة',()=>[...SELSEEN].some(k=>k.startsWith('para:تشتهر')),()=>blk('تشتهر'),'انقر داخل الفقرة الثانية 3 نقرات سريعة'),
+  Q('المستند كله',()=>SELSEEN.has('all'),()=>firstBody(),'اضغط Ctrl + A','selectAll')]});
+const SL2=PIC({t:'متى أحدّد؟ الخط أم الفقرة',goalImg:'img/m-sl2.png',skills:['أوامر الخط: على المحدَّد فقط','أوامر الفقرة: على الفقرة كلها — يكفي المؤشر داخلها'],
+ intro:'قاعدة مهمة:\n• أوامر «الخط» (غامق، لون، حجم…) تعمل على ما تحدّده فقط ← حدّد الكلمة بالضبط.\n• أوامر «الفقرة» (محاذاة، تعداد، مسافة بادئة، حدود…) تعمل على الفقرة كلها ← يكفي أن تنقر داخل الفقرة دون تحديد.\nلوّن «مهم» فقط بالأحمر، ثم وسّط الفقرة كلها بنقرة داخلها.',
+ setup:{html:'<p style="font-size:16pt">هذا الدرس مهم جدًّا للامتحان.</p><p style="font-size:16pt">اقرأه في البيت.</p>'},
+ reqs:[Q('«مهم» فقط حمراء',()=>fmtOf('مهم',e=>isCol(getComputedStyle(e).color,C_RED))&&!fmtOf('الدرس',e=>isCol(getComputedStyle(e).color,C_RED))&&!fmtOf('جدًّا',e=>isCol(getComputedStyle(e).color,C_RED)),()=>blk('مهم'),'حدّد «مهم» فقط (نقرتان عليها) ← لون الخط ← أحمر','fontcolor',TSEL('مهم')),
+  Q('الفقرة الأولى في الوسط',()=>getComputedStyle(blk('مهم')).textAlign==='center',()=>blk('مهم'),'انقر في أي مكان داخل الفقرة ← توسيط — بلا تحديد','alignC',{caretIn:1}),
+  N(Q('الفقرة الثانية كما هي',()=>getComputedStyle(blk('اقرأه')).textAlign!=='center',()=>blk('اقرأه'),'الثانية لم تكن مطلوبة — انقر فيها واضغط «محاذاة لليمين»'),1)]});
+SL2.reqs[0].fixFn=()=>fmtOf('الدرس',e=>isCol(getComputedStyle(e).color,C_RED))||fmtOf('جدًّا',e=>isCol(getComputedStyle(e).color,C_RED))?'لوّنتَ أكثر من «مهم» — أوامر الخط تعمل على ما حدّدتَه. أرجع الباقي للأسود وحدّد «مهم» فقط.':null;
+
+/* ===== تحدَّ نفسك: واجب كبير صعب في كل مهارات النص ===== */
+const HW_LINES=['نشرة العلوم','مدرسة الأمل – الصف السابع','الماء سرّ الحياة','يتكوّن الماء من ذرتين من الهيدروجين وذرة من الأكسجين، وصيغته H2O. يغلي الماء عند 100 درجة، ويغطّي 71% من سطح الأرض، لذلك نسمّيها الكوكب الأزرق.','معلومة مهمة: نحتاج إلى شرب 8 أكواب من الماء يوميًّا.','فوائد الماء:','ينظّم حرارة الجسم','يساعد على الهضم','ينظّف الجسم من السموم','خطوات تجربة التبخّر:','ضع الماء في كأس','ضع الكأس تحت الشمس','راقب الماء بعد يومين','خطة البحث','الماء في الطبيعة','الأنهار','البحار','الماء في جسم الإنسان','الدم','Water is life.','«الماء أساس كل شيء حي»','إعداد: الطالبة سارة التاريخ: 2026'];
+const lh=b=>b?(+b.style.lineHeight||parseFloat(getComputedStyle(b).lineHeight)/parseFloat(getComputedStyle(b).fontSize)):0;
+const TXT_HW=PIC({t:'الواجب الكبير: نشرة العلوم',goalImg:'img/m-hw.png',level:'صعب جدًّا',skills:['الأنماط','الخط والتنسيق','مرتفع/منخفض','المحاذاة والتباعد','الحدود والتظليل','التعداد بكل أنواعه','الاتجاه والمسافة البادئة','Shift + Enter'],
+ intro:'الكلام كله مكتوب بلا تنسيق. اجعله مثل الصورة تمامًا — كل المهارات التي تعلّمتها في هذا الموضوع. انظر جيدًا إلى كل سطر: النمط، المحاذاة، اللون، القوائم، الحدود…',
+ setup:{html:HW_LINES.map(t=>`<p>${t}</p>`).join('')},
+ reqs:[Q('«نشرة العلوم»: نمط «العنوان» في الوسط',()=>{const b=blk('نشرة العلوم');return !!b&&b.classList.contains('wtitle')&&getComputedStyle(b).textAlign==='center'},()=>blk('نشرة العلوم'),'انقر في السطر ← الأنماط ← العنوان ← ثم توسيط','styles',{caretIn:1,gal:['[data-cmd="style"][data-arg="title"]','اختر «العنوان»']}),
+  Q('سطر المدرسة: في الوسط ومائل',()=>{const b=blk('مدرسة الأمل');return !!b&&getComputedStyle(b).textAlign==='center'&&fmtOf('مدرسة الأمل',isI)},()=>blk('مدرسة الأمل'),'وسّط السطر، وحدّده كله ← مائل'),
+  Q('«الماء سرّ الحياة» و«خطة البحث»: عنوان 1',()=>blk('الماء سرّ الحياة')?.tagName==='H1'&&blk('خطة البحث')?.tagName==='H1',()=>blk('الماء سرّ الحياة'),'انقر في كل منهما ← الأنماط ← عنوان 1','styles',{caretIn:1,gal:['[data-cmd="style"][data-arg="h1"]','اختر «عنوان 1»']}),
+  Q('الفقرة مضبوطة من الجهتين',()=>getComputedStyle(blk('يتكوّن الماء')).textAlign==='justify',()=>blk('يتكوّن الماء'),'انقر في الفقرة ← ضبط (Ctrl + J)','justify',{caretIn:1}),
+  Q('تباعد أسطر الفقرة 1.5',()=>{const v=+blk('يتكوّن الماء')?.style.lineHeight||0;return v>=1.5*1.08-.05&&v<=1.5*1.08+.05},()=>blk('يتكوّن الماء'),'انقر في الفقرة ← تباعد الأسطر ← 1.5','linespacing',{caretIn:1,mi:['linespacing','1.5','1.5']}),
+  Q('H₂O: الرقم منخفض',()=>{const M=charMap(),T=M.map(x=>x[0]).join('');const i=T.indexOf('H2O');return i>=0&&isSub(M[i+1][1])&&!isSub(M[i][1])},()=>blk('يتكوّن الماء'),'حدّد 2 فقط ← منخفض x₂','sub'),
+  Q('«71%» غامقة حمراء',()=>fmtOf('71%',e=>isB(e)&&isCol(getComputedStyle(e).color,C_RED)),()=>blk('يتكوّن الماء'),'حدّد 71% ← غامق ← لون الخط أحمر','bold',TSEL('71%')),
+  Q('المعلومة المهمة: إطار وتظليل أصفر',()=>{const b=blk('معلومة مهمة');return !!b&&['top','bottom','left','right'].every(k=>hasB(b,k))&&isCol(b.style.backgroundColor,FAM(x=>x.h>=35&&x.h<=65&&x.l>=.6))},()=>blk('معلومة مهمة'),'انقر في الفقرة ← حدود ▾ ← حدود خارجية، ثم تظليل ▾ ← أصفر فاتح','pborders',{caretIn:1,mi:['pborders','box','حدود خارجية']}),
+  Q('«معلومة مهمة:» غامقة',()=>fmtOf('معلومة مهمة',isB)&&!fmtOf('نحتاج',isB),()=>blk('معلومة مهمة'),'حدّد «معلومة مهمة:» فقط ← غامق','bold',TSEL('معلومة مهمة')),
+  Q('«فوائد الماء:» و«خطوات تجربة التبخّر:» غامقان وتحتهما خط',()=>['فوائد الماء','خطوات تجربة التبخّر'].every(w=>fmtOf(w,e=>isB(e)&&isU(e))),()=>blk('فوائد الماء'),'حدّد كل سطر ← غامق + تسطير'),
+  Q('الفوائد الثلاث: تعداد بعلامة ✓',()=>['ينظّم','الهضم','السموم'].every(t=>/✓/.test(liOf(t)?.closest('ul')?.style.listStyleType||'')),()=>blk('ينظّم'),'حدّد الفوائد الثلاث ← سهم «تعداد نقطي» ▾ ← ✓','bullets',{selText:'ينظّم حرارة الجسم',mi:['bullets','✓','✓']}),
+  Q('خطوات التجربة: ترقيم أ. ب. ج.',()=>['ضع الماء','تحت الشمس','راقب'].every(t=>/abjad/.test(liOf(t)?.closest('ol')?.style.listStyleType||'')),()=>blk('ضع الماء'),'حدّد الخطوات ← سهم «ترقيم» ▾ ← أ. ب. ج.','numbering',{selText:'ضع الماء في كأس',mi:['numbering','arabic-abjad','أ. ب. ج.']}),
+  Q('خطة البحث: قائمة متعددة المستويات 1. و 1.1.',()=>{const t=topList('الماء في الطبيعة');return !!t&&t.classList.contains('ml')&&[['الماء في الطبيعة',1],['الأنهار',2],['البحار',2],['جسم الإنسان',1],['الدم',2]].every(([w,d])=>topList(w)===t&&depth(w)===d)},()=>blk('الماء في الطبيعة'),'حدّد الأسطر الخمسة ← قائمة متعددة المستويات ← ثم Tab على الأنهار والبحار والدم','multilevel',{selText:'الماء في الطبيعة',mi:['multilevel','1','1. 1.1. 1.1.1.']}),
+  Q('«Water is life.» من اليسار إلى اليمين ومائلة',()=>{const b=blk('Water is life');return !!b&&getComputedStyle(b).direction==='ltr'&&fmtOf('Water is life',isI)},()=>blk('Water is life'),'انقر فيها ← اتجاه النص من اليسار إلى اليمين، ثم حدّدها ← مائل','ltr',{caretIn:1}),
+  Q('الاقتباس مُزاح إلى الداخل ومميّز بالأصفر',()=>{const b=blk('أساس كل شيء');return !!b&&(parseFloat(b.style.marginRight)||0)>=40&&fmtOf('الماء أساس كل شيء حي',e=>isCol(hiOf(e),C_YEL))},()=>blk('أساس كل شيء'),'انقر فيه ← زيادة المسافة البادئة، ثم حدّده ← لون تمييز النص أصفر','indentInc',{caretIn:1}),
+  Q('التوقيع: سطران في فقرة واحدة على اليسار',()=>{const b=blk('إعداد: الطالبة');return !!b&&b.textContent.includes('التاريخ')&&!!b.querySelector('br')&&['left','end'].includes(getComputedStyle(b).textAlign)},()=>blk('إعداد: الطالبة'),'انقر قبل «التاريخ» ← Shift + Enter، ثم محاذاة لليسار','alignL',{caretIn:1})]});
+TXT_HW.reqs[15].fixFn=()=>{const a=blk('إعداد: الطالبة'),b=blk('التاريخ: 2026');return a&&b&&a!==b?'صار «التاريخ» فقرة جديدة (Enter). تراجع (Ctrl + Z) واستخدم Shift + Enter.':null};
+MORE_PICS_T2=[['الكتابة',[TX1,MK1,RD1,TX2]],['التحديد',[SL1,SL2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة: التعداد',[LS1,LS2,LS3,LS4,LS5]],['الفقرة: المحاذاة والاتجاه والحدود',[TX7,PG2,PG1]]];
 
 /* ---------- topics ---------- */
 const MORE_PICS={
@@ -528,10 +584,11 @@ const MORE_PICS={
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
 const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
-Object.assign(MORE_IMG,{PG1:'m-pg1',PG2:'m-pg2',PG3:'m-pg3',LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
+Object.assign(MORE_IMG,{TXT_HW:'m-hw',MK1:'m-mk1',RD1:'m-rd1',SL1:'m-sl1',SL2:'m-sl2',PG1:'m-pg1',PG2:'m-pg2',PG3:'m-pg3',LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 var MORE_PICS_T2;
 (function(){
  if(MORE_PICS_T2)MORE_PICS.t2=MORE_PICS_T2;
+ {const t2=TOPICS.find(t=>t.id==='t2');if(t2&&typeof TXT_HW!=='undefined')t2.tasks=[['S',TXT_HW]]}
  if(typeof BA1!=='undefined')MORE_PICS.t1=[['البرنامج والمستند',[BA1,BA2,BA3]],['الواجهة',[BA0,BA4]],['الحفظ',[BA5,BA6,BA7]]];
  const byId=id=>TOPICS.find(t=>t.id===id);
  if(!byId('t9'))TOPICS.push({id:'t9',num:'9',title:'الأعمدة',sub:'عمودان أو ثلاثة كالجريدة، وفاصل العمود',icon:'columns'});

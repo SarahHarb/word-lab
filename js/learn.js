@@ -139,10 +139,10 @@ function renderHead(){
   const sec=l.goalImg?'صمّم مثل الصورة':l.kind==='learn'?'تعلّم':'تحدَّ نفسك';
   $('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button>
    <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.level?` <em class="tag lv">${l.level}</em>`:l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}${l.proj?projBar(l):''}${l.kind==='do'&&!l.goalImg&&l.reqs.length>6?'<div class="reqs many" id="reqs"></div>':''}</div>
-   <div class="la">${l.kind==='do'?`${l.reqs.length>6||l.goalImg?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
+   <div class="la">${l.kind==='do'?`${l.reqs.length>6||l.goalImg?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button><button class="b" id="solBtn" title="شاهد خطوات الحل">💡 الحل</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
   $('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');
   $('#hr').onclick=()=>startItem();$('#hn').onclick=()=>nextLesson();
-  if(l.kind==='do'){$('#verify').onclick=verify;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
+  if(l.kind==='do'){$('#verify').onclick=verify;$('#solBtn').onclick=showSolution;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
   fitSim();
 }
 function renderReqs(){renderRefList();const b=$('#reqs');if(!b||!CO.item.reqs)return;const h=CO.item.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}return `<span class="rq ${ok?'ok':CO.bad===i?'bad':''}" data-r="${i}">${ok?'✓':CO.bad===i?'✗':i+1} ${r.t}</span>`}).join('');if(b.innerHTML!==h){b.innerHTML=h;b.querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>showReqHint(+x.dataset.r))}}
@@ -245,3 +245,10 @@ function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)retu
   ul.querySelectorAll('[data-h]').forEach(b=>b.onclick=e=>{e.stopPropagation();showReqHint(+b.dataset.h)})}
 
 function fixOf(r){let x=null;try{x=r.fixFn&&r.fixFn()}catch(e){}return x||r.fix}
+
+/* «💡 الحل»: خطوات الحل كاملة بالترتيب، مع «أرني» لكل خطوة */
+function showSolution(){const it=CO.item;if(!it||!it.reqs)return;const done=i=>{try{return !!it.reqs[i].check()}catch(e){return false}};
+  const steps=it.reqs.map((r,i)=>`<li class="sol-i${done(i)?' ok':''}"><div><b>${done(i)?'✓ ':''}${r.t}</b><p>${(r.fix||'').replace(/</g,'&lt;')}</p></div>${r.where||r.cmd||r.path?`<button class="b sol-go" data-i="${i}">👆 أرني</button>`:''}</li>`).join('');
+  dialog({title:'💡 الحل خطوة بخطوة',w:isPhone()?510:620,body:`<div class="sol">${it.goalImg?`<img src="${it.goalImg}" alt="">`:''}${it.intro?`<p class="sol-in">${it.intro.replace(/</g,'&lt;')}</p>`:''}<ol>${steps}</ol><p class="sm">جرّب بنفسك أولًا — ثم استخدم «👆 أرني» لترى مكان كل أمر في Word.</p></div>`,
+   buttons:[{label:'إغلاق',pri:1}],onOpen:d=>d.querySelectorAll('.sol-go').forEach(b=>b.onclick=()=>{closeDialog();const i=+b.dataset.i;setTimeout(()=>{try{showReqHint(i)}catch(e){}},60)})});
+  logAct('solution')}

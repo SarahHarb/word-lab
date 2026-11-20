@@ -246,3 +246,14 @@ body.demo #lhead{position:relative;z-index:1005}
 #objbar{position:absolute;display:none;z-index:1150;pointer-events:none}
 #objbar button{pointer-events:auto;border:0;background:#c62828;color:#fff;font:600 13px Tajawal,system-ui,sans-serif;padding:5px 12px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;white-space:nowrap}
 #objbar button:hover{background:#a31515}
+.rp-intro p{white-space:pre-line}
+#solBtn{background:#fff7e0;border:1px solid #f0c75e;color:#7a5200;font-weight:700}
+#solBtn:hover{background:#ffefc2}
+.sol img{max-width:100%;max-height:200px;display:block;margin:0 auto 10px;border:1px solid #e5e7eb;border-radius:8px}
+.sol .sol-in{white-space:pre-line;color:#374151;background:#f8fafc;border-radius:8px;padding:8px 10px;margin:0 0 10px}
+.sol ol{margin:0;padding-inline-start:22px}
+.sol .sol-i{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eef2f7}
+.sol .sol-i p{margin:3px 0 0;color:#475569;font-size:13px}
+.sol .sol-i.ok b{color:#15803d}
+.sol .sol-go{white-space:nowrap;font-size:12px;padding:4px 10px}
+@media (max-width:700px){#solBtn{padding-inline:8px}}
