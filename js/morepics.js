@@ -323,7 +323,7 @@ const BA3=PIC({t:'مستند جديد من «ملف»',goalImg:'img/m-b3.png',sk
  setup:DOCX(TRIP,{file:'رحلتي',where:'المستندات'}),
  reqs:[Q('مستند جديد فارغ',()=>logHas('newdoc')&&S.file.name!=='رحلتي',()=>$('#wtabs [data-tab="file"]'),'ملف ← جديد ← مستند فارغ',null,{path:[FTAB(),ST('[data-hid="bs-new"]','انقر «جديد»',()=>!!$('#backstage [data-bs="new"].on')||logHas('newdoc')),ST('#bsMain [data-hid="bs-blank"]','انقر «مستند فارغ»',null,1)]}),
   Q('اكتب اسمك فيه',()=>logHas('newdoc')&&S.file.name!=='رحلتي'&&firstBody().textContent.trim().length>=2,()=>firstBody(),'انقر على الصفحة واكتب اسمك')]});
-const BA4=PIC({t:'تعرّف على الواجهة',goalImg:'img/m-b4.png',skills:['التبويبات والشريط','شريط الحالة: التكبير','المسطرة'],
+const BA4=PIC({t:'تجوّل في الواجهة',goalImg:'img/m-b4.png',skills:['التبويبات والشريط','شريط الحالة: التكبير','المسطرة'],
  intro:'تجوّل في الواجهة: افتح التبويبات «إدراج» ثم «تخطيط» ثم «عرض». كبّر العرض إلى 150% من شريط الحالة (أسفل يسار النافذة)، وأخفِ المسطرة من تبويب «عرض». (مرّر الفأرة على أي زر لتعرف عمله)',
  setup:DOCX(TRIP),
  reqs:[Q('فتحتَ تبويب «إدراج»',()=>logHas('tab:insert'),()=>$('#wtabs [data-tab="insert"]'),'انقر على كلمة «إدراج» في الأعلى',null,{path:[ST('#wtabs [data-tab="insert"]','انقر «إدراج»',()=>logHas('tab:insert'))]}),
@@ -352,6 +352,36 @@ const BA7=PIC({t:'حفظ باسم: نسخة جديدة',goalImg:'img/m-b7.png',s
   Q('على «سطح المكتب»',()=>SIM.log.some(a=>/^save:.*نسخة.*@سطح المكتب$/.test(a)),()=>$('#wtabs [data-tab="file"]'),'في نافذة «حفظ باسم» اختر «سطح المكتب» قبل «حفظ»',null,{path:()=>SAVEAS_PATH('سطح المكتب','التقرير - نسخة 2')}),
   Q('الملف القديم «التقرير» ما زال موجودًا',()=>FS.some(f=>f.name==='التقرير'&&f.where==='المستندات'),()=>$('#fname'),'لا تحذف الملف القديم')]});
 
+/* ---- أجزاء الواجهة: انقر على كل جزء لتتعرّف عليه ---- */
+const UI_PARTS=[
+ {k:'title',n:'شريط العنوان',sel:'#wwin .fname',d:'في أعلى النافذة: يعرض اسم الملف (مستند1) واسم البرنامج Word.'},
+ {k:'qat',n:'شريط أدوات الوصول السريع',sel:'#wwin .qat',d:'أزرار نستعملها كثيرًا: حفظ، تراجع، إعادة.'},
+ {k:'win',n:'أزرار النافذة',sel:'#wwin .wbtns',d:'تصغير النافذة، تكبيرها، وإغلاقها.'},
+ {k:'tabs',n:'التبويبات',sel:'#wtabs',d:'ملف، الصفحة الرئيسية، إدراج، تصميم… كل تبويب يعرض أوامر مختلفة.'},
+ {k:'cmd',n:'الأوامر',sel:'#ribbon [data-panel="home"] [data-hid="bold"]',d:'الأزرار التي ننفّذ بها العمل، مثل غامق B أو لون الخط.'},
+ {k:'group',n:'المجموعات',sel:'#ribbon [data-panel="home"] .gl',d:'أسماء صغيرة تحت الأوامر (الحافظة، خط، فقرة…) تجمع الأوامر المتشابهة.'},
+ {k:'ruler',n:'المسطرة',sel:'#hruler',d:'تبيّن هوامش الصفحة وأماكن الكتابة.'},
+ {k:'page',n:'الصفحة (منطقة الكتابة)',sel:'#doc .page',d:'الورقة البيضاء التي نكتب فيها.'},
+ {k:'status',n:'شريط الحالة',sel:'#wwin .wstatus',d:'في أسفل النافذة: رقم الصفحة، عدد الكلمات، اللغة.'},
+ {k:'views',n:'طرق العرض',sel:'#wwin .wstatus .vb',d:'تغيّر شكل عرض المستند: قراءة، طباعة، ويب.'},
+ {k:'zoom',n:'التكبير والتصغير',sel:'#wwin .wstatus .zm',d:'يكبّر الصفحة على الشاشة فقط، ولا يغيّر حجم الخط في الطباعة.'},
+];
+const partOf=t=>{if(!t||!t.closest)return null;
+ if(t.closest('#wwin .wbtns'))return 'win';if(t.closest('#wwin .qat'))return 'qat';if(t.closest('#wwin .wtbar'))return 'title';
+ if(t.closest('#wtabs'))return 'tabs';if(t.closest('#ribbon .gl'))return 'group';if(t.closest('#ribbon'))return t.closest('[data-cmd],[data-hid],button,select,input,label')?'cmd':'group';
+ if(t.closest('#hruler'))return 'ruler';if(t.closest('.wstatus .vb'))return 'views';if(t.closest('.wstatus .zm'))return 'zoom';if(t.closest('.wstatus'))return 'status';
+ if(t.closest('#doc .page'))return 'page';return null};
+window.PARTS_SEEN=new Set();
+const BA0=PIC({t:'أجزاء البرنامج',goalImg:'img/m-b0.png',skills:UI_PARTS.map(x=>x.n),
+ intro:'انظر إلى الصورة: هذه أجزاء نافذة Word. انقر على كل جزء في Word لتتعرّف عليه — يظهر لك اسمه وعمله. (في هذا التمرين النقر يعرّفك بالجزء فقط ولا ينفّذ الأمر)',
+ setup:{...DOCX(TRIP),after:()=>{PARTS_SEEN=new Set()}},parts:1,
+ reqs:UI_PARTS.map(x=>Q(x.n,()=>PARTS_SEEN.has(x.k)||(x.k==='ruler'&&(S.view==='web'||!S.ruler)),()=>$(x.sel),`انقر على ${x.n} — ${x.d}`,null,{path:[ST(x.sel,`هذا ${x.n}: انقر عليه`,()=>PARTS_SEEN.has(x.k))]}))});
+['pointerdown','touchstart'].forEach(ev=>document.addEventListener(ev,e=>{if(!CO.item||!CO.item.parts||CO.mode==='won'&&false)return;const k=partOf(e.target);if(!k)return;
+  const P=UI_PARTS.find(x=>x.k===k);const fresh=!PARTS_SEEN.has(k);PARTS_SEEN.add(k);simToast(`${fresh?'✓ ':''}${P.n}: ${P.d}`);
+  if(PART_BLOCK.includes(k)){e.preventDefault();e.stopPropagation()}},{capture:true,passive:false}));
+const PART_BLOCK=['win','qat','cmd','group','views','title','status'];
+['mousedown','click','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(!CO.item||!CO.item.parts)return;const k=partOf(e.target);if(k&&PART_BLOCK.includes(k)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()}},true));
+
 /* ---------- topics ---------- */
 const MORE_PICS={
  t4:[['الصور',[IM1,IM2,IM3,IM4,IM5,IM6]],['الأشكال',[SH1,SH2,SH3,SH4,SH5,SH6]],['WordArt',[WA1,WA2,WA3]]],
@@ -360,9 +390,9 @@ const MORE_PICS={
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
 const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
-Object.assign(MORE_IMG,{BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
+Object.assign(MORE_IMG,{BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 (function(){
- if(typeof BA1!=='undefined')MORE_PICS.t1=[['البرنامج والمستند',[BA1,BA2,BA3]],['الواجهة',[BA4]],['الحفظ',[BA5,BA6,BA7]]];
+ if(typeof BA1!=='undefined')MORE_PICS.t1=[['البرنامج والمستند',[BA1,BA2,BA3]],['الواجهة',[BA0,BA4]],['الحفظ',[BA5,BA6,BA7]]];
  const byId=id=>TOPICS.find(t=>t.id===id);
  if(!byId('t9'))TOPICS.push({id:'t9',num:'9',title:'الأعمدة',sub:'عمودان أو ثلاثة كالجريدة، وفاصل العمود',icon:'columns'});
  Object.entries(MORE_PICS).forEach(([id,groups])=>{const t=byId(id);if(!t)return;t.learnTitle='🖼️ صمّم مثل الصورة';
