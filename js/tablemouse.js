@@ -50,3 +50,11 @@
    if(td&&td!==t0&&td.closest('table')===t0.closest('table')){e.preventDefault();S.curCell=t0;setCells(rectCells(t0,td));updateCtx()}},{passive:false});
  document.addEventListener('touchend',()=>{t0=null},{passive:true});
 })();
+/* touch on the «جدول» grid: slide a finger to choose rows × columns, lift to insert (like Word) */
+(function(){let last=null,active=false;
+ const spanAt=t=>{const el=document.elementFromPoint(t.clientX,t.clientY);return el&&el.closest&&el.closest('#tgrid span')};
+ const hover=s=>{if(!s)return;last=s;s.dispatchEvent(new MouseEvent('mouseover',{bubbles:true}))};
+ document.addEventListener('touchstart',e=>{const s=e.target.closest&&e.target.closest('#tgrid span');if(!s)return;active=true;e.preventDefault();hover(s)},{passive:false,capture:true});
+ document.addEventListener('touchmove',e=>{if(!active)return;e.preventDefault();hover(spanAt(e.touches[0]))},{passive:false,capture:true});
+ document.addEventListener('touchend',e=>{if(!active)return;active=false;e.preventDefault();if(last){const r=+last.dataset.r,c=+last.dataset.c;last=null;closeMenus();insertTable(r,c)}},{passive:false,capture:true});
+})();
