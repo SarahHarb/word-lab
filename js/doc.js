@@ -72,7 +72,7 @@ function dialog({title,body,buttons=[{label:'موافق',pri:1}],onOpen,w}){
 }
 function closeDialog(){$('#dlgs').classList.remove('show');$('#dlgs').innerHTML=''}
 function showCtx(x,y,items){const m=$('#ctxmenu');m.innerHTML=items.map(i=>i==='-'?'<div class="msep"></div>':mi(i[0],i[1],i[2],i[3])).join('');m.classList.add('show');
-  const sc=window.SIMSCALE||1;placeAt(m,Math.min(x,innerWidth-m.offsetWidth*sc-6),Math.min(y,innerHeight-m.offsetHeight*sc-10))}
+  const sc=window.SIMSCALE||1;placeAt(m,Math.min(x,LW()-m.offsetWidth*sc-6),Math.min(y,LH()-m.offsetHeight*sc-10))}
 function hideCtx(){$('#ctxmenu').classList.remove('show')}
 
 /* ---------------- desktop ---------------- */
@@ -281,8 +281,8 @@ function setTab(t){
 function closeMenus(){$$('.ddw.open').forEach(d=>d.classList.remove('open'));$$('.subm.open').forEach(s=>s.classList.remove('open'));hideCtx();if(window.removeTablePreview)removeTablePreview()}
 function placeAt(el,vx,vy){const s=window.SIMSCALE||1;if(s!==1&&el.closest('#sim')){const r=$('#sim').getBoundingClientRect();el.style.left=((vx-r.left)/s)+'px';el.style.top=((vy-r.top)/s)+'px'}else{el.style.left=vx+'px';el.style.top=vy+'px'}el.style.right='auto'}
 function openMenu(w){closeMenus();w.classList.add('open');const b=w.querySelector('[data-dd]').getBoundingClientRect(),dd=w.querySelector('.dd');const s=window.SIMSCALE||1;
-  dd.style.maxHeight='';const ww=dd.offsetWidth*s,hh=dd.offsetHeight*s;let vx=b.right-ww;vx=Math.max(4,Math.min(innerWidth-ww-4,vx));let vy=b.bottom+1;
-  if(vy+hh>innerHeight-6)dd.style.maxHeight=Math.max(120,(innerHeight-vy-10)/s)+'px';placeAt(dd,vx,vy);
+  dd.style.maxHeight='';const ww=dd.offsetWidth*s,hh=dd.offsetHeight*s;let vx=b.right-ww;vx=Math.max(4,Math.min(LW()-ww-4,vx));let vy=b.bottom+1;
+  if(vy+hh>LH()-6)dd.style.maxHeight=Math.max(120,(LH()-vy-10)/s)+'px';placeAt(dd,vx,vy);
   logAct('menu:'+w.querySelector('[data-dd]').dataset.cmd);SIM.emit('menu')}
 function wireRibbon(){
   const tabs=$('#wtabs'), rib=$('#ribbon');
@@ -309,7 +309,7 @@ function wireRibbon(){
   rib.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'&&e.key==='Enter'){e.preventDefault();e.target.blur()}});
 }
 function hasDefault(c){return ['paste','underline','highlight','fontcolor','bullets','numbering','pshading','pborders','find','equation','delComment'].includes(c)}
-function openSub(btn,m){$$('.subm.open').forEach(x=>{if(x!==m)x.classList.remove('open')});m.classList.add('open');const r=btn.getBoundingClientRect();const s=window.SIMSCALE||1;const ww=m.offsetWidth*s,hh=m.offsetHeight*s;let vx=r.left-ww-2;if(vx<4)vx=r.right+2;let vy=r.top;if(vy+hh>innerHeight-6)vy=Math.max(4,innerHeight-hh-6);placeAt(m,vx,vy)}
+function openSub(btn,m){$$('.subm.open').forEach(x=>{if(x!==m)x.classList.remove('open')});m.classList.add('open');const r=btn.getBoundingClientRect();const s=window.SIMSCALE||1;const ww=m.offsetWidth*s,hh=m.offsetHeight*s;let vx=r.left-ww-2;if(vx<4)vx=r.right+2;let vy=r.top;if(vy+hh>LH()-6)vy=Math.max(4,LH()-hh-6);placeAt(m,vx,vy)}
 const OPS={};
 function run(cmd,arg,el){
   logAct('cmd:'+cmd+(arg!=null?':'+arg:''));
