@@ -235,3 +235,4 @@ body.demo #lhead{position:relative;z-index:1005}
 #bubble{pointer-events:none}#bubble .gstop,#bubble button{pointer-events:auto}
 
 #bubble{transform-origin:0 0}
+#ovl #bubble,#ovl #rtip{width:max-content}
