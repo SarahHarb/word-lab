@@ -99,6 +99,7 @@ Object.assign(OPS,{
     applyObj(o);logAct('alignObj:'+a)},
   groupObj(){simToast('تجميع: حدّد عدة كائنات أولًا')},
   rotate(a){const o=objOnly();if(!o)return;snap();const d=o.dataset;if(a==='reset'){d.rot=0;delete d.flipH;delete d.flipV}else if(a==='flipH')d.flipH=d.flipH?'':'1';else if(a==='flipV')d.flipV=d.flipV?'':'1';else d.rot=((+d.rot||0)+(+a))%360;applyObj(o);logAct('rotate:'+a)},
+  delObj(){delSelObj()},
   objH(v){const o=objOnly();if(!o)return;snap();const d=o.dataset;const nh=+v*CM;if(o.classList.contains('pic')){scaleObj(o,nh/+d.h)}else{d.h=nh;applyObj(o)}logAct('objH')},
   objW(v){const o=objOnly();if(!o)return;snap();const d=o.dataset;const nw=+v*CM;if(o.classList.contains('pic')){scaleObj(o,nw/+d.w)}else{d.w=nw;d.fixedW=1;applyObj(o)}logAct('objW')},
 });
@@ -161,7 +162,7 @@ document.addEventListener('mouseup',e=>{
 });
 function cancelDraw(){if(S.drawKind){S.drawKind=null;doc.classList.remove('drawing')}}
 function objContext(o,x,y){selectObj(o);const isP=o.classList.contains('pic');
-  showCtx(x,y,[['cut',null,'قص','cut'],['copy',null,'نسخ','copy'],'-',...(isP?[['changePic',null,'تغيير الصورة','changepic']]:[['addShapeText',null,'إضافة نص','addtext']]),['wrap','square','التفاف النص: مربع','wrap'],['wrap','inline','التفاف النص: مع النص','wrap'],['wrap','front','التفاف النص: أمام النص','wrap'],'-',['forward',null,'إحضار للأمام','forward'],['backward',null,'إرسال للخلف','backward'],['newComment',null,'تعليق جديد','newcomment']])}
+  showCtx(x,y,[['cut',null,'قص','cut'],['copy',null,'نسخ','copy'],['delObj',null,'حذف','delete'],'-',...(isP?[['changePic',null,'تغيير الصورة','changepic']]:[['addShapeText',null,'إضافة نص','addtext']]),['wrap','square','التفاف النص: مربع','wrap'],['wrap','inline','التفاف النص: مع النص','wrap'],['wrap','front','التفاف النص: أمام النص','wrap'],'-',['forward',null,'إحضار للأمام','forward'],['backward',null,'إرسال للخلف','backward'],['newComment',null,'تعليق جديد','newcomment']])}
 document.addEventListener('dblclick',e=>{const o=e.target.closest&&e.target.closest('#doc .obj.shp');if(o&&!o.classList.contains('textbox')&&!o.classList.contains('wordart')){const t=o.querySelector('.stxt');if(!t.isContentEditable&&t.textContent.trim()){t.contentEditable='true';placeCaretIn(t,false)}}});
 /* ---------- equations ---------- */
 const Z='​';
@@ -189,3 +190,14 @@ Object.assign(OPS,{
 
 /* Tab moves between equation slots */
 document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const eq=curEq();if(!eq)return;e.preventDefault();e.stopImmediatePropagation();const slots=[...eq.querySelectorAll('.slot')];const r=S.range;let n=r.startContainer;n=n.nodeType===1?n:n.parentElement;const cur=n.closest('.slot');let i=slots.indexOf(cur);const nx=slots[i+1];const rr=document.createRange();if(nx){rr.selectNodeContents(nx);rr.collapse(false)}else{let t=eq.lastChild;if(!t||t.nodeType!==3){t=document.createTextNode(Z);eq.appendChild(t)}rr.setStart(t,t.length);rr.collapse(true)}const s=getSelection();s.removeAllRanges();s.addRange(rr);S.range=rr.cloneRange()},true);
+/* زر «حذف» يظهر فوق الصورة/الشكل المحدّد (مفيد خاصة على الجوال حيث لا يوجد زر Delete) */
+function delSelObj(){if(!S.obj)return;snap();const o=S.obj,p=o.parentElement;o.remove();if(p&&p.tagName==='P'&&!p.textContent.trim()&&!p.querySelector('.obj,img'))p.innerHTML='<br>';clearObjSel();updateCtx();logAct('objDelete');SIM.emit('change');placeObjBar()}
+function placeObjBar(){let b=document.getElementById('objbar');const o=S.obj;
+  if(!o||!doc.contains(o)||S.drawKind||o.classList.contains('cropping')){if(b)b.style.display='none';return}
+  if(!b){b=document.createElement('div');b.id='objbar';b.innerHTML='<button type="button" data-hid="obj-delete">🗑 حذف</button>';(document.getElementById('ovl')||document.body).appendChild(b);
+    const btn=b.querySelector('button');const go=e=>{e.preventDefault();e.stopPropagation();delSelObj()};btn.addEventListener('mousedown',go);btn.addEventListener('touchstart',go,{passive:false})}
+  const R=typeof realRect==='function'?realRect(o):o.getBoundingClientRect();if(!R.width&&!R.height){b.style.display='none';return}
+  const O=typeof OX==='function'?OX():{x:scrollX,y:scrollY};b.style.display='block';
+  const bw=b.offsetWidth||70,bh=b.offsetHeight||30;let y=R.top-bh-8;if(y<4)y=R.bottom+8;let x=R.left+R.width/2-bw/2;x=Math.max(4,Math.min(LW()-bw-4,x));
+  b.style.left=(x+O.x)+'px';b.style.top=(y+O.y)+'px'}
+setInterval(placeObjBar,250);

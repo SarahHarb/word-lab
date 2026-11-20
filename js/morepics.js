@@ -73,8 +73,8 @@ const IM1=PIC({t:'إدراج صورة',goalImg:'img/m-pic1.png',skills:['إدر�
  setup:DOCP(`<p class="wtitle">رحلتي إلى البحر</p><p><br></p><p>${PLONG}</p>`,'.pg-body > p:nth-of-type(2)'),
  reqs:[Q('صورة البحر (الغروب)',()=>picsAll().some(o=>imgIdx(o)===2),()=>pic0()||firstBody().children[1],'إدراج ← صور ← اختر صورة الغروب على البحر','pictures',{mi:['insPic','2','صورة البحر']}),
   Q('الصورة تحت العنوان وفوق الفقرة',()=>{const o=picsAll().find(x=>imgIdx(x)===2);if(!o)return false;const ps=paras();const t=ps.findIndex(p=>p.classList.contains('wtitle')),k=ps.findIndex(p=>p.contains(o)),f=ps.findIndex(p=>fuzzyHas(p.textContent,'البحر الميت'));return t>=0&&k>t&&k<f},()=>pic0()||firstBody().children[1],'انقر في السطر الفارغ تحت العنوان أولًا، ثم أدرج الصورة'),
-  Q('صورة واحدة فقط',()=>picsAll().length===1,()=>picsAll()[1]||pic0(),'احذف الصورة الزائدة: انقر عليها ثم Delete')]});
-IM1.reqs[0].fixFn=()=>{const o=pic0();return o&&imgIdx(o)!==2?'هذه صورة أخرى. احذفها (انقر عليها ثم Delete) وأدرج صورة البحر.':null};
+  Q('صورة واحدة فقط',()=>picsAll().length===1,()=>picsAll()[1]||pic0(),'احذف الصورة الزائدة: انقر عليها ثم «🗑 حذف» (أو زر Delete)')]});
+IM1.reqs[0].fixFn=()=>{const o=pic0();return o&&imgIdx(o)!==2?'هذه صورة أخرى. احذفها (انقر عليها ثم «🗑 حذف») وأدرج صورة البحر.':null};
 
 const IM2=PIC({t:'حجم الصورة ومكانها',goalImg:'img/m-pic2.png',skills:['تحديد الصورة','العرض بالسنتيمتر','توسيط الصورة'],
  intro:'صغّر الصورة حتى يصير عرضها 6 سم تقريبًا، ثم ضعها في وسط السطر. (بالماوس: اسحب المقبض الدائري في الزاوية)',

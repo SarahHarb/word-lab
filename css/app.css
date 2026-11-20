@@ -239,3 +239,6 @@ body.demo #lhead{position:relative;z-index:1005}
 .g-tgt{outline:3px solid #f5b301 !important;outline-offset:-1px;box-shadow:0 0 0 5px rgba(245,179,1,.35) !important;animation:gtp 1.1s ease-in-out infinite}
 @keyframes gtp{50%{outline-color:#ffd36b;box-shadow:0 0 0 9px rgba(245,179,1,.18)}}
 @media print{.g-tgt{outline:none !important;box-shadow:none !important}}
+#objbar{position:absolute;display:none;z-index:1150;pointer-events:none}
+#objbar button{pointer-events:auto;border:0;background:#c62828;color:#fff;font:600 13px Tajawal,system-ui,sans-serif;padding:5px 12px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;white-space:nowrap}
+#objbar button:hover{background:#a31515}
