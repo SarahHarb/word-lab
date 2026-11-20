@@ -231,3 +231,5 @@ body.demo #lhead{position:relative;z-index:1005}
 #bubble.free::after,#bubble.free::before{display:none}
 @media (max-width:700px){#bubble{max-width:72vw;font-size:13px;padding:9px 12px}#bubble .bt{font-size:13px}}
 @media (max-width:900px){.simwrap:has(.ddw.open) .refpanel,.simwrap:has(#dlgs.show) .refpanel{visibility:hidden}}
+
+#bubble{pointer-events:none}#bubble .gstop,#bubble button{pointer-events:auto}
