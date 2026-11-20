@@ -161,6 +161,38 @@ const SH6=PIC({t:'شكل خلف النص',goalImg:'img/m-shp6.png',skills:['ال
  reqs:[Q('الشكل خلف النص',()=>shapes('cloud')[0]?.dataset.wrap==='behind',()=>shapes('cloud')[0],'انقر على حدّ الشكل ← تنسيق الشكل ← التفاف النص ← خلف النص (أو «إرسال للخلف»)','wrap',{tab:'sformat',mi:['wrap','behind','خلف النص']}),
   Q('لونه فاتح',()=>{const f=shapes('cloud')[0]?.dataset.fill;const x=f&&f!=='none'&&hsl(rgb(hex6(f)));return f==='none'||(!!x&&x.l>=.7)},()=>shapes('cloud')[0],'تنسيق الشكل ← تعبئة الشكل ← لون فاتح (من الصف العلوي)','shapeFill',{tab:'sformat'})]});
 
+/* ======================= التفاف النص والموضع (الأشكال) ======================= */
+const sid=k=>doc.querySelector(`.pg-body .obj.shp[data-sid="${k}"]`);
+const putShp=(sel,k,w,h,o,id,mode)=>{const p=firstBody().querySelector(sel);if(!p)return;const t=document.createElement('div');t.innerHTML=SHP_IN(k,w,h,o);const x=t.firstChild;x.dataset.sid=id;if(o.side)x.dataset.side=o.side;
+  if(mode==='float'){placeFloat(x,firstBody(),o.x||0,o.y||0)}else{if(mode==='only')p.innerHTML='';p.prepend(x)}applyObj(x)};
+const SQ=['square','tight','through'];
+const SW1=PIC({t:'مربع أم ضيق؟',goalImg:'img/m-sw1.png',skills:['التفاف النص: مربع','التفاف النص: ضيق','خلال'],
+ intro:'الشكلان الآن «مع النص» — كل واحد مثل حرف كبير داخل السطر.\n• «مربع»: الكلام يقف عند مربع وهمي حول الشكل (حافة مستقيمة).\n• «ضيق»: الكلام يلتصق بحدود الشكل نفسه ويدخل في زواياه.\n• «خلال»: مثل «ضيق»، ويدخل الكلام أيضًا في الفراغات المفتوحة داخل الشكل.\nاجعل الدائرة «مربع» والنجمة «ضيق» كما في الصورة، ولاحظ الفرق.',
+ setup:{html:`<p class="wtitle">الشمس والنجوم</p><p id="pa">${PLONG} ${PLONG2}</p><p id="pb" style="text-align:left">${PLONG2} ${PLONG}</p><p>${PLONG2}</p>`,
+  after:()=>{putShp('#pa','oval',150,150,{wrap:'inline',fill:'#ffc000',line:'#bf9000'},'sun');putShp('#pb','star',170,170,{wrap:'inline',fill:'#ffd966',line:'#bf9000'},'star')}},
+ reqs:[Q('الدائرة: مربع',()=>sid('sun')?.dataset.wrap==='square',()=>sid('sun'),'انقر على الدائرة ← تنسيق الشكل ← التفاف النص ← مربع','wrap',{tab:'sformat',mi:['wrap','square','مربع']}),
+  Q('النجمة: ضيق',()=>['tight','through'].includes(sid('star')?.dataset.wrap),()=>sid('star'),'انقر على النجمة ← تنسيق الشكل ← التفاف النص ← ضيق','wrap',{tab:'sformat',mi:['wrap','tight','ضيق']})]});
+SW1.reqs[0].fixFn=()=>{const w=sid('sun')?.dataset.wrap;return ['tight','through'].includes(w)?'هذا «ضيق»: الكلام يلتصق بالدائرة. المطلوب حافة مستقيمة: «مربع».':w&&!SQ.includes(w)&&w!=='inline'?'المطلوب أن يكون الكلام بجانب الدائرة: «مربع».':null};
+SW1.reqs[1].fixFn=()=>sid('star')?.dataset.wrap==='square'?'هذا «مربع»: انظر كيف يقف الكلام بعيدًا عن رؤوس النجمة. المطلوب أن يدخل بين رؤوسها: «ضيق».':null;
+const SW2=PIC({t:'أعلى وأسفل، أمام النص، مع النص',goalImg:'img/m-sw2.png',skills:['أعلى وأسفل','أمام النص','مع النص'],
+ intro:'• «أعلى وأسفل»: الشكل وحده في سطوره، لا كلام بجانبه.\n• «أمام النص»: الشكل يطفو فوق الكلام ويغطيه، ويمكن وضعه في أي مكان.\n• «مع النص»: الشكل يصبح جزءًا من السطر مثل حرف، ويتحرك مع الكتابة.\nطبّق على كل شكل الالتفاف المطلوب كما في الصورة.',
+ setup:{html:`<p class="wtitle">لوحة الصف</p><p id="pa">${PLONG} ${PLONG2}</p><p id="pb" style="text-align:left">${PLONG2} ${PLONG}</p><p id="pc">${PLONG2}</p>`,
+  after:()=>{putShp('#pa','ribbon',260,90,{wrap:'square',side:'right',fill:'#70ad47',line:'#507e32'},'rib');putShp('#pb','smiley',120,120,{wrap:'square',side:'left',fill:'#ffc000',line:'#bf9000'},'sm');
+   const pc=firstBody().querySelector('#pc');putShp('#pc','heart',70,64,{wrap:'front',fill:'#e83e8c',line:'#a52a64',x:20,y:Math.round(pc.offsetTop-10)},'ht','float')}},
+ reqs:[Q('الشريط: أعلى وأسفل',()=>sid('rib')?.dataset.wrap==='topbottom',()=>sid('rib'),'انقر على الشريط الأخضر ← تنسيق الشكل ← التفاف النص ← أعلى وأسفل','wrap',{tab:'sformat',mi:['wrap','topbottom','أعلى وأسفل']}),
+  Q('الوجه الضاحك: أمام النص',()=>sid('sm')?.dataset.wrap==='front',()=>sid('sm'),'انقر على الوجه الضاحك ← التفاف النص ← أمام النص','wrap',{tab:'sformat',mi:['wrap','front','أمام النص']}),
+  Q('القلب: مع النص',()=>sid('ht')?.dataset.wrap==='inline',()=>sid('ht'),'انقر على القلب ← التفاف النص ← مع النص','wrap',{tab:'sformat',mi:['wrap','inline','مع النص']})]});
+SW2.reqs[0].fixFn=()=>SQ.includes(sid('rib')?.dataset.wrap)?'ما زال الكلام بجانب الشريط. المطلوب لا كلام بجانبه: «أعلى وأسفل».':null;
+SW2.reqs[1].fixFn=()=>sid('sm')?.dataset.wrap==='behind'?'هذا «خلف النص»: الكلام فوق الوجه. المطلوب أن يغطي الوجهُ الكلام: «أمام النص».':null;
+const SW3=PIC({t:'الموضع',goalImg:'img/m-sw3.png',skills:['الموضع','التفاف النص: مربع'],
+ intro:'زر «الموضع» يضع الشكل بضغطة واحدة في مكان جاهز من الصفحة (9 أماكن: أعلى/منتصف/أسفل × يمين/وسط/يسار) ويجعل الالتفاف «مربع» تلقائيًا.\nضع الشمس في الأعلى إلى اليسار، والقمر في الأسفل إلى اليمين.',
+ setup:{html:`<p class="wtitle">الليل والنهار</p><p id="pa">${PLONG} ${PLONG2}</p><p>${PLONG2} ${PLONG}</p><p id="pc">${PLONG} ${PLONG2}</p>`,
+  after:()=>{putShp('#pa','oval',120,120,{wrap:'inline',fill:'#ffc000',line:'#bf9000'},'sun');putShp('#pc','moon',90,120,{wrap:'inline',fill:'#8faadc',line:'#2f528f'},'moon')}},
+ reqs:[Q('الشمس: في الأعلى إلى اليسار',()=>{const o=sid('sun');return !!o&&o.dataset.pos==='tl'&&SQ.includes(o.dataset.wrap)},()=>sid('sun'),'انقر على الشمس ← تنسيق الشكل ← الموضع ← المربع العلوي الأيسر','position',{tab:'sformat',mi:['position','tl','في الأعلى إلى اليسار']}),
+  Q('القمر: في الأسفل إلى اليمين',()=>{const o=sid('moon');return !!o&&o.dataset.pos==='br'&&SQ.includes(o.dataset.wrap)},()=>sid('moon'),'انقر على القمر ← تنسيق الشكل ← الموضع ← المربع السفلي الأيمن','position',{tab:'sformat',mi:['position','br','في الأسفل إلى اليمين']})]});
+const posFix=(k,want)=>()=>{const p=sid(k)?.dataset.pos;if(!p||p===want)return null;return 'اخترت «'+POSN(p).replace(' مع التفاف نص مربع','')+'». المطلوب «'+POSN(want).replace(' مع التفاف نص مربع','')+'» — مرّر الماوس على المربعات لترى اسم كل موضع.'};
+SW3.reqs[0].fixFn=posFix('sun','tl');SW3.reqs[1].fixFn=posFix('moon','br');
+
 /* ======================= WordArt ======================= */
 const WA1=PIC({t:'إدراج WordArt',goalImg:'img/m-wa1.png',skills:['إدراج ← WordArt','الكتابة داخل WordArt'],
  intro:'في السطر الأول الفارغ أضف WordArt أزرق، واكتب فيه «يوم العلوم».',
@@ -623,14 +655,14 @@ IM9.reqs[3].fixFn=()=>picBy('mount')?.dataset.wrap==='behind'?'هذا «خلف �
 
 /* ---------- topics ---------- */
 const MORE_PICS={
- t4:[['الرسم',[SH1,SH2,SH3]],['الأسهم ومربع النص والترتيب',[SH4,SH5,SH6]]],
+ t4:[['الرسم',[SH1,SH2,SH3]],['الأسهم ومربع النص',[SH4,SH5]],['التفاف النص والموضع',[SW1,SW2,SW3,SH6]]],
  t10:[['الإدراج والحجم',[IM1,IM2,IM6]],['أنماط الصورة',[IM4,IM7]],['الترتيب',[IM3,IM9,IM5,IM8]]],
  t11:[['WordArt',[WA1,WA2,WA3]]],
  t6:[['الرأس والتذييل',[HF1,HF2,HF6,HF5]],['ترقيم الصفحات',[HF3,HF4]]],
  t8:[['الرموز',[SY1,SY2]],['التاريخ',[DT1,DT2]],['المعادلات',[EQ1,EQ2,EQ3]]],
  t9:[['الأعمدة',[CO1,CO2,CO3]]],
 };
-const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',IM7:'m-pic7',IM8:'m-pic8',IM9:'m-pic9',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
+const MORE_IMG={IM1:'m-pic1',IM2:'m-pic2',IM3:'m-pic3',IM4:'m-pic4',IM5:'m-pic5',IM6:'m-pic6',IM7:'m-pic7',IM8:'m-pic8',IM9:'m-pic9',SH1:'m-shp1',SH2:'m-shp2',SH3:'m-shp3',SH4:'m-shp4',SH5:'m-shp5',SH6:'m-shp6',SW1:'m-sw1',SW2:'m-sw2',SW3:'m-sw3',WA1:'m-wa1',WA2:'m-wa2',WA3:'m-wa3',HF1:'m-hf1',HF2:'m-hf2',HF3:'m-hf3',HF4:'m-hf4',HF5:'m-hf5',HF6:'m-hf6',SY1:'m-sym1',SY2:'m-sym2',DT1:'m-date1',DT2:'m-date2',EQ1:'m-eq1',EQ2:'m-eq2',EQ3:'m-eq3',CO1:'m-col1',CO2:'m-col2',CO3:'m-col3'};
 Object.assign(MORE_IMG,{TXT_HW:'m-hw',MK1:'m-mk1',RD1:'m-rd1',SL1:'m-sl1',SL2:'m-sl2',PG1:'m-pg1',PG2:'m-pg2',PG3:'m-pg3',LS1:'m-ls1',LS2:'m-ls2',LS3:'m-ls3',LS4:'m-ls4',LS5:'m-ls5',TX1:'m-tx1',TX2:'m-tx2',TX3:'m-tx3',TX4:'m-tx4',TX5:'m-tx5',TX6:'m-tx6',TX7:'m-tx7',TX8:'m-tx8',TX9:'m-tx9',TX10:'m-tx10',TX11:'m-tx11',TX12:'m-tx12',BA0:'m-b0',BA1:'m-b1',BA2:'m-b2',BA3:'m-b3',BA4:'m-b4',BA5:'m-b5',BA6:'m-b6',BA7:'m-b7'});
 var MORE_PICS_T2;
 (function(){

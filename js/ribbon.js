@@ -188,7 +188,7 @@ const PANELS={
  psize:()=>PSIZES.map(s=>`<button class="mi mg" data-cmd="psize" data-arg="${s.id}">${icon('size',26)}<span><b>${s.name}</b><small>${s.w} سم × ${s.h} سم</small></span></button>`).join(''),
  columns:()=>`${mi('columns','1','واحد','onepage')}${mi('columns','2','اثنان','columns')}${mi('columns','3','ثلاثة','columns')}${mi('columns','right','اليمين','columns')}${mi('columns','left','اليسار','columns')}${sep}${mi('colMore',null,'المزيد من الأعمدة...','columns')}`,
  breaks:()=>`${cap('فواصل الصفحات')}${mi('pageBreak',null,'صفحة — بداية صفحة جديدة','pagebreak')}${mi('colBreak',null,'عمود — النص بعده يبدأ في العمود التالي','columns')}${mi('textWrapBreak',null,'التفاف النص','wrap')}${cap('فواصل المقاطع')}${mi('sectionBreak','next','الصفحة التالية','breaks')}${mi('sectionBreak','cont','مستمر','breaks')}`,
- position:()=>`${mi('wrap','inline','مع النص','wrap')}${cap('مع التفاف النص')}<div class="posgal">${['tr','tc','tl','mr','mc','ml','br','bc','bl'].map(p=>`<button data-cmd="position" data-arg="${p}"><i class="pp ${p}"></i></button>`).join('')}</div>`,
+ position:()=>`${mi('wrap','inline','مع النص','wrap')}${cap('مع التفاف النص')}<div class="posgal">${['tr','tc','tl','mr','mc','ml','br','bc','bl'].map(p=>`<button data-cmd="position" data-arg="${p}" title="${POSN(p)}"><i class="pp ${p}"></i></button>`).join('')}</div>`,
  wrap:()=>[['inline','مع النص'],['square','مربع'],['tight','ضيق'],['through','خلال'],['topbottom','أعلى وأسفل'],['behind','خلف النص'],['front','أمام النص']].map(a=>`<button class="mi" data-cmd="wrap" data-arg="${a[0]}">${wrapIcon(a[0])}<span>${a[1]}</span></button>`).join('')+sep+mi('wrapMore',null,'خيارات تخطيط إضافية...','wrap'),
  alignObj:()=>[['right','محاذاة إلى اليمين'],['center','توسيط'],['left','محاذاة إلى اليسار'],['top','محاذاة إلى الأعلى'],['middle','محاذاة إلى الوسط'],['bottom','محاذاة إلى الأسفل']].map(a=>mi('alignObj',a[0],a[1],'align')).join(''),
  rotate:()=>`${mi('rotate','90','تدوير لليمين 90°','rotate')}${mi('rotate','-90','تدوير لليسار 90°','rotate')}${mi('rotate','flipV','قلب رأسي','rotate')}${mi('rotate','flipH','قلب أفقي','rotate')}${mi('rotate','reset','إعادة التعيين','resetpic')}`,
@@ -251,4 +251,5 @@ function renderRibbon(){
   rib.innerHTML=ph;
 }
 /* map command -> tab (first occurrence, normal tabs preferred) */
+const POSN=p=>'الموضع '+({t:'في الأعلى',m:'في المنتصف',b:'في الأسفل'})[p[0]]+' '+({r:'إلى اليمين',c:'في الوسط',l:'إلى اليسار'})[p[1]]+' مع التفاف نص مربع';window.POSN=POSN;
 function tabOfCmd(id){for(const t of CTX_ORDER){const tb=$(`#wtabs [data-tab="${t}"]`);if(tb&&tb.offsetParent&&$(`[data-panel="${t}"] [data-hid="${id}"]`))return t}for(const t of [...TAB_ORDER,...CTX_ORDER]){if($(`[data-panel="${t}"] [data-hid="${id}"]`))return t}return null}
