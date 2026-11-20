@@ -41,7 +41,7 @@ function gTick(){if(!GD.on)return;const r=GD.r;if(!CO.item||!CO.item.reqs.includ
  if(doc.contains(el)&&canvas&&canvas.contains(el)){const rr=el.getBoundingClientRect();if(rr.bottom<0||rr.top>LH())el.scrollIntoView({block:'center'})}
  placeCoach(el,`<span class="bt">${s.last?'الآن':`الخطوة ${GD.i+1} من ${GD.steps.length-1}`}</span>${s.say}<br><button class="gstop" onmousedown="event.stopPropagation();stopGuide()">إيقاف الإرشاد</button>`);avoidCover(s.avoid?($('.ddw.open > .dd')||el):($('#dlgs.show .dlg')&&$('#dlgs.show .dlg').contains(el)?null:null))}
 function avoidCover(box){if(!box)return;const b=$('#bubble');if(!b||b.style.display==='none')return;const R=box.getBoundingClientRect(),V=VP(),k=+b.dataset.k||1,bw=b.offsetWidth*k,bh=b.offsetHeight*k,L=V.l,T=V.t,W=V.l+V.w,H=V.t+V.h;
- const r={left:R.left+scrollX,right:R.right+scrollX,top:R.top+scrollY,bottom:R.bottom+scrollY};
+ const O=OX(),r={left:R.left+O.x,right:R.right+O.x,top:R.top+O.y,bottom:R.bottom+O.y};
  const cl=(v,a,z)=>Math.max(a,Math.min(z,v));
  const cand=[[r.left-bw-14,cl(r.top,T+8,H-bh-8)],[r.right+14,cl(r.top,T+8,H-bh-8)],[cl(r.left,L+8,W-bw-8),r.bottom+12],[cl(r.left,L+8,W-bw-8),r.top-bh-12],[L+8,H-bh-8]];
  for(const [x,y] of cand){if(x>=L+4&&y>=T+4&&x+bw<=W-4&&y+bh<=H-4&&(x+bw<=r.left||x>=r.right||y+bh<=r.top||y>=r.bottom)){b.style.left=x+'px';b.style.top=y+'px';b.className='free';return}}

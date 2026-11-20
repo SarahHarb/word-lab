@@ -75,7 +75,7 @@ button{font-family:inherit;cursor:pointer}
 #bubble::before{content:"";position:absolute;left:calc(var(--ax) - 8px);border:8px solid transparent}
 #bubble.down::before{top:-16px;border-bottom-color:#111827}#bubble.up::before{bottom:-16px;border-top-color:#111827}
 #blocker{position:fixed;inset:0;z-index:999;display:none;cursor:wait}
-#cursor{position:absolute;z-index:1002;display:none;pointer-events:none;transition-property:left,top;transition-timing-function:cubic-bezier(.5,0,.3,1);margin:-2px 0 0 -4px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+#cursor{position:fixed;z-index:1002;display:none;pointer-events:none;transition-property:left,top;transition-timing-function:cubic-bezier(.5,0,.3,1);margin:-2px 0 0 -4px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 #cursor::after{content:"";position:absolute;left:-10px;top:-10px;width:24px;height:24px;border-radius:50%;background:rgba(245,179,1,.65);transform:scale(0);transition:transform .15s}
 #cursor.click::after{transform:scale(1.4)}
 #rtip{position:absolute;display:none;z-index:1004;pointer-events:none;background:#fff;border:1px solid #c8c6c4;box-shadow:0 6px 16px rgba(0,0,0,.18);padding:8px 11px;max-width:260px;font:12.5px "Segoe UI",Tahoma,Arial;color:#252423;border-radius:3px;direction:rtl}

@@ -57,19 +57,20 @@ SIM.on('tab',t=>S.tabsSeen[t]=1);
 const CO={mode:'idle',unit:null,item:null,idx:0};
 function hideCoach(){$('#ring').style.display='none';$('#bubble').style.display='none'}
 /* visible area in page px (works with pinch-zoom on phones) */
-function VP(){const v=window.visualViewport;if(v)return{l:v.offsetLeft+scrollX,t:v.offsetTop+scrollY,w:v.width,h:v.height,s:v.scale||1};return{l:scrollX,t:scrollY,w:LW(),h:LH(),s:1}}
+function OX(){const h=document.getElementById('ovl');const o=h?h.getBoundingClientRect():{left:-scrollX,top:-scrollY};return{x:-o.left,y:-o.top}}
+function VP(){const O=OX(),v=window.visualViewport;if(v)return{l:v.offsetLeft+O.x,t:v.offsetTop+O.y,w:v.width,h:v.height,s:v.scale||1};return{l:O.x,t:O.y,w:LW(),h:LH(),s:1}}
 function placeCoach(el,html,num){
-  const R=el.getBoundingClientRect(),ring=$('#ring'),b=$('#bubble'),V=VP();
-  const r={left:R.left+scrollX,top:R.top+scrollY,width:R.width,height:R.height,right:R.right+scrollX,bottom:R.bottom+scrollY};
+  const R=el.getBoundingClientRect(),ring=$('#ring'),b=$('#bubble'),V=VP(),O=OX();
+  const r={left:R.left+O.x,top:R.top+O.y,width:R.width,height:R.height,right:R.right+O.x,bottom:R.bottom+O.y};
   ring.style.display='block';Object.assign(ring.style,{left:(r.left-4)+'px',top:(r.top-4)+'px',width:(r.width+8)+'px',height:(r.height+8)+'px'});
   const h=(num!=null?`<b>${num}</b>`:'')+html;if(b.dataset.h!==h){b.innerHTML=h;b.dataset.h=h}b.style.display='block';
   const k=1/Math.max(1,V.s);b.style.transform=k<1?`scale(${k})`:'';b.dataset.k=k;
-  const bw=b.offsetWidth*k,bh=b.offsetHeight*k;const inV=r.right>V.l&&r.left<V.l+V.w&&r.bottom>V.t&&r.top<V.t+V.h;if(!inV){V.l=scrollX;V.t=scrollY;V.w=LW();V.h=LH()}const vb=V.t+V.h,vr=V.l+V.w;
+  const bw=b.offsetWidth*k,bh=b.offsetHeight*k;const inV=r.right>V.l&&r.left<V.l+V.w&&r.bottom>V.t&&r.top<V.t+V.h;if(!inV){V.l=O.x;V.t=O.y;V.w=LW();V.h=LH()}const vb=V.t+V.h,vr=V.l+V.w;
   const below=r.bottom+bh+20<vb||r.top-bh-12<V.t;let x=r.left+r.width/2-bw/2;x=Math.max(V.l+6,Math.min(vr-bw-6,x));
   b.style.left=x+'px';b.style.top=(below?r.bottom+12*k:Math.max(V.t+6,r.top-bh-12*k))+'px';b.className=below?'down':'up';b.style.setProperty('--ax',Math.max(14,Math.min(bw/k-14,(r.left+r.width/2-x)/k))+'px');
 }
 const cur=()=>$('#cursor');
-function moveCursorTo(el,ms=650){if(!el)return wait(0);const r=el.getBoundingClientRect();const c=cur();c.style.display='block';c.style.transitionDuration=ms+'ms';c.style.left=(r.left+scrollX+r.width/2)+'px';c.style.top=(r.top+scrollY+r.height/2)+'px';return wait(ms)}
+function moveCursorTo(el,ms=650){if(!el)return wait(0);const r=el.getBoundingClientRect();const c=cur();c.style.display='block';c.style.transitionDuration=ms+'ms';c.style.left=(r.left+r.width/2)+'px';c.style.top=(r.top+r.height/2)+'px';return wait(ms)}
 async function clickFx(){const c=cur();c.classList.add('click');await wait(200);c.classList.remove('click')}
 function stepIdx(it){const st=it.steps;for(let i=0;i<st.length;i++){let d=false;try{d=st[i].done()}catch(e){}if(!d)return i}return st.length-1}
 setInterval(()=>{
@@ -101,7 +102,7 @@ function buildTips(){UNITS.flatMap(s=>s.units||[s]).forEach(u=>(u.explore||[]).f
 /* screen tips (like Word) */
 let tipT;
 function showTip(el){const t=$('#rtip');const hid=el.dataset.hid||el.closest('[data-hid]')?.dataset.hid;const info=TIPS[hid]||{};const lab=info.n||el.dataset.tip||el.querySelector('span')?.textContent||'';if(!lab)return;
-  t.innerHTML=`<b>${lab.replace(/▾/g,'')}</b>${info.d||el.dataset.tip&&el.dataset.tip!==lab?`<p>${info.d||el.dataset.tip}</p>`:''}${info.u?`<p class="tu">🧭 متى نستخدمه؟ ${info.u}</p>`:''}${info.k?`<kbd>${info.k}</kbd>`:''}`;t.style.display='block';const r=el.getBoundingClientRect(),V=VP();let x=r.left+scrollX+r.width/2-t.offsetWidth/2;x=Math.max(V.l+6,Math.min(V.l+V.w-t.offsetWidth-6,x));t.style.left=x+'px';t.style.top=(r.bottom+scrollY+6)+'px'}
+  t.innerHTML=`<b>${lab.replace(/▾/g,'')}</b>${info.d||el.dataset.tip&&el.dataset.tip!==lab?`<p>${info.d||el.dataset.tip}</p>`:''}${info.u?`<p class="tu">🧭 متى نستخدمه؟ ${info.u}</p>`:''}${info.k?`<kbd>${info.k}</kbd>`:''}`;t.style.display='block';const r=el.getBoundingClientRect(),V=VP(),O=OX();let x=r.left+O.x+r.width/2-t.offsetWidth/2;x=Math.max(V.l+6,Math.min(V.l+V.w-t.offsetWidth-6,x));t.style.left=x+'px';t.style.top=(r.bottom+O.y+6)+'px'}
 function hideTip(){clearTimeout(tipT);$('#rtip').style.display='none'}
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('#ribbon .rb,#ribbon .rck,#ribbon .rnum,#ribbon .rsel,#ribbon .gi');if(!el||$('.ddw.open')){if(!e.target.closest||!e.target.closest('#ribbon'))hideTip();return}clearTimeout(tipT);tipT=setTimeout(()=>showTip(el),350)});
 document.addEventListener('mousedown',hideTip,true);
@@ -155,7 +156,7 @@ function stopDemo(){if(CO.mode!=='demo')return;CO.mode='idle';hideCoach();hideTi
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CO.mode==='demo')stopDemo()},true);
 async function watchItem(){
   hideSimCard();applySetup(CO.item.setup||{});await wait(120);CO.hit=false;CO.mode='demo';$('#blocker').style.display='block';$('#stopDemo').style.display='flex';document.body.classList.add('demo');renderHead();
-  const c=cur();c.style.display='block';c.style.transitionDuration='0ms';const r=$('#sim').getBoundingClientRect();c.style.left=(r.left+scrollX+r.width/2)+'px';c.style.top=(r.top+scrollY+r.height/2)+'px';await wait(250);
+  const c=cur();c.style.display='block';c.style.transitionDuration='0ms';const r=$('#sim').getBoundingClientRect();c.style.left=(r.left+r.width/2)+'px';c.style.top=(r.top+r.height/2)+'px';await wait(250);
   const st=CO.item.steps;
   for(let i=0;i<st.length;i++){if(CO.mode!=='demo')break;const s=st[i];let el=null;try{el=s.el()}catch(e){}
     if(!el){await wait(350);try{el=s.el()}catch(e){}}if(!el)break;if(canvas.contains(el)||el.closest('#ribbon'))el.scrollIntoView({block:'nearest',inline:'nearest'});await wait(60);
