@@ -584,6 +584,25 @@ const TXT_HW=PIC({t:'الواجب الكبير: نشرة العلوم',goalImg:'
 TXT_HW.reqs[15].fixFn=()=>{const a=blk('إعداد: الطالبة'),b=blk('التاريخ: 2026');return a&&b&&a!==b?'صار «التاريخ» فقرة جديدة (Enter). تراجع (Ctrl + Z) واستخدم Shift + Enter.':null};
 MORE_PICS_T2=[['الكتابة',[TX1,MK1,RD1,TX2]],['التحديد',[SL1,SL2]],['الخط',[TX3,TX4,TX5,TX6,TX11]],['الفقرة: التعداد',[LS1,LS2,LS3,LS4,LS5]],['الفقرة: المحاذاة والاتجاه والحدود',[TX7,PG2,PG1]]];
 
+
+/* ألوان محدّدة لـ «أرني» و«شاهد الحل» */
+{const MI=(q,cmd,arg,l)=>{if(q)q.mi=[cmd,arg,l]};
+ MI(TX5.reqs[0],'fontcolor','#ff0000','أحمر');MI(TX5.reqs[1],'highlight','#ffff00','أصفر');MI(TX5.reqs[2],'fontcolor','#0070c0','أزرق');
+ MI(SL2.reqs[0],'fontcolor','#ff0000','أحمر');MI(SH2.reqs[0],'shapeFill','#ffff00','أصفر');MI(SH2.reqs[1],'shapeOutline','#ff0000','أحمر');
+ MI(SH4.reqs[1],'shapeFill','#ed7d31','برتقالي');MI(SH5.reqs[2],'shapeFill','#ffff00','أصفر');MI(SH6.reqs[1],'shapeFill','#deebf6','أزرق فاتح');
+ MI(IM4.reqs[1],'picBorder','#00b050','أخضر');MI(WA1.reqs[1],'textFill','#0070c0','أزرق');MI(WA2.reqs[0],'textFill','#00b050','أخضر');MI(WA3.reqs[1],'textFill','#7030a0','بنفسجي');
+ MI(PG1.reqs[2],'pshading','#fff2cc','أصفر فاتح');}
+
+
+{const ST2=(el,say,done,click)=>({el:typeof el==='string'?()=>$(el):el,say,done,click:click?1:0});
+ const COLP=(n,line)=>[ST2('#wtabs [data-tab="layout"]','افتح «تخطيط»',()=>$('#wtabs [data-tab="layout"]')?.classList.contains('on')||!!$('#colN')),
+  ST2(()=>{const b=$('#ribbon [data-panel="layout"] [data-hid="columns"]');return b&&((b.closest('.split')||b).querySelector('.car')||b)},'افتح قائمة «أعمدة» ▾',()=>!!$('.ddw.open')||!!$('#colN')),
+  ST2(()=>$('.ddw.open [data-cmd="colMore"]'),'اختر «المزيد من الأعمدة...»',()=>!!$('#colN'),1),
+  ST2(()=>$(`#dlgs .colpre[data-n="${n}"]`),`اختر «${n==='3'?'ثلاثة':'اثنان'}»`,()=>$('#colN')?.value===n,1),
+  ...(line?[ST2('#colLn','ضع ✓ على «خط فاصل بين الأعمدة»',()=>!!$('#colLn')?.checked,1)]:[]),
+  ST2('#dlgs .df .pri','اضغط «موافق»',null,1)];
+ CO2.reqs[0].path=()=>COLP('3',true);CO2.reqs[1].path=()=>COLP('3',true);}
+
 /* ---------- topics ---------- */
 const MORE_PICS={
  t4:[['الرسم',[SH1,SH2,SH3]],['الأسهم ومربع النص والترتيب',[SH4,SH5,SH6]]],

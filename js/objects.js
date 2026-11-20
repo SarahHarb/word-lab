@@ -80,7 +80,7 @@ Object.assign(OPS,{
   textEffects(f){const o=shpOnly();if(!o)return;snap();o.dataset.tfx=f;applyObj(o);logAct('textEffects:'+f)},
   wastyle(i){const o=shpOnly();if(!o)return;snap();const s=WA_STYLES[i];o.dataset.tfill=s.fill;o.dataset.tout=s.out;o.dataset.tfx=s.fx;applyObj(o)},
   editShape(){simToast('تحرير الشكل: للعرض فقط')},alignText(){const o=shpOnly();if(!o)return;const t=o.querySelector('.stxt');t.style.alignItems=t.style.alignItems==='flex-start'?'center':'flex-start'},createLink(){simToast('إنشاء ارتباط: للعرض فقط')},
-  addShapeText(){const o=shpOnly();if(!o)return;const t=o.querySelector('.stxt');t.contentEditable='true';placeCaretIn(t,false);logAct('addShapeText')},
+  addShapeText(){const o=shpOnly();if(!o)return;startShapeText(o)},
   /* arrange (shared) */
   wrap(a){const o=objOnly();if(!o)return;snap();const d=o.dataset;const was=d.wrap;
     if(['behind','front'].includes(a)&&!['behind','front'].includes(was)){const body=bodyOf(o);const br=body.getBoundingClientRect(),or=o.getBoundingClientRect(),z=(S.zoom/100*(window.SIMSCALE||1));d.x=Math.round((or.left-br.left)/z);d.y=Math.round((or.top-br.top)/z);if(o.parentElement!==body){body.appendChild(o)}}
@@ -163,7 +163,7 @@ document.addEventListener('mouseup',e=>{
 function cancelDraw(){if(S.drawKind){S.drawKind=null;doc.classList.remove('drawing')}}
 function objContext(o,x,y){selectObj(o);const isP=o.classList.contains('pic');
   showCtx(x,y,[['cut',null,'قص','cut'],['copy',null,'نسخ','copy'],['delObj',null,'حذف','delete'],'-',...(isP?[['changePic',null,'تغيير الصورة','changepic']]:[['addShapeText',null,'إضافة نص','addtext']]),['wrap','square','التفاف النص: مربع','wrap'],['wrap','inline','التفاف النص: مع النص','wrap'],['wrap','front','التفاف النص: أمام النص','wrap'],'-',['forward',null,'إحضار للأمام','forward'],['backward',null,'إرسال للخلف','backward'],['newComment',null,'تعليق جديد','newcomment']])}
-document.addEventListener('dblclick',e=>{const o=e.target.closest&&e.target.closest('#doc .obj.shp');if(o&&!o.classList.contains('textbox')&&!o.classList.contains('wordart')){const t=o.querySelector('.stxt');if(!t.isContentEditable&&t.textContent.trim()){t.contentEditable='true';placeCaretIn(t,false)}}});
+document.addEventListener('dblclick',e=>{const o=e.target.closest&&e.target.closest('#doc .obj.shp');if(o&&!o.classList.contains('textbox')&&!o.classList.contains('wordart')){const t=o.querySelector('.stxt');if(!t.isContentEditable){startShapeText(o)}}});
 /* ---------- equations ---------- */
 const Z='​';
 function curEq(){const r=S.range;if(!r)return null;const n=r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement;return n.closest&&n.closest('.eq')}
@@ -194,10 +194,16 @@ document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const eq=curEq()
 function delSelObj(){if(!S.obj)return;snap();const o=S.obj,p=o.parentElement;o.remove();if(p&&p.tagName==='P'&&!p.textContent.trim()&&!p.querySelector('.obj,img'))p.innerHTML='<br>';clearObjSel();updateCtx();logAct('objDelete');SIM.emit('change');placeObjBar()}
 function placeObjBar(){let b=document.getElementById('objbar');const o=S.obj;
   if(!o||!doc.contains(o)||S.drawKind||o.classList.contains('cropping')){if(b)b.style.display='none';return}
-  if(!b){b=document.createElement('div');b.id='objbar';b.innerHTML='<button type="button" data-hid="obj-delete">🗑 حذف</button>';(document.getElementById('ovl')||document.body).appendChild(b);
-    const btn=b.querySelector('button');const go=e=>{e.preventDefault();e.stopPropagation();delSelObj()};btn.addEventListener('mousedown',go);btn.addEventListener('touchstart',go,{passive:false})}
+  if(!b){b=document.createElement('div');b.id='objbar';b.innerHTML='<button type="button" class="ob-txt" data-hid="obj-text">✏️ اكتب</button><button type="button" data-hid="obj-delete">🗑 حذف</button>';(document.getElementById('ovl')||document.body).appendChild(b);
+    const btn=b.querySelector('[data-hid="obj-delete"]');const go=e=>{e.preventDefault();e.stopPropagation();delSelObj()};btn.addEventListener('mousedown',go);btn.addEventListener('touchstart',go,{passive:false});const bt=b.querySelector('.ob-txt');const gt=e=>{e.preventDefault();e.stopPropagation();if(S.obj)startShapeText(S.obj)};bt.addEventListener('mousedown',gt);bt.addEventListener('touchstart',gt,{passive:false})}
+  {const bt=b.querySelector('.ob-txt');const st=o.querySelector('.stxt');bt.style.display=o.classList.contains('shp')&&!(st&&st.isContentEditable)?'':'none'}
   const R=typeof realRect==='function'?realRect(o):o.getBoundingClientRect();if(!R.width&&!R.height){b.style.display='none';return}
   const O=typeof OX==='function'?OX():{x:scrollX,y:scrollY};b.style.display='block';
   const bw=b.offsetWidth||70,bh=b.offsetHeight||30;let y=R.top-bh-8;if(y<4)y=R.bottom+8;let x=R.left+R.width/2-bw/2;x=Math.max(4,Math.min(LW()-bw-4,x));
   b.style.left=(x+O.x)+'px';b.style.top=(y+O.y)+'px'}
 setInterval(placeObjBar,250);
+
+/* الكتابة داخل الشكل: نقرتان على الشكل، أو حدّده وابدأ الكتابة مباشرة (مثل Word)، أو زر «✏️ اكتب» */
+function startShapeText(o){const t=o&&o.querySelector('.stxt');if(!t)return null;selectObj(o);t.contentEditable='true';if(!t.querySelector('p')&&!t.textContent.trim())t.innerHTML='<p><br></p>';t.focus();placeCaretIn(t.querySelector('p')||t,false);S.range=curRange()||S.range;logAct('addShapeText');return t}
+document.addEventListener('keydown',e=>{if(!S.obj||e.ctrlKey||e.metaKey||e.altKey)return;const o=S.obj;if(!o.classList.contains('shp'))return;const t=o.querySelector('.stxt');if(!t||t.isContentEditable&&t.contains(document.activeElement))return;
+  if(e.key.length===1||e.key==='Enter'){if(e.target.closest&&e.target.closest('input,select,textarea'))return;e.preventDefault();startShapeText(o);if(e.key.length===1)document.execCommand('insertText',false,e.key)}},true);

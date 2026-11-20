@@ -139,10 +139,10 @@ function renderHead(){
   const sec=l.goalImg?'صمّم مثل الصورة':l.kind==='learn'?'تعلّم':'تحدَّ نفسك';
   $('#lhead').innerHTML=`<button class="menu" id="menuBtn" aria-label="الدروس">☰</button>
    <div class="lt"><div class="crumb">${u.num} ${u.title} <i>›</i> ${sec}${l.level?` <em class="tag lv">${l.level}</em>`:l.kind==='do'?' <em class="tag do">نفّذ</em>':l.problem?' <em class="tag pr">مشكلة</em>':''}</div><h1>${l.t}</h1>${l.hint?`<p>💡 ${l.hint}</p>`:''}${l.proj?projBar(l):''}${l.kind==='do'&&!l.goalImg&&l.reqs.length>6?'<div class="reqs many" id="reqs"></div>':''}</div>
-   <div class="la">${l.kind==='do'?`${l.reqs.length>6||l.goalImg?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button><button class="b" id="solBtn" title="شاهد خطوات الحل">💡 الحل</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
+   <div class="la">${l.kind==='do'?`${l.reqs.length>6||l.goalImg?'':'<div class="reqs" id="reqs"></div>'}<button class="b pri" id="verify">✔ تحقّق</button><button class="b" id="solBtn" title="يعرض الحل وحده كأنه فيديو، ثم يعيد التمرين كما كان">▶ شاهد الحل</button>`:`<span class="dots" id="dots"></span><button class="b ${CO.mode==='demo'?'red':'blue'}" id="hw">${CO.mode==='demo'?'⏹ إيقاف المشاهدة':'▶ شاهد الحل'}</button>`}<button class="b" id="hr" title="من جديد">↺</button><button class="b" id="hn" title="التالي">التالي ‹</button></div>`;
   $('#menuBtn').onclick=()=>document.body.classList.toggle('drawer');
   $('#hr').onclick=()=>startItem();$('#hn').onclick=()=>nextLesson();
-  if(l.kind==='do'){$('#verify').onclick=verify;$('#solBtn').onclick=showSolution;renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
+  if(l.kind==='do'){$('#verify').onclick=verify;$('#solBtn').onclick=()=>playSolution();renderReqs()}else{$('#hw').onclick=()=>CO.mode==='demo'?stopDemo():watchItem();renderDots(CO.mode==='won'?99:-1)}
   fitSim();
 }
 function renderReqs(){renderRefList();const b=$('#reqs');if(!b||!CO.item.reqs)return;const h=CO.item.reqs.map((r,i)=>{let ok=false;try{ok=!!r.check()}catch(e){}return `<span class="rq ${ok?'ok':CO.bad===i?'bad':''}" data-r="${i}">${ok?'✓':CO.bad===i?'✗':i+1} ${r.t}</span>`}).join('');if(b.innerHTML!==h){b.innerHTML=h;b.querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>showReqHint(+x.dataset.r))}}
@@ -239,17 +239,18 @@ function renderRefList(){const ul=$('#rplist');const it=CO.item;if(!ul||!it)retu
   if(CO.focus!=null&&(st[CO.focus]||!av[CO.focus]))CO.focus=null;const f=CO.focus;
   const sig=st.join()+'|'+av.join()+'|'+f;if(CO.rpSig===sig)return;CO.rpSig=sig;
   ul.innerHTML=it.reqs.map((r,i)=>{const cls=st[i]?'ok':av[i]?(i===f?'av cur':'av'):'lock';const nd=(r.need||[]).filter(k=>!st[k]).map(k=>k+1);
-    return `<li class="${cls}" data-q="${i}"><i>${st[i]?'✓':av[i]?i+1:'🔒'}</i><div><span>${r.t}</span>${i===f?`<small>${fixOf(r)}</small>${r.cmd||r.where?`<button data-h="${i}">👆 أرني أين</button>`:''}`:!st[i]&&!av[i]&&nd.length?`<em>بعد ${nd.join('، ')}</em>`:''}</div></li>`}).join('');
+    return `<li class="${cls}" data-q="${i}"><i>${st[i]?'✓':av[i]?i+1:'🔒'}</i><div><span>${r.t}</span>${i===f?`<small>${fixOf(r)}</small>${r.cmd||r.where||r.path?`<span class="rq-btns"><button data-h="${i}">👆 أرني أين</button><button data-p="${i}" class="playb">▶ شاهد</button></span>`:''}`:!st[i]&&!av[i]&&nd.length?`<em>بعد ${nd.join('، ')}</em>`:''}</div></li>`}).join('');
   const n=st.filter(Boolean).length;$('#rpCount').textContent=`${n} / ${st.length}`;const mini=$('#rpMini');if(mini){const fi=f!=null?f:st.findIndex(x=>!x);mini.textContent=fi>=0?`${n}/${st.length} · ${it.reqs[fi].t} ▲`:'✓ تمّت المطابقة'}
   const lh=$('#refpanel .rp-lh b');if(lh)lh.textContent=n===st.length?'تمّت المطابقة 🎉':'المضيء جاهز — اختر أي واحد';
   ul.querySelectorAll('li.av').forEach(x=>x.onclick=()=>{CO.focus=+x.dataset.q;CO.rpSig='';renderRefList()});
-  ul.querySelectorAll('[data-h]').forEach(b=>b.onclick=e=>{e.stopPropagation();showReqHint(+b.dataset.h)})}
+  ul.querySelectorAll('[data-h]').forEach(b=>b.onclick=e=>{e.stopPropagation();showReqHint(+b.dataset.h)});
+  ul.querySelectorAll('[data-p]').forEach(b=>b.onclick=e=>{e.stopPropagation();playSolution(+b.dataset.p)})}
 
 function fixOf(r){let x=null;try{x=r.fixFn&&r.fixFn()}catch(e){}return x||r.fix}
 
 /* «💡 الحل»: خطوات الحل كاملة بالترتيب، مع «أرني» لكل خطوة */
 function showSolution(){const it=CO.item;if(!it||!it.reqs)return;const done=i=>{try{return !!it.reqs[i].check()}catch(e){return false}};
-  const steps=it.reqs.map((r,i)=>`<li class="sol-i${done(i)?' ok':''}"><div><b>${done(i)?'✓ ':''}${r.t}</b><p>${(r.fix||'').replace(/</g,'&lt;')}</p></div>${r.where||r.cmd||r.path?`<button class="b sol-go" data-i="${i}">👆 أرني</button>`:''}</li>`).join('');
-  dialog({title:'💡 الحل خطوة بخطوة',w:isPhone()?510:620,body:`<div class="sol">${it.goalImg?`<img src="${it.goalImg}" alt="">`:''}${it.intro?`<p class="sol-in">${it.intro.replace(/</g,'&lt;')}</p>`:''}<ol>${steps}</ol><p class="sm">جرّب بنفسك أولًا — ثم استخدم «👆 أرني» لترى مكان كل أمر في Word.</p></div>`,
-   buttons:[{label:'إغلاق',pri:1}],onOpen:d=>d.querySelectorAll('.sol-go').forEach(b=>b.onclick=()=>{closeDialog();const i=+b.dataset.i;setTimeout(()=>{try{showReqHint(i)}catch(e){}},60)})});
+  const steps=it.reqs.map((r,i)=>`<li class="sol-i${done(i)?' ok':''}"><div><b>${done(i)?'✓ ':''}${r.t}</b><p>${(r.fix||'').replace(/</g,'&lt;')}</p></div>${r.where||r.cmd||r.path?`<span class="sol-bt"><button class="b sol-go" data-i="${i}">👆 أرني</button><button class="b sol-play" data-i="${i}">▶ شاهد</button></span>`:''}</li>`).join('');
+  dialog({title:'💡 الحل خطوة بخطوة',w:isPhone()?510:620,body:`<div class="sol">${it.goalImg?`<img src="${it.goalImg}" alt="">`:''}${it.intro?`<p class="sol-in">${it.intro.replace(/</g,'&lt;')}</p>`:''}<button class="b sol-all">▶ شاهد الحل كاملًا</button><ol>${steps}</ol><p class="sm">«▶ شاهد»: يعرض الحل وحده كأنه فيديو ثم يعيد التمرين كما كان. «👆 أرني»: يمشي معك وأنت تنفّذ بنفسك.</p></div>`,
+   buttons:[{label:'إغلاق',pri:1}],onOpen:d=>{d.querySelectorAll('.sol-go').forEach(b=>b.onclick=()=>{closeDialog();const i=+b.dataset.i;setTimeout(()=>{try{showReqHint(i)}catch(e){}},60)});d.querySelectorAll('.sol-play').forEach(b=>b.onclick=()=>{closeDialog();const i=+b.dataset.i;setTimeout(()=>playSolution(i),80)});d.querySelector('.sol-all').onclick=()=>{closeDialog();setTimeout(()=>playSolution(),80)}}});
   logAct('solution')}
