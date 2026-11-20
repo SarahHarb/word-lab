@@ -11,9 +11,12 @@ function styleSel(css){
   const host=editHost(r.startContainer)||doc;
   const made=[];host.querySelectorAll('font[size="7"]').forEach(f=>{const s=document.createElement('span');s.style.cssText=css;s.innerHTML=f.innerHTML;f.replaceWith(s);made.push(s)});
   host.querySelectorAll('span[style*="xxx-large"]').forEach(s=>{s.style.fontSize='';s.style.cssText+=';'+css;made.push(s)});
+  if(/font-size/.test(css))made.forEach(m=>m.querySelectorAll('[style*="font-size"]').forEach(x=>x.style.fontSize=''));
+  if(/font-family/.test(css))made.forEach(m=>m.querySelectorAll('[style*="font-family"]').forEach(x=>x.style.fontFamily=''));
+  if(/(^|;)\s*color/.test(css))made.forEach(m=>m.querySelectorAll('[style*="color"]').forEach(x=>x.style.color=''));
   if(made.length){const rr=document.createRange();rr.setStartBefore(made[0]);rr.setEndAfter(made[made.length-1]);const sl=getSelection();sl.removeAllRanges();sl.addRange(rr);S.range=rr.cloneRange()}
 }
-function curPt(){const r=S.range;if(!r)return 11;const n=r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement;return Math.round(parseFloat(getComputedStyle(n).fontSize)*.75*2)/2}
+function curPt(){const r=S.range;if(!r)return 11;let n=r.startContainer;if(n.nodeType===1&&n.childNodes[r.startOffset]){n=n.childNodes[r.startOffset];if(!r.collapsed){const w=document.createTreeWalker(n.nodeType===1?n:n.parentElement,NodeFilter.SHOW_TEXT);const t=n.nodeType===3?n:w.nextNode();if(t)n=t}}n=n.nodeType===1?n:n.parentElement;return Math.round(parseFloat(getComputedStyle(n).fontSize)*.75*2)/2}
 const SIZES=[8,9,10,11,12,14,16,18,20,22,24,26,28,36,48,72];
 let lastHilite='#ffff00',lastFore='#ff0000';
 Object.assign(OPS,{

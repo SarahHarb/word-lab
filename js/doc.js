@@ -395,6 +395,8 @@ function globalKeys(e){
     if(L==='v'&&inDoc&&S.clip&&e.shiftKey){e.preventDefault();S.range=curRange()||S.range;run('paste','text');return}
     if((L==='x'||L==='c')&&inDoc){const r=curRange();if(r&&!r.collapsed){e.preventDefault();S.range=r.cloneRange();run(L==='x'?'cut':'copy');return}}
     if(L==='a'&&S.app==='doc'&&!e.target.closest('.stxt,.eq')){e.preventDefault();run('selectAll');return}
+    if(inDoc&&(e.code==='BracketRight'||(e.shiftKey&&e.code==='Period'))){e.preventDefault();S.range=curRange()||S.range;run('grow');return}
+    if(inDoc&&(e.code==='BracketLeft'||(e.shiftKey&&e.code==='Comma'))){e.preventDefault();S.range=curRange()||S.range;run('shrink');return}
     if(e.code==='Equal'&&inDoc){e.preventDefault();run(e.shiftKey?'sup':'sub');return}
     if(L==='z'&&!lastCmd)return; // native undo for typing
     if(map[L]&&S.app!=='desktop'){if(['bold','italic','underline'].includes(map[L])&&!inDoc)return;e.preventDefault();if(['bold','italic','underline'].includes(map[L]))S.range=curRange()||S.range;run(map[L]);return}
