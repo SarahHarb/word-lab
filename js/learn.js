@@ -166,7 +166,7 @@ async function watchItem(){
   const c=cur();c.style.display='block';c.style.transitionDuration='0ms';const r=$('#sim').getBoundingClientRect();c.style.left=(r.left+r.width/2)+'px';c.style.top=(r.top+r.height/2)+'px';await wait(250);
   const st=CO.item.steps;
   for(let i=0;i<st.length;i++){if(CO.mode!=='demo')break;const s=st[i];let el=null;try{el=s.el()}catch(e){}
-    if(!el){await wait(350);try{el=s.el()}catch(e){}}if(!el)break;if(canvas.contains(el)||el.closest('#ribbon'))el.scrollIntoView({block:'nearest',inline:'nearest'});await wait(60);
+    if(!el){await wait(350);try{el=s.el()}catch(e){}}if(!el)break;if(canvas.contains(el))el.scrollIntoView({block:'nearest',inline:'nearest'});else if(el.closest('#ribbon,#wtabs')&&window.ensureHVis)await ensureHVis(el);await wait(60);
     renderDots(i);placeCoach(el,s.say,i+1);await moveCursorTo(el);if(el.closest('#ribbon')&&!el.closest('.dd')){showTip(el.closest('.rb,.rck,.rnum,.rsel,.gi')||el);await wait(1100);hideTip()}if(s.pre){s.pre();await wait(400)}await clickFx();
     try{await (s.act&&s.act())}catch(e){console.error(e)}await wait(900);}
   hideCoach();c.style.display='none';$('#blocker').style.display='none';$('#stopDemo').style.display='none';document.body.classList.remove('demo');

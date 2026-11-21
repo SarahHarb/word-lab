@@ -6,13 +6,26 @@ const rectOf=el=>typeof realRect==='function'?realRect(el):el.getBoundingClientR
 async function ensureVis(el){if(!el||!el.getBoundingClientRect)return;const cv=$('#canvas');if(!cv||!cv.contains(el))return;const r=rectOf(el),c=cv.getBoundingClientRect();if(r.top>=c.top+20&&r.bottom<=c.bottom-20)return;
   if(PL.k<.05){el.scrollIntoView({block:'center'});return}el.scrollIntoView({block:'center',behavior:'smooth'});await W(450)}
 window.ensureVis=ensureVis;
-async function moveTo(el,ms=700){await ensureVis(el);const r=rectOf(el);const c=$('#cursor');c.style.display='block';c.style.transitionDuration=(ms*PL.k)+'ms';c.style.left=(r.left+Math.min(r.width/2,60))+'px';c.style.top=(r.top+Math.min(r.height/2,18))+'px';await W(ms)}
+/* الصفحة نفسها لا تتمرّر أبدًا (التطبيق بملء الشاشة): أي scrollIntoView حرّك النافذة أفقيًا ← أرجعها */
+window.addEventListener('scroll',()=>{const vv=window.visualViewport;if(vv&&vv.scale>1.01)return;if(window.scrollX||window.scrollY)window.scrollTo(0,0)},{passive:true});
+/* على الجوال: الشريط والتبويبات تُسحب أفقيًا — أرِ السحبة بالماوس ثم اسحب حتى يظهر الأمر */
+async function ensureHVis(el){if(!el||!el.getBoundingClientRect||el.closest('.dd,.menu,#dlgs,.dlg,.gal-pop'))return;let p=el.parentElement;
+  while(p&&p!==document.body&&!p.contains(doc)){const cs=getComputedStyle(p);if(/(auto|scroll)/.test(cs.overflowX)&&p.scrollWidth>p.clientWidth+4){const r=el.getBoundingClientRect(),c=p.getBoundingClientRect();
+      if(r.left<c.left+8||r.right>c.right-8){const want=(r.left+r.width/2)-(c.left+c.width/2);const max=p.scrollWidth-p.clientWidth;
+        if(PL.k<.05){p.scrollLeft+=want}else{const cur=$('#cursor');const y=Math.min(c.bottom-14,Math.max(c.top+14,r.top+r.height/2));const x0=c.left+c.width/2;
+          cur.style.display='block';cur.style.transitionDuration=(500*PL.k)+'ms';cur.style.left=x0+'px';cur.style.top=y+'px';await W(550);cur.classList.add('clk');
+          const dx=Math.max(-c.width*.4,Math.min(c.width*.4,-want));cur.style.transitionDuration=(700*PL.k)+'ms';cur.style.left=(x0+dx)+'px';
+          const st=p.scrollLeft,t0=performance.now(),D=Math.max(200,700*PL.k);await new Promise(res=>{const f=t=>{const k=Math.min(1,(t-t0)/D),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;p.scrollLeft=st+want*e;k<1?requestAnimationFrame(f):res()};requestAnimationFrame(f)});
+          cur.classList.remove('clk');await W(250)}}}
+    p=p.parentElement}}
+window.ensureHVis=ensureHVis;
+async function moveTo(el,ms=700){await ensureVis(el);await ensureHVis(el);const r=rectOf(el);const c=$('#cursor');c.style.display='block';c.style.transitionDuration=(ms*PL.k)+'ms';c.style.left=(r.left+Math.min(r.width/2,60))+'px';c.style.top=(r.top+Math.min(r.height/2,18))+'px';await W(ms)}
 function clickFx(){const c=$('#cursor');c.classList.remove('clk');void c.offsetWidth;c.classList.add('clk')}
 function realClick(el){const r=el.getBoundingClientRect();const o={bubbles:true,cancelable:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2,button:0};
   try{el.dispatchEvent(new PointerEvent('pointerdown',o))}catch(e){}el.dispatchEvent(new MouseEvent('mousedown',o));el.dispatchEvent(new MouseEvent('mouseup',o));el.dispatchEvent(new MouseEvent('click',o))}
 function selectIn(el,text){const tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while(n=tw.nextNode()){const i=n.data.indexOf(text);if(i>=0){const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+text.length);const s=getSelection();s.removeAllRanges();s.addRange(r);S.range=r.cloneRange();return true}}
   const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);S.range=r.cloneRange();return true}
-function bar(msg){let b=$('#playbar');if(!b){b=document.createElement('div');b.id='playbar';b.innerHTML='<span class="pb-dot"></span><b>▶ عرض الحل</b><span class="pb-msg"></span><button type="button">⏹ إيقاف</button>';document.body.appendChild(b);b.querySelector('button').onclick=()=>{PL.stop=true}}
+function bar(msg){let b=$('#playbar');if(!b){b=document.createElement('div');b.id='playbar';b.innerHTML='<span class="pb-dot"></span><span class="pb-txt"><b>▶ شاهد الحل</b><span class="pb-msg"></span></span><button type="button">⏹ إيقاف</button>';document.body.appendChild(b);b.querySelector('button').onclick=()=>{PL.stop=true}}
   b.querySelector('.pb-msg').textContent=msg||'';b.style.display='flex'}
 function shield(on){let s=$('#playshield');if(!s){s=document.createElement('div');s.id='playshield';document.body.appendChild(s)}s.style.display=on?'block':'none'}
 function snapState(){return {pen:JSON.stringify(S.pen||null),grid:S.gridOn,vg:doc.classList.contains('vgrid'),ruler:S.ruler,html:doc.innerHTML,page:JSON.stringify(S.page),hf:JSON.stringify(S.hf),marks:S.marks,view:S.view,zoom:S.zoom,app:S.app,log:SIM.log.slice()}}
@@ -21,7 +34,7 @@ function restore(st){try{if(window.SELSEEN)SELSEEN.clear();if(window.PARTS_SEEN)
   try{applyPage();renderHF&&renderHF();doc.querySelectorAll('.obj').forEach(applyObj);if(window.markSpaces)markSpaces(S.marks)}catch(e){}SIM.log=st.log;S.range=null;try{S.pen=JSON.parse(st.pen);S.gridOn=st.grid;doc.classList.toggle('vgrid',st.vg);clearCells&&clearCells();S.curCell=null;typeof syncRibbon==='function'&&syncRibbon()}catch(e){}try{if(S.zoom!==st.zoom)setZoom(st.zoom);if(S.ruler!==st.ruler){S.ruler=st.ruler;applyPage();typeof syncRibbon==='function'&&syncRibbon()}const fb=$('#backstage');if(fb&&!fb.hidden&&S.app==='doc')closeBackstage()}catch(e){}try{SIM.emit('change')}catch(e){}}
 async function doStep(st,r,k){let el=null;try{el=st.el()}catch(e){}if(!el)return false;
   if(st.done&&(()=>{try{return st.done()}catch(e){return false}})())return true;
-  bar(st.say.replace(/<[^>]+>/g,''));try{placeCoach(el,st.say,k+1)}catch(e){}await moveTo(el);if(PL.stop)return false;clickFx();await W(250);
+  bar(st.say.replace(/<[^>]+>/g,''));await ensureHVis(el);try{placeCoach(el,st.say,k+1)}catch(e){}await moveTo(el);if(PL.stop)return false;clickFx();await W(250);
   const inDoc=doc.contains(el);
   if(inDoc&&el.classList&&el.classList.contains('obj')){selectObj(el);try{updateCtx()}catch(e){}}
   else if(inDoc&&/حدّد/.test(st.say)&&r.selText){selectIn(el,r.selText)}
@@ -42,7 +55,7 @@ function setSel(r){const s=getSelection();s.removeAllRanges();s.addRange(r);S.ra
 async function showAt(el){if(!el)return;await moveTo(el,600);clickFx();await W(200)}
 async function typeText(t){for(const ch of t){document.execCommand('insertText',false,ch);await W(t.length>40?15:55)}S.range=curRange()||S.range;try{SIM.emit('change')}catch(e){}}
 async function ribbonCmd(cmd,arg,say){bar(say||'');const tab=tabOfCmd(cmd);if(tab){const t=$(`#wtabs [data-tab="${tab}"]`);if(t&&!t.classList.contains('on')){await showAt(t);realClick(t);await W(300)}}
-  const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}"]`);if(b){try{placeCoach(b,say||'')}catch(e){}await showAt(b)}
+  const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}"]`);if(b){await ensureHVis(b);try{placeCoach(b,say||'')}catch(e){}await showAt(b)}
   const r0=S.range;if(r0){setSel(r0)}run(cmd,arg);await W(500);try{hideCoach()}catch(e){}}
 async function demoOp(o){if(PL.stop)return;
   if(o.say)bar(o.say);
@@ -62,7 +75,7 @@ async function demoOp(o){if(PL.stop)return;
     else if(k==='CtrlA'){run('selectAll')}else{tg.dispatchEvent(new KeyboardEvent('keydown',{key:k==='ShiftEnter'?'Enter':k==='ShiftTab'?'Tab':k,shiftKey:/Shift/.test(k),bubbles:true,cancelable:true}))}
     S.range=curRange()||S.range;try{SIM.emit('change')}catch(e){}await W(650);return}
   if(o.cmd){await ribbonCmd(o.cmd,o.arg,o.say);return}
-  if(o.show){const tab=tabOfCmd(o.show);{const t=tab&&$(`#wtabs [data-tab="${tab}"]`);if(t&&!t.classList.contains('on')&&t.offsetParent){await showAt(t);realClick(t);await W(300)}}const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${o.show}"]`);if(b&&b.offsetParent){try{placeCoach(b,o.say||'')}catch(e){}await showAt(b)}else await W(900);await W(400);try{hideCoach()}catch(e){}return}
+  if(o.show){const tab=tabOfCmd(o.show);{const t=tab&&$(`#wtabs [data-tab="${tab}"]`);if(t&&!t.classList.contains('on')&&t.offsetParent){await showAt(t);realClick(t);await W(300)}}const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${o.show}"]`);if(b&&b.offsetParent){await ensureHVis(b);try{placeCoach(b,o.say||'')}catch(e){}await showAt(b)}else await W(900);await W(400);try{hideCoach()}catch(e){}return}
   if(o.click){const el=typeof o.click==='function'?o.click():$(o.click);if(!el)return;await showAt(el);realClick(el);await W(450);return}
   if(o.dbl){const el=typeof o.dbl==='function'?o.dbl():$(o.dbl);if(!el)return;await showAt(el);el.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));await W(450);return}
   if(o.fill){const el=$(o.fill);if(!el)return;await showAt(el);el.focus();el.value='';for(const ch of o.value){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}));await W(50)}return}
