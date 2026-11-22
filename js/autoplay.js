@@ -60,8 +60,8 @@ async function ribbonCmd(cmd,arg,say){bar(say||'');const tab=tabOfCmd(cmd);if(ta
   /* أمر له قائمة منسدلة: افتح القائمة وأرِ الخيار ثم اختره (مثل Word) */
   const w=b&&b.dataset.dd&&b.closest('.ddw');if(w&&arg!=null&&!PL.stop){try{hideCoach()}catch(e){}try{openMenu(w)}catch(e){}await W(450);
     const A=String(arg).toLowerCase();const it=[...w.querySelectorAll('.dd [data-arg]')].find(x=>String(x.dataset.arg).toLowerCase()===A&&(!x.dataset.cmd||x.dataset.cmd===cmd||!w.querySelector(`.dd [data-cmd="${cmd}"]`)));
-    if(it&&it.offsetParent){try{placeCoach(it,say||it.textContent.trim()||'')}catch(e){}await moveTo(it,550);clickFx();await W(350)}else await W(500);
-    try{closeMenus()}catch(e){}}
+    if(it&&it.offsetParent){await W(500);await moveTo(it,650);it.classList.add('hov');clickFx();await W(350)}else await W(500);
+    it&&it.classList.remove('hov');try{closeMenus()}catch(e){}}
   if(r0){setSel(r0)}run(cmd,arg);await W(500);try{hideCoach()}catch(e){}}
 async function demoOp(o){if(PL.stop)return;
   if(o.say)bar(o.say);

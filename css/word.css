@@ -134,7 +134,7 @@
 .swg.hl{grid-template-columns:repeat(5,22px)}
 .sw{width:18px;height:18px;border:1px solid #c8c6c4;padding:0}
 .swg.hl .sw{width:22px;height:22px}
-.sw:hover{outline:2px solid #f4b400;outline-offset:0}
+.sw:hover,.sw.hov{outline:2px solid #f4b400;outline-offset:0}
 .tgrid{display:grid;grid-template-columns:repeat(10,17px);gap:3px;padding:6px 10px;direction:rtl}
 .tgrid span{width:17px;height:17px;border:1px solid #a19f9d;background:#fff}
 .tgrid span.h{background:#ffe7a8;border-color:#e3a21a}
