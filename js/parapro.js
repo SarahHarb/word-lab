@@ -13,14 +13,17 @@ function applyPB(bs,spec,bd){groups(bs).forEach(g=>{g.forEach((b,i)=>{const firs
    if(spec.ih!==undefined){if(!last)b.style.borderBottom=spec.ih?bd:'';if(!first)b.style.borderTop=''}
    if(g.length>1){if(!last)b.style.marginBottom='0';if(!first)b.style.marginTop='0'}
    tidy(b)})})}
+function PB_STATE(a){try{const bs=pbBlocks();if(!bs.length)return false;const g=groups(bs);const T=()=>g.every(x=>has(x[0],'top')),B=()=>g.every(x=>has(x[x.length-1],'bottom')),L=()=>bs.every(b=>has(b,'left')),R=()=>bs.every(b=>has(b,'right')),I=()=>g.every(x=>x.slice(0,-1).every(b=>has(b,'bottom')))&&g.some(x=>x.length>1);
+  return a==='top'?T():a==='bottom'?B():a==='left'?L():a==='right'?R():a==='box'?T()&&B()&&L()&&R():a==='all'?T()&&B()&&L()&&R()&&(I()||g.every(x=>x.length<2)):a==='inside'||a==='ih'?I():a==='none'?bs.every(b=>!['top','bottom','left','right'].some(k=>has(b,k))):false}catch(e){return false}}
+window.PB_STATE=PB_STATE;
 OPS.pborders=function(a){if(a==='more')return paraBordersDlg();if(!needSel())return;const bs=pbBlocks();if(!bs.length)return;
   if(a==='drawTable')return run('drawTable');if(a==='viewGrid')return run('viewGrid');
   a=a||S.lastPB||'bottom';snap();const bd=BD();
   if(a==='hr'){const hr=document.createElement('hr');hr.className='whr';bs[bs.length-1].after(hr);logAct('pborders:hr');SIM.emit('change');return}
   S.lastPB=a;const g=groups(bs);
   if(a==='none')applyPB(bs,{top:0,bottom:0,left:0,right:0,ih:0},bd);
-  else if(a==='box')applyPB(bs,{top:1,bottom:1,left:1,right:1,ih:0},bd);
-  else if(a==='all')applyPB(bs,{top:1,bottom:1,left:1,right:1,ih:1},bd);
+  else if(a==='box'){const on=!PB_STATE('box');applyPB(bs,on?{top:1,bottom:1,left:1,right:1,ih:0}:{top:0,bottom:0,left:0,right:0},bd)}
+  else if(a==='all'){const on=!PB_STATE('all');applyPB(bs,on?{top:1,bottom:1,left:1,right:1,ih:1}:{top:0,bottom:0,left:0,right:0,ih:0},bd)}
   else if(a==='inside'||a==='ih'){const on=!g.every(x=>x.slice(0,-1).every(b=>has(b,'bottom')));applyPB(bs,{ih:on?1:0},bd)}
   else{const on=a==='top'?!g.every(x=>has(x[0],'top')):a==='bottom'?!g.every(x=>has(x[x.length-1],'bottom')):!bs.every(b=>has(b,a));applyPB(bs,{[a]:on?1:0},bd)}
   logAct('pborders:'+a);SIM.emit('change')};

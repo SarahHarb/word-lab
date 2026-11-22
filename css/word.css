@@ -529,3 +529,4 @@ body:has(#dlgs.show) #tblhandle,body:has(.ddw.open) #tblhandle{display:none!impo
 .bp.h{position:absolute;left:-26px;top:50%;transform:translateY(-50%)}
 .obj.sel2{outline:1px dashed #2b579a;outline-offset:2px}
 .obj .pcap{position:absolute;left:0;right:0;bottom:0;background:rgba(43,87,154,.85);color:#fff;font:600 12pt Arial;text-align:center;padding:4px 6px;outline:none}
+.dd .mi.act{background:#cfe0f5;box-shadow:inset 0 0 0 1px #7da7d9}.dd .mi.act:hover{background:#bcd3f0}

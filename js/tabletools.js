@@ -230,3 +230,44 @@ window.bordersDlg=function(tab){if(!needCell())return;const t=S.curCell.closest(
    qa('.bdApply').forEach(x=>x.onchange=()=>{st.apply=x.value;paint()});
    if(tab==='shade')qa('.bdtabs button')[2].click();paint()}})};
 OPS.tborders=(function(prev){return function(a){if(a==='more')return window.bordersDlg();return prev.call(this,a)}})(OPS.tborders);
+
+/* ===== قائمة «حدود» مثل Word: كل أمر يعمل كمفتاح — إذا كان الحد موجودًا بنفس القلم يُزال، وإلا يُطبَّق ===== */
+(function(){
+const KS={all:['top','bottom','left','right','ih','iv'],outside:['top','bottom','left','right'],inside:['ih','iv'],ih:['ih'],iv:['iv'],top:['top'],bottom:['bottom'],left:['left'],right:['right']};
+const tbCells=()=>{const t=S.curCell.closest('table');return S.selCells.length?[...S.selCells]:[...t.querySelectorAll('td')]};
+const inf=(td,s)=>{const c=getComputedStyle(td),S2=SIDE_CAP[s];return {s:c['border'+S2+'Style'],w:parseFloat(c['border'+S2+'Width'])||0,c:c['border'+S2+'Color']}};
+const vis=i=>i.s!=='none'&&i.s!=='hidden'&&i.w>0&&!/rgba\(0, 0, 0, 0\)|transparent/.test(i.c);
+const rgb=h=>{const d=document.createElement('i');d.style.color=h;document.body.appendChild(d);const v=getComputedStyle(d).color;d.remove();return v};
+function pen(){const p=S.pen||{};return {s:p.s||'solid',w:Math.max(+p.w||1,p.s==='double'?4:1),c:rgb(p.c||'#000')}}
+const same=(i,p)=>i.s===p.s&&Math.abs(i.w-p.w)<.6&&i.c===p.c;
+function edges(cs){const t=cs[0].closest('table'),g=gridMap(t),rtl=isRTLt(t);const bs=cs.map(c=>g.get(c)).filter(Boolean);if(!bs.length)return [];
+  const R1=Math.min(...bs.map(b=>b.r1)),R2=Math.max(...bs.map(b=>b.r2)),C1=Math.min(...bs.map(b=>b.c1)),C2=Math.max(...bs.map(b=>b.c2));const lo=rtl?'right':'left',hi=rtl?'left':'right';const out=[];
+  cs.forEach(c=>{const v=g.get(c);if(!v)return;const outer={top:v.r1===R1,bottom:v.r2===R2,[lo]:v.c1===C1,[hi]:v.c2===C2};
+    ['top','bottom','left','right'].forEach(s=>{const k=outer[s]?s:(s==='top'||s==='bottom')?'ih':'iv';out.push({k,td:c,s})})});return out}
+function edgeOn(e,p){const a=inf(e.td,e.s);if(vis(a))return p?same(a,p):true;const n=neighbour(e.td,e.s);if(n){const b=inf(n,OPP[e.s]);if(vis(b))return p?same(b,p):true}return false}
+const DG={diagDown:'d',diagUp:'u'};
+function hasDiag(td,k){return (td.dataset.dg||'').includes(k)}
+function drawDiag(td){td.querySelector(':scope > svg.tdiag')?.remove();const dg=td.dataset.dg||'';if(!dg){if(td.style.position==='relative')td.style.position='';return}
+  const c=td.dataset.dgc||'#000',w=td.dataset.dgw||1;td.style.position='relative';
+  const ns='http://www.w3.org/2000/svg',sv=document.createElementNS(ns,'svg');sv.setAttribute('class','tdiag');sv.setAttribute('viewBox','0 0 100 100');sv.setAttribute('preserveAspectRatio','none');sv.setAttribute('contenteditable','false');
+  sv.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible');
+  sv.innerHTML=(dg.includes('d')?`<line x1="0" y1="0" x2="100" y2="100" stroke="${c}" stroke-width="${w}" vector-effect="non-scaling-stroke"/>`:'')+(dg.includes('u')?`<line x1="0" y1="100" x2="100" y2="0" stroke="${c}" stroke-width="${w}" vector-effect="non-scaling-stroke"/>`:'');td.appendChild(sv)}
+window.drawDiag=drawDiag;
+window.TB_STATE=a=>{try{if(!S.curCell||!S.curCell.closest('table'))return false;const cs=tbCells();if(DG[a])return cs.every(td=>hasDiag(td,DG[a]));
+  if(a==='none'){return edges(cs).every(e=>!edgeOn(e))&&cs.every(td=>!td.dataset.dg)}const ks=KS[a];if(!ks)return false;const es=edges(cs).filter(e=>ks.includes(e.k));return es.length>0&&es.every(e=>edgeOn(e))}catch(e){return false}};
+const prev=OPS.tborders;
+OPS.tborders=function(a){if(a==='more')return window.bordersDlg();if(a==='drawTable'||a==='viewGrid')return run(a);if(!needCell())return;const cs=tbCells();
+  if(DG[a]){snap();const k=DG[a],on=!cs.every(td=>hasDiag(td,k)),p=S.pen||{};cs.forEach(td=>{let d=(td.dataset.dg||'').replace(k,'');if(on){d+=k;td.dataset.dgc=p.c||'#000';td.dataset.dgw=Math.max(+p.w||1,1)}if(d)td.dataset.dg=d;else{delete td.dataset.dg;delete td.dataset.dgc;delete td.dataset.dgw}drawDiag(td)});logAct('tborders:'+a+(on?'':':off'));SIM.emit&&SIM.emit('change');return}
+  const ks=KS[a||'all'];
+  if(ks){const P=pen();const es=edges(cs).filter(e=>ks.includes(e.k));const off=es.length&&es.every(e=>edgeOn(e,P));
+    if(off&&!S._noTog){snap();const sp={};ks.forEach(k=>sp[k]=false);applyBorderSet(cs,sp,penBd());logAct('tborders:'+a+':off');SIM.emit&&SIM.emit('change');try{simToast('أُزيل الحد — اضغطه مرة أخرى لإرجاعه')}catch(e){}return}
+    snap();const sp={};ks.forEach(k=>sp[k]=true);applyBorderSet(cs,sp,penBd());logAct('tborders:'+(a||'all'));SIM.emit&&SIM.emit('change');return}
+  if(a==='none'){const r=prev.call(this,a);cs.forEach(td=>{if(td.dataset.dg){delete td.dataset.dg;delete td.dataset.dgc;delete td.dataset.dgw;drawDiag(td)}});return r}
+  return prev.call(this,a)};
+/* إظهار الأمر المفعّل في القائمة (مثل Word) */
+const _om=openMenu;openMenu=function(w){_om(w);try{const dd=w.querySelector('[data-dd]');const cmd=dd&&dd.dataset.cmd;const F=cmd==='tborders'?window.TB_STATE:cmd==='pborders'?window.PB_STATE:null;
+  w.querySelectorAll('.dd .mi.act').forEach(m=>m.classList.remove('act'));if(F)w.querySelectorAll('.dd .mi[data-arg]').forEach(m=>{if(!['more','hr','drawTable'].includes(m.dataset.arg)&&F(m.dataset.arg))m.classList.add('act')});
+  if(cmd==='tborders'||cmd==='pborders'){const g=w.querySelector('.dd .mi[data-arg="viewGrid"]');if(g)g.classList.toggle('act',doc.classList.contains('vgrid'))}}catch(e){}};
+})();
+
+OPS.borderPainter=function(){S._noTog=1;try{OPS.tborders('all')}finally{S._noTog=0}};
