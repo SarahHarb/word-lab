@@ -56,7 +56,13 @@ async function showAt(el){if(!el)return;await moveTo(el,600);clickFx();await W(2
 async function typeText(t){for(const ch of t){document.execCommand('insertText',false,ch);await W(t.length>40?15:55)}S.range=curRange()||S.range;try{SIM.emit('change')}catch(e){}}
 async function ribbonCmd(cmd,arg,say){bar(say||'');const tab=tabOfCmd(cmd);if(tab){const t=$(`#wtabs [data-tab="${tab}"]`);if(t&&!t.classList.contains('on')){await showAt(t);realClick(t);await W(300)}}
   const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}"]`);if(b){await ensureHVis(b);try{placeCoach(b,say||'')}catch(e){}await showAt(b)}
-  const r0=S.range;if(r0){setSel(r0)}run(cmd,arg);await W(500);try{hideCoach()}catch(e){}}
+  const r0=S.range;
+  /* أمر له قائمة منسدلة: افتح القائمة وأرِ الخيار ثم اختره (مثل Word) */
+  const w=b&&b.dataset.dd&&b.closest('.ddw');if(w&&arg!=null&&!PL.stop){try{hideCoach()}catch(e){}try{openMenu(w)}catch(e){}await W(450);
+    const A=String(arg).toLowerCase();const it=[...w.querySelectorAll('.dd [data-arg]')].find(x=>String(x.dataset.arg).toLowerCase()===A&&(!x.dataset.cmd||x.dataset.cmd===cmd||!w.querySelector(`.dd [data-cmd="${cmd}"]`)));
+    if(it&&it.offsetParent){try{placeCoach(it,say||it.textContent.trim()||'')}catch(e){}await moveTo(it,550);clickFx();await W(350)}else await W(500);
+    try{closeMenus()}catch(e){}}
+  if(r0){setSel(r0)}run(cmd,arg);await W(500);try{hideCoach()}catch(e){}}
 async function demoOp(o){if(PL.stop)return;
   if(o.say)bar(o.say);
   if(o.caret!=null){const f0=findText(o.caret);if(!f0)return;await ensureVis(f0[0].parentElement);const f=findText(o.caret);const [n,i]=f;const r=document.createRange();const pos=o.at==='end'?i+o.caret.length:i+(o.off||0);r.setStart(n,pos);r.collapse(true);
