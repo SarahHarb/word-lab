@@ -117,6 +117,7 @@ document.addEventListener('mousedown',hideTip,true);
 ['click','change'].forEach(ev=>document.addEventListener(ev,e=>{const f=CO.item&&CO.item.final;if(!f||!e.target.closest)return;if(e.target.closest(f))setTimeout(()=>{if(CO.mode==='try'||CO.mode==='free'||CO.mode==='demo')CO.hit=true},40)},true));
 /* nav */
 let openTopic=null;const secOpen={};
+const TOPIC_FILES={t5:[['files/tables-exercises.docx','تمارين الجداول.docx']],t10:[['files/pictures-exercises.docx','تمارين الصور.docx']]};
 function renderNav2(){
   const all=allUnits();let d=0,t=0;all.forEach(u=>L(u).forEach(l=>{t++;if(isDone(u,l))d++}));
   $('#sprog').innerHTML=`<div class="pt"><span>تقدّمك</span><b>${d} / ${t}</b></div><div class="bar"><i style="width:${t?d/t*100:0}%"></i></div>`;
@@ -126,7 +127,7 @@ function renderNav2(){
     const sec=(k,title,arr)=>{if(!arr.length)return '';const id=u.id+k;const has=arr.includes(CO.item)&&CO.unit===u;if(secOpen[id]==null)secOpen[id]=has||k==='l';const o=secOpen[id];const sd=arr.filter(l=>isDone(u,l)).length;
       return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map((l,k)=>{const i=ls.indexOf(l);const gh=l.g&&(k===0||arr[k-1].g!==l.g)?`<div class="lg">${l.g}</div>`:'';return gh+`<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
     return `<div class="topic ${op?'open':''} ${CO.unit===u?'cur':''}"><button class="th" data-t="${u.id}"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>${u.sub}</small></span><span class="tc">${dn}/${ls.length}</span><span class="chev">‹</span></button>
-      ${op?`<div class="tbody">${sec('l',u.learnTitle||'تعلّم',ls.filter(l=>l.key[0]==='l'&&!l.proj))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.key[0]!=='l'))}</div>`:''}</div>`}).join('');
+      ${op?`<div class="tbody">${sec('l',u.learnTitle||'تعلّم',ls.filter(l=>l.key[0]==='l'&&!l.proj))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.key[0]!=='l'))}${(TOPIC_FILES[u.id]||[]).map(f=>`<a class="tfile" href="${f[0]}" download="${f[1]}"><span class="fi">W</span><span><b>${f[1].replace('.docx','')}</b><small>ملف Word للتحميل</small></span><span class="dl">⬇</span></a>`).join('')}</div>`:''}</div>`}).join('');
   $('#wsBtn').onclick=()=>{openWorkspace();document.body.classList.remove('drawer')};
   $$('#topics [data-t]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.t);openTopic=openTopic===u?null:u;renderNav2()});
   $$('#topics [data-s]').forEach(b=>b.onclick=()=>{secOpen[b.dataset.s]=!secOpen[b.dataset.s];renderNav2()});
