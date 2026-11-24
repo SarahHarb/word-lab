@@ -6,9 +6,12 @@
 create table if not exists teachers (email text primary key, name text default '', created_at timestamptz default now());
 alter table teachers enable row level security;
 
--- 2) كل شعبة لها صاحب (إيميل المدرّس). الشعب الحالية تصبح للأدمن.
+-- 2) كل شعبة لها صاحب (إيميل المدرّس).
 alter table sections add column if not exists owner text;
-update sections set owner = (select email from admins order by email limit 1) where owner is null;
+-- سارة حرب: مسؤولة الموقع (أدمن) ومدرّسة الشعبتين الحاليتين 38 و 53
+insert into admins(email) values ('p9396@ppu.edu.ps') on conflict do nothing;
+insert into teachers(email,name) values ('p9396@ppu.edu.ps','سارة حرب') on conflict (email) do update set name = excluded.name;
+update sections set owner = 'p9396@ppu.edu.ps' where name in ('38','53') or owner is null;
 
 -- 3) دوال الصلاحيات
 create or replace function is_teacher() returns boolean language sql stable security definer set search_path=public as $$
