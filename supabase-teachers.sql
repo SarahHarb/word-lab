@@ -1,6 +1,6 @@
 -- ===== برنامج وورد — إضافة المدرّسين (تشغيل مرة واحدة) =====
 -- الصقي هذا الملف كاملًا في Supabase: SQL Editor ← New query ← Run
--- آمن: لا يحذف أي شعبة أو طالب أو تقدّم.
+-- لا يمس الشعب 38 و 53 وطلابها وتقدّمهم. يحذف فقط شعبة «المدرسون» بعد تحويل أعضائها إلى مدرّسين.
 
 -- 1) جدول المدرّسين
 create table if not exists teachers (email text primary key, name text default '', created_at timestamptz default now());
@@ -17,6 +17,9 @@ insert into teachers(email,name)
   select lower(st.email), coalesce(st.name,'') from students st join sections se on se.id = st.section_id
   where trim(se.name) in ('المدرسون','المدرّسون','المدرسين') and lower(st.email) <> 'p9396@ppu.edu.ps'
 on conflict (email) do nothing;
+-- بعد نقلهم كمدرّسين: لم يعودوا طلابًا، وتُحذف شعبة «المدرسون»
+delete from students where section_id in (select id from sections where trim(name) in ('المدرسون','المدرّسون','المدرسين'));
+delete from sections where trim(name) in ('المدرسون','المدرّسون','المدرسين');
 
 -- 3) دوال الصلاحيات
 create or replace function is_teacher() returns boolean language sql stable security definer set search_path=public as $$
