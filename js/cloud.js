@@ -40,7 +40,7 @@ async function onUser(u){
   }catch(e){alertGate('خطأ في الاتصال: '+e.message);return}
   $('#gate').hidden=true;startOnce();renderUser();
 }
-let csT;function cloudSave(){if(!CLOUD.on||!CLOUD.user||CLOUD.admin)return;clearTimeout(csT);csT=setTimeout(async()=>{const done={};Object.keys(P).forEach(k=>{const x=P[k];if(!x)return;const hp=x.p&&Object.keys(x.p).length,hs=x.s&&Object.keys(x.s).length;if(hp||hs)done[k]={p:x.p||{},...(hs?{s:x.s}:{})}});
+let csT;function cloudSave(){if(!CLOUD.on||!CLOUD.user||(CLOUD.admin&&!CLOUD.teacher))return;clearTimeout(csT);csT=setTimeout(async()=>{const done={};Object.keys(P).forEach(k=>{const x=P[k];if(!x)return;const hp=x.p&&Object.keys(x.p).length,hs=x.s&&Object.keys(x.s).length;if(hp||hs)done[k]={p:x.p||{},...(hs?{s:x.s}:{})}});
   const {error}=await CLOUD.sb.from('progress').upsert({email:CLOUD.email,name:CLOUD.student?.name||CLOUD.user.user_metadata?.full_name||'',section_id:CLOUD.student?.section_id||null,done,last:new Date().toISOString()});if(error)console.warn(error)},1200)}
 function isUnlocked(u){return !window.UNLOCKED||window.UNLOCKED.includes(u.id)}
 function renderUser(){const b=$('#suser');if(!b||!CLOUD.user)return;const m=CLOUD.user.user_metadata||{};b.hidden=false;b.innerHTML=`<img src="${m.avatar_url||m.picture||''}" alt=""><span><b>${CLOUD.student?.name||m.full_name||''}</b><small dir="ltr">${CLOUD.email}</small></span>${CLOUD.admin?'<a href="admin.html" class="adm">لوحة المتابعة</a>':''}<button id="sOut">خروج</button>`;$('#sOut').onclick=signOut}

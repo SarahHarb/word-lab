@@ -46,3 +46,7 @@ drop policy if exists st_upd on students; create policy st_upd on students for u
 drop policy if exists st_del on students; create policy st_del on students for delete to authenticated using (owns_section(section_id));
 
 drop policy if exists p_sel on progress; create policy p_sel on progress for select to authenticated using (is_admin() or email = my_email() or owns_student(email));
+
+-- 5) المدرّس يتعلّم على الموقع مثل الطالب: يُحفظ تقدّمه وتراه المسؤولة
+drop policy if exists p_ins on progress; create policy p_ins on progress for insert to authenticated with check (email = my_email() and (is_student() or is_teacher()));
+drop policy if exists p_upd on progress; create policy p_upd on progress for update to authenticated using (email = my_email()) with check (email = my_email() and (is_student() or is_teacher()));
