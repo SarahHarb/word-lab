@@ -27,7 +27,7 @@ async function cloudInit(){
 async function onUser(u){
   handled=true;gate('loading');const sb=CLOUD.sb;const email=(u.email||'').toLowerCase();CLOUD.user=u;CLOUD.email=email;
   try{
-    const a=await sb.from('admins').select('email').eq('email',email).maybeSingle();CLOUD.admin=!!a.data;
+    const a=await sb.from('admins').select('email').eq('email',email).maybeSingle();CLOUD.admin=!!a.data;if(!CLOUD.admin){try{const t=await sb.from('teachers').select('email').eq('email',email).maybeSingle();if(t.data){CLOUD.admin=true;CLOUD.teacher=true}}catch(e){}}
     if(!CLOUD.admin){
       const st=await sb.from('students').select('*').eq('email',email).maybeSingle();if(!st.data){gate('denied',email);return}CLOUD.student=st.data;
       const loadSec=async()=>{const ids=[CLOUD.student.section_id,...(CLOUD.student.extra||[])].filter(Boolean);const r=ids.length?await sb.from('sections').select('unlocked').in('id',ids):{data:[]};window.UNLOCKED=[...new Set((r.data||[]).flatMap(x=>x.unlocked||[]))];if(appStarted){renderNav2();if(CO.unit&&!isUnlocked(CO.unit))openWorkspace()}};
