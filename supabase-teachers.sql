@@ -12,6 +12,11 @@ alter table sections add column if not exists owner text;
 insert into admins(email) values ('p9396@ppu.edu.ps') on conflict do nothing;
 insert into teachers(email,name) values ('p9396@ppu.edu.ps','سارة حرب') on conflict (email) do update set name = excluded.name;
 update sections set owner = 'p9396@ppu.edu.ps' where name in ('38','53') or owner is null;
+-- كل من في شعبة «المدرسون» يصبح مدرّسًا (يضيف شعبه وطلابه)
+insert into teachers(email,name)
+  select lower(st.email), coalesce(st.name,'') from students st join sections se on se.id = st.section_id
+  where trim(se.name) in ('المدرسون','المدرّسون','المدرسين') and lower(st.email) <> 'p9396@ppu.edu.ps'
+on conflict (email) do nothing;
 
 -- 3) دوال الصلاحيات
 create or replace function is_teacher() returns boolean language sql stable security definer set search_path=public as $$
