@@ -58,6 +58,8 @@ const CO={mode:'idle',unit:null,item:null,idx:0};
 function gMark(el){const o=window.__gEl;if(o&&o!==el)o.classList.remove('g-tgt');window.__gEl=el;if(el)el.classList.add('g-tgt')}
 function hideCoach(){gMark(null);$('#ring').style.display='none';$('#bubble').style.display='none'}
 /* visible area in page px (works with pinch-zoom on phones) */
+document.addEventListener('scroll',e=>{const t=e.target;if(!t||t.nodeType!==1){const vv=window.visualViewport;if((!vv||vv.scale<=1.01)&&(scrollX||scrollY))scrollTo(0,0);return}
+  if(t.closest&&t.closest('#doc'))return;const c=getComputedStyle(t);if(c.overflowX==='hidden'&&t.scrollLeft)t.scrollLeft=0;if(c.overflowY==='hidden'&&t.scrollTop)t.scrollTop=0},true);
 function OX(){const h=document.getElementById('ovl');const o=h?h.getBoundingClientRect():{left:-scrollX,top:-scrollY};return{x:-o.left,y:-o.top}}
 function VP(){const O=OX(),v=window.visualViewport;if(v)return{l:v.offsetLeft+O.x,t:v.offsetTop+O.y,w:v.width,h:v.height,s:v.scale||1};return{l:O.x,t:O.y,w:LW(),h:LH(),s:1}}
 /* rect that really lies under the element (self-check with hit-testing; fixes browser zoom quirks) */
@@ -65,7 +67,10 @@ function realRect(el){const R=el.getBoundingClientRect();if(typeof doc==="undefi
   const hits=r=>{const x=r.left+r.width/2,y=r.top+r.height/2;if(x<0||y<0||x>LW()||y>LH())return null;const h=document.elementFromPoint(x,y);return !!h&&(h===el||el.contains(h))};
   const h0=hits(R);if(h0!==false)return R;const z=parseFloat(doc.style.zoom)||1;if(z===1)return R;
   for(const [p,q] of [[z,1],[z,z],[1,z],[1/z,1],[1/z,1/z]]){const c=new DOMRect(R.left*p,R.top*p,R.width*q,R.height*q);if(hits(c))return c}return R}
-function placeCoach(el,html,num){
+/* زر في الشريط خارج الشاشة (الجوال): مرّر الشريط إليه أولًا، فلا تخرج الحلقة/الفقاعة خارج الصفحة */
+function revealInStrip(el){if(!el||!el.closest||!el.closest('#ribbon,#wtabs')||el.closest('.dd'))return;let p=el.parentElement;
+  while(p&&p!==document.body&&!p.contains(doc)){const c=getComputedStyle(p);if(/(auto|scroll)/.test(c.overflowX)&&p.scrollWidth>p.clientWidth+4){const r=el.getBoundingClientRect(),pr=p.getBoundingClientRect();if(r.left<pr.left+6||r.right>pr.right-6)p.scrollLeft+=(r.left+r.width/2)-(pr.left+pr.width/2)}p=p.parentElement}}
+function placeCoach(el,html,num){try{revealInStrip(el)}catch(e){}
   const R=realRect(el),ring=$('#ring'),b=$('#bubble'),V=VP(),O=OX();
   const r={left:R.left+O.x,top:R.top+O.y,width:R.width,height:R.height,right:R.right+O.x,bottom:R.bottom+O.y};
   gMark(el);const pz=V.s>1.04;
