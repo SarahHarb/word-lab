@@ -122,7 +122,7 @@ document.addEventListener('mousedown',hideTip,true);
 ['click','change'].forEach(ev=>document.addEventListener(ev,e=>{const f=CO.item&&CO.item.final;if(!f||!e.target.closest)return;if(e.target.closest(f))setTimeout(()=>{if(CO.mode==='try'||CO.mode==='free'||CO.mode==='demo')CO.hit=true},40)},true));
 /* nav */
 let openTopic=null;const secOpen={};
-const TOPIC_FILES={t5:[['files/tables-exercises.docx','تمارين الجداول.docx']],t10:[['files/pictures-exercises.docx','تمارين الصور.docx']]};
+const TOPIC_FILES={t5:[['files/tables-exercises.docx','تمارين الجداول.docx']],t10:[['files/pictures-exercises.docx','تمارين الصور.docx']],t4:[['files/shapes-exercises.docx','تمارين الأشكال.docx']],t11:[['files/wordart-exercises.docx','تمارين WordArt.docx']]};
 function renderNav2(){
   const all=allUnits();let d=0,t=0;all.forEach(u=>L(u).forEach(l=>{t++;if(isDone(u,l))d++}));
   $('#sprog').innerHTML=`<div class="pt"><span>تقدّمك</span><b>${d} / ${t}</b></div><div class="bar"><i style="width:${t?d/t*100:0}%"></i></div>`;
