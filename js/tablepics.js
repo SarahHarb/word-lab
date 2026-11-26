@@ -242,7 +242,7 @@ const PIC_SPLITT=PIC({t:'تقسيم الجدول وتحويله وحذفه',goal
 const TABLE_PICS=[PIC_INS,PIC_TYPE,PIC_SELECT,PIC_ADD,PIC_DEL,PIC_SORT,PIC_MERGE,PIC_SPLIT,PIC_SIZE,PIC_ALIGN,PIC_STYLE,PIC_SHADE,PIC_NOB,PIC_ALLB,PIC_OUTER,PIC_DBL,PIC_DASH,PIC_PAINT,PIC_SPLITT];
 TABLE_PICS.forEach((p,i)=>p.t=`${i+1}. ${p.t}`);
 /* the hard one: every skill, as a challenge */
-HOUSE_TASK.t='تحدٍّ: أعد رسم جدول المبنى';HOUSE_TASK.level='صعب';HOUSE_TASK.skills=['كل مهارات الجداول'];delete HOUSE_TASK.g;HOUSE_TASK.intro=HOUSE_TASK.intro.replace('ابدأ من الصفر: ','');
+HOUSE_TASK.t='تحدٍّ: أعد رسم جدول المبنى';delete HOUSE_TASK.level;HOUSE_TASK.skills=['كل مهارات الجداول'];delete HOUSE_TASK.g;HOUSE_TASK.intro='أعد رسم جدول المبنى كما في الصورة. لك أن تختار الطريقة:<br>• <b>الدمج:</b> أدرج 6 أعمدة × 7 صفوف ثم ادمج.<br>• <b>الممحاة:</b> نفس الجدول، وامسح الخطوط بدل الدمج.<br>• <b>التقسيم والدمج معًا:</b> أدرج 4 أعمدة × 6 صفوف، ثم قسّم وادمج.<br><small>«▶ شاهد الحل» يعرض كل طريقة. وفي Word العربي يبدأ الجدول من اليمين، فقد يظهر معكوسًا عن الصورة — هذا طبيعي.</small>';
 (()=>{const r=HOUSE_TASK.reqs;const set=(i,...n)=>{if(r[i])r[i].need=n};for(let i=1;i<r.length;i++)set(i,0);set(2,0,3,5);set(6,3);set(8,3,5);set(9,2);set(10,5);set(12,2);set(13,3);set(14,3);set(15,3)})();
 
 /* text formatting on a cell selection (drag over cells, then Bold / colour …) — like Word */
@@ -270,7 +270,7 @@ function rowHint(arr){const t=PT_();if(!t)return null;let best=null,bs=-1;prows(
 (()=>{const dimReq=(task,i,C,R)=>{const r=task.reqs[i];if(!r)return;r.fixFn=()=>dimFix(r,C,R);const w0=r.where;r.where=()=>{const t=PT_();if(!t)return w0();const lr=t.rows[t.rows.length-1];return lr.cells[lr.cells.length-1]}};
  dimReq(PIC_INS,0,4,3);dimReq(PIC_TYPE,0,3,4);
  FR.forEach((row,k)=>{const r=PIC_TYPE.reqs[k+1];if(r)r.fixFn=()=>rowHint(row)});
- if(HOUSE_TASK.reqs[0])HOUSE_TASK.reqs[0].fixFn=()=>PT_()?null:'إدراج ← جدول ← اختر 7×7 (أو العدد الذي تراه مناسبًا).'})();
+ if(HOUSE_TASK.reqs[0])HOUSE_TASK.reqs[0].fixFn=()=>PT_()?null:'إدراج ← جدول ← 6 أعمدة × 7 صفوف (للدمج)، أو 4 × 6 (للتقسيم والدمج معًا).'})();
 
 PIC_SPLITT.reqs[2].fixFn=()=>{const t=[...doc.querySelectorAll('table.wt:not(.prev)')].find(t=>!(fuzzyHas(t.textContent,'8:00')||fuzzyHas(t.textContent,'13:00')||fuzzyHas(t.textContent,'ماء')));if(!t)return null;
   if(!t.textContent.trim())return 'بقي جدول فارغ: «حذف خلايا» أو Delete يمسح المحتوى فقط والجدول باقٍ. انقر فيه ← تخطيط ← حذف ← «حذف جدول».';return null};

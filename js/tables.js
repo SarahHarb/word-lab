@@ -35,6 +35,15 @@ function clearCells(){S.selCells.forEach(c=>c.classList.remove('sel'));S.selCell
 function setCells(a){clearCells();S.selCells=a.filter(Boolean);S.selCells.forEach(c=>c.classList.add('sel'));logAct('cellsSelected:'+S.selCells.length);SIM.emit('change')}
 /* visual grid (handles merged cells): each cell -> {r1,r2,c1,c2} */
 function gridMap(t){const occ=[];const m=new Map();[...t.rows].forEach((tr,r)=>{occ[r]=occ[r]||[];let c=0;[...tr.cells].forEach(td=>{while(occ[r][c])c++;const rs=td.rowSpan||1,cs=td.colSpan||1;for(let i=0;i<rs;i++){occ[r+i]=occ[r+i]||[];for(let j=0;j<cs;j++)occ[r+i][c+j]=td}m.set(td,{r1:r,r2:r+rs-1,c1:c,c2:c+cs-1});c+=cs})});return m}
+/* تقسيم خلية إلى n أعمدة × rr صفوف (مثل Word) — يحافظ على شبكة الجدول */
+function splitCellNM(c,n,rr){const t=c.closest('table');const w0=c.offsetWidth,auto=t.style.tableLayout==='auto';let g=gridMap(t);const v=g.get(c);const group=[c];
+  if(n>1){if(c.colSpan>=n){const extra=c.colSpan-n;c.colSpan=1;let last=c;for(let i=0;i<n-1;i++){const x=newCell();x.rowSpan=c.rowSpan;last.after(x);last=x;group.push(x)}if(extra>0)last.colSpan+=extra}
+    else{const add=n-c.colSpan;c.colSpan=1;let last=c;for(let i=0;i<n-1;i++){const x=newCell();x.rowSpan=c.rowSpan;last.after(x);last=x;group.push(x)}
+      const seen=new Set();g.forEach((w,td)=>{if(td===c||seen.has(td))return;if(w.r2<v.r1||w.r1>v.r2){if(w.c1<=v.c2&&w.c2>=v.c1){seen.add(td);td.colSpan+=add}}})}}
+  if(rr>1&&c.rowSpan===1){const tr=c.parentElement;g=gridMap(t);const seen=new Set();g.forEach((w,td)=>{if(group.includes(td))return;if(w.r1<=v.r1&&w.r2>=v.r1&&!seen.has(td)){seen.add(td);td.rowSpan+=rr-1}});
+    let after=tr;for(let i=0;i<rr-1;i++){const nr=document.createElement('tr');group.forEach(gc=>{const x=newCell();x.colSpan=gc.colSpan;nr.appendChild(x)});after.after(nr);after=nr}}
+  if(n>1){const ws=Math.max(24,Math.round(w0/n))+'px';group.forEach((x,i)=>{if(i===0||!x.textContent.trim()){x.style.width=ws;x.style.minWidth=auto?'':ws}})}}
+window.splitCellNM=splitCellNM;
 function rectCells(a,b){const t=a.closest('table');const g=gridMap(t);const A=g.get(a),B=g.get(b);if(!A||!B)return [a];let r1=Math.min(A.r1,B.r1),r2=Math.max(A.r2,B.r2),c1=Math.min(A.c1,B.c1),c2=Math.max(A.c2,B.c2);
   let grow=true;while(grow){grow=false;g.forEach(v=>{if(v.r2>=r1&&v.r1<=r2&&v.c2>=c1&&v.c1<=c2){if(v.r1<r1){r1=v.r1;grow=true}if(v.r2>r2){r2=v.r2;grow=true}if(v.c1<c1){c1=v.c1;grow=true}if(v.c2>c2){c2=v.c2;grow=true}}})}
   const o=[];g.forEach((v,td)=>{if(v.r2>=r1&&v.r1<=r2&&v.c2>=c1&&v.c1<=c2)o.push(td)});return o}
@@ -82,11 +91,7 @@ Object.assign(OPS,{
       else{const byRow=[...rows];const f=cs[0];const t=f.closest('table');let w=0;[...byRow[0].cells].forEach(c=>{if(cs.includes(c))w+=c.colSpan});cs.slice(1).forEach(o=>{if(o.textContent.trim())f.innerHTML+=' '+o.innerHTML;o.remove()});f.colSpan=w;f.rowSpan=byRow.length}}
     clearCells();S.curCell=cs[0];placeCaretIn(cs[0],false);logAct('merge');simToast('تم دمج الخلايا ✓')},
   splitCells(){if(!needCell())return;const c=S.curCell;dialog({title:'تقسيم الخلايا',body:`<label class="row" style="justify-content:space-between">عدد الأعمدة: <input type="number" id="sc" value="${Math.max(2,c.colSpan)}" min="1" max="10" style="width:60px"></label><label class="row" style="justify-content:space-between">عدد الصفوف: <input type="number" id="sr" value="1" min="1" max="10" style="width:60px"></label>`,
-    buttons:[{label:'موافق',pri:1,act:()=>{snap();const n=Math.max(1,+$('#sc').value),rr=Math.max(1,+$('#sr').value);const t=c.closest('table');const w0=c.offsetWidth,auto=t.style.tableLayout==='auto';
-      if(n>1){if(c.colSpan>=n){const extra=c.colSpan-1;c.colSpan=1;for(let i=0;i<n-1;i++)c.after(newCell());const rem=extra-(n-1);if(rem>0)c.nextElementSibling.colSpan+=rem}
-        else{const add=n-c.colSpan;const ci=c.cellIndex;for(let i=0;i<add;i++)c.after(newCell());c.colSpan=1;[...t.rows].forEach(r=>{if(r===c.parentElement)return;const x=r.cells[Math.min(ci,r.cells.length-1)];if(x)x.colSpan+=add})}}
-      if(rr>1){const tr=c.parentElement;for(let i=0;i<rr-1;i++){const nr=document.createElement('tr');[...tr.cells].forEach(x=>{if(x!==c&&!(n>1&&x.previousElementSibling===c))x.rowSpan++});const nc=newCell();nc.colSpan=1;nr.appendChild(nc);tr.after(nr)}}
-      if(n>1){let x=c;const ws=Math.max(24,Math.round(w0/n))+'px';for(let i=0;i<n&&x;i++){if(i===0||!x.textContent.trim()){x.style.width=ws;x.style.minWidth=auto?'':ws}x=x.nextElementSibling}}
+    buttons:[{label:'موافق',pri:1,act:()=>{snap();const n=Math.max(1,+$('#sc').value),rr=Math.max(1,+$('#sr').value);splitCellNM(c,n,rr);
       logAct('splitCells')}},{label:'إلغاء'}]})},
   splitTable(){if(!needCell())return;snap();const t=S.curCell.closest('table'),tr=S.curCell.parentElement;if(tr.rowIndex===0)return;const t2=t.cloneNode(false);const tb=document.createElement('tbody');t2.appendChild(tb);let r=tr;while(r){const n=r.nextElementSibling;tb.appendChild(r);r=n}const p=document.createElement('p');p.innerHTML='<br>';t.after(p,t2);logAct('splitTable')},
   autofit(a){if(!needCell())return;snap();const t=S.curCell.closest('table');t.style.tableLayout=a==='content'?'auto':'fixed';t.style.width=a==='content'?'auto':'100%'},

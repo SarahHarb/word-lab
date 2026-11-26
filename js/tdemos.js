@@ -1,4 +1,11 @@
 /* «▶ شاهد الحل» لتمارين الجداول */
+/* تمرين له أكثر من طريقة حل: اختيار الطريقة بتبويبات قبل التشغيل */
+(function(){const prev=window.playSolution;if(!prev)return;
+ window.playSolution=function(i){const it=(typeof CO!=="undefined")&&CO.item;if(i!=null||!it||!it.demoMethods)return prev.apply(this,arguments);
+  let k=0;const tabs=()=>`<div class="mtabs">${it.demoMethods.map((m,j)=>`<button type="button" class="mtab ${j===k?'on':''}" data-m="${j}">${m.name}</button>`).join('')}</div><p class="mdesc">${it.demoMethods[k].d}</p>`;
+  dialog({title:'▶ شاهد الحل — اختر الطريقة',w:520,body:`<div id="mbox">${tabs()}</div><p class="muted" style="font-size:12.5px;margin:6px 0 0">كل الطرق توصلك لنفس الجدول. جرّب الطريقة التي تناسبك.</p>`,
+   buttons:[{label:'▶ شغّل هذه الطريقة',pri:1,act:()=>{it.demoAll=it.demoMethods[k].list;setTimeout(()=>prev(),60)}},{label:'إلغاء'}]});
+  const bind=()=>document.querySelectorAll('#mbox .mtab').forEach(b=>b.onclick=()=>{k=+b.dataset.m;document.getElementById('mbox').innerHTML=tabs();bind()});setTimeout(bind,0)}})();
 (function(){
 const T=()=>PT_(),c=(r,i)=>T()&&T().rows[r]&&T().rows[r].cells[i];
 const A=()=>window.APL;
@@ -29,12 +36,32 @@ DA('PIC_DBL',()=>[cell(()=>c(0,0)),{cmd:'penStyle',arg:'double',say:'نمط ال
 DA('PIC_DASH',()=>[cell(()=>c(1,0)),{cmd:'penStyle',arg:'dashed',say:'نمط الحد: متقطع'},{cmd:'tborders',arg:'inside',say:'حدود ← حدود داخلية'},{cmd:'penStyle',arg:'solid',say:'نمط الحد: متصل'},{cmd:'penWeight',arg:'3',say:'السُّمك: 2¼'},{cmd:'tborders',arg:'outside',say:'حدود ← حدود خارجية'}]);
 DA('PIC_PAINT',()=>[cell(()=>c(0,0)),{cmd:'penColor',arg:'#00b050',say:'لون القلم: أخضر'},{cmd:'penWeight',arg:'3',say:'السُّمك: 2¼'},{cmd:'tselect',arg:'col',say:'تحديد العمود'},js('حدود ← الحد الأيسر للعمود',()=>OPS.tborders(isRTLt(T())?'left':'right'))]);
 DA('PIC_SPLITT',()=>[cell(()=>findCell('13:00'),'انقر في صف «13:00»'),{cmd:'splitTable',say:'تقسيم الجدول'},cell(()=>{const t=[...document.querySelectorAll('#doc table.wt')].find(x=>/ماء/.test(x.textContent));return t&&t.rows[1].cells[0]}),{cmd:'convertText',say:'تحويل إلى نص'},cell(()=>{const t=[...document.querySelectorAll('#doc table.wt')].find(x=>/قديم/.test(x.textContent));return t&&t.rows[0].cells[0]}),{cmd:'tdel',arg:'table',say:'حذف ← حذف الجدول'}]);
-/* تحدٍّ: جدول المبنى */
-DA('HOUSE_TASK',()=>{const t=()=>HT(),hc=(r,i)=>t()&&t().rows[r]&&t().rows[r].cells[i];const sel2=(a,b,say)=>cells(()=>hc(...a),()=>hc(...b),say);const M={cmd:'merge',say:'دمج الخلايا'};
- return [endP(),{show:'table',say:'إدراج ← جدول 7×7'},js('',()=>insertTable(7,7)),cell(()=>hc(0,0)),{cmd:'tselect',arg:'table',say:'تحديد الجدول'},{cmd:'shading',arg:'#deebf6',say:'تظليل أزرق فاتح'},
-  sel2([0,0],[0,1]),M,sel2([0,1],[0,3]),M,sel2([0,2],[0,3]),M,...[1,2].flatMap(r=>[sel2([r,0],[r,1]),M,sel2([r,4],[r,5]),M]),sel2([6,0],[6,1]),M,sel2([6,3],[6,4]),M,sel2([3,5],[4,6]),M,...[4,3,2].flatMap(i=>[sel2([3,i],[4,i]),M]),sel2([5,0],[5,6]),M,
-  sel2([0,0],[0,2]),{cmd:'shading',arg:'#44546a',say:'تظليل كحلي'},sel2([2,0],[2,4]),{cmd:'shading',arg:'#7030a0',say:'تظليل بنفسجي'},cell(()=>hc(5,0)),{cmd:'shading',arg:'#70ad47',say:'تظليل أخضر'},sel2([6,0],[6,4]),{cmd:'shading',arg:'#c00000',say:'تظليل أحمر'},
-  cell(()=>hc(1,4)),{cmd:'shading',arg:'pattern',say:'نقش'},{cmd:'penStyle',arg:'double',say:'نمط الحد: مزدوج'},sel2([1,2],[3,3],'حدّد الباب'),{cmd:'tborders',arg:'outside',say:'حدود خارجية'},sel2([6,2],[6,2]),{cmd:'tborders',arg:'right',say:'حد أيمن'},{cmd:'tborders',arg:'left',say:'حد أيسر'},sel2([6,0],[6,4]),{cmd:'tborders',arg:'bottom',say:'حد سفلي'},
-  typeIn(()=>hc(3,5),'Bottom center alignment'),cell(()=>hc(3,5)),{cmd:'calign',arg:'bottom-center',say:'محاذاة أسفل الوسط'},typeIn(()=>hc(5,0),'Hebron'),cell(()=>hc(5,0)),{cmd:'textDir',say:'اتجاه النص'},{cmd:'calign',arg:'middle-center',say:'محاذاة للوسط'},{cmd:'rowH',arg:'1.8',say:'الارتفاع 1.8 سم'},
-  js('حدّد «Hebron» ← غامق ← لون أصفر',async()=>{const gg=hc(5,0);selectWord(gg,'Hebron');OPS.bold();selectWord(gg,'Hebron');OPS.fontcolor('#ffff00');clearCells()})]});
+/* تحدٍّ: جدول المبنى — ثلاث طرق للحل */
+(()=>{const it=g('HOUSE_TASK');if(!it)return;
+ const HTb=()=>HT();const G=(r,c)=>{const t=HTb();if(!t)return null;let hit=null;gridMap(t).forEach((v,td)=>{if(!hit&&v.r1<=r&&r<=v.r2&&v.c1<=c&&c<=v.c2)hit=td});return hit};
+ const sel=(a,b,say)=>cells(()=>G(...a),()=>G(...b),say);const one=(r,c,say)=>cell(()=>G(r,c),say);
+ const M=(a,b,say)=>[sel(a,b,say||'حدّد الخلايا بالسحب'),{cmd:'merge',say:'تخطيط ← دمج الخلايا'}];
+ const side=()=>isRTLt(HTb())?'left':'right';
+ const E=(a,b,say)=>[one(a[0],a[1],say||'الممحاة: امسح الخطوط بين الخلايا'),js('',async()=>{setTool('eraser');await A().W(300);for(let r=a[0];r<=b[0];r++){for(let c=a[1];c<b[1];c++){eraseEdge(G(r,a[1]),side());await A().W(250)}}for(let r=a[0];r<b[0];r++){eraseEdge(G(a[0],a[1]),'bottom');await A().W(250)}setTool(null)})];
+ const SPL=(r,c,n,rr,say)=>[one(r,c,say),{show:'splitCells',say:`تخطيط ← تقسيم الخلايا: ${n} ${n===1?'عمود':'أعمدة'} × ${rr} ${rr===1?'صف':'صفوف'}`},js('',()=>{splitCellNM(G(r,c),n,rr)})];
+ /* التنسيق نفسه في الطرق الثلاث (الشبكة النهائية: 7 صفوف × 6 أعمدة) */
+ const FMT=()=>[one(0,0,'التلوين'),{cmd:'tselect',arg:'table',say:'تحديد ← الجدول'},{cmd:'shading',arg:'#deebf6',say:'تظليل ← أزرق فاتح للجدول كله'},
+  sel([0,0],[0,5]),{cmd:'shading',arg:'#44546a',say:'الصف الأول ← كحلي'},sel([2,0],[2,5]),{cmd:'shading',arg:'#7030a0',say:'الصف الثالث ← بنفسجي'},one(5,0),{cmd:'shading',arg:'#70ad47',say:'الصف الطويل ← أخضر'},sel([6,0],[6,5]),{cmd:'shading',arg:'#c00000',say:'الصف الأخير ← أحمر'},
+  one(1,4,'خلية النقش فوق المربع الكبير'),{cmd:'shading',arg:'pattern',say:'حدود ← حدود وتظليل ← نقش قطري'},
+  {cmd:'penStyle',arg:'double',say:'نمط الخط ← مزدوج'},sel([1,3],[4,3],'حدّد خلايا الباب'),{cmd:'tborders',arg:'outside',say:'حدود ← حدود خارجية'},sel([6,3],[6,3],'خلية الباب في الصف الأخير'),{cmd:'tborders',arg:'right',say:'حد أيمن'},{cmd:'tborders',arg:'left',say:'حد أيسر'},sel([6,0],[6,5]),{cmd:'tborders',arg:'bottom',say:'حد سفلي مزدوج'},{cmd:'penStyle',arg:'solid',say:'نمط الخط ← متصل'},
+  typeIn(()=>G(3,4),'Bottom center alignment'),one(3,4),{cmd:'calign',arg:'bottom-center',say:'تخطيط ← محاذاة أسفل الوسط'},
+  typeIn(()=>G(5,0),'Hebron'),one(5,0),{cmd:'textDir',say:'تخطيط ← اتجاه النص'},{cmd:'calign',arg:'middle-center',say:'محاذاة للوسط'},{cmd:'rowH',arg:'1.8',say:'الارتفاع 1.8 سم'},
+  js('حدّد «Hebron» ← غامق ← لون الخط أصفر',async()=>{const c=G(5,0);selectWord(c,'Hebron');OPS.bold();selectWord(c,'Hebron');OPS.fontcolor('#ffff00');clearCells()})];
+ const START=(r,c)=>[endP(),{show:'table',say:`إدراج ← جدول ← ${c} أعمدة × ${r} صفوف`},js('',()=>insertTable(r,c))];
+ it.demoMethods=[
+  {name:'الطريقة 1: الدمج',d:'أدرج جدولًا بعدد كل الأعمدة والصفوف التي تراها في الصورة: 6 أعمدة × 7 صفوف، ثم ادمج الخلايا التي يجب أن تصبح خلية واحدة.',
+   list:()=>[...START(7,6),...M([0,0],[0,1],'الصف الأول: ادمج كل جزأين'),...M([0,2],[0,3]),...M([0,4],[0,5]),...[1,2].flatMap(r=>[...M([r,0],[r,1]),...M([r,4],[r,5])]),
+     ...M([3,2],[4,2],'الأعمدة الطويلة: ادمج عموديًّا'),...M([3,3],[4,3]),...M([3,4],[4,5],'المربع الكبير: 2×2'),...M([5,0],[5,5],'الصف الأخضر كله خلية واحدة'),...M([6,0],[6,1]),...FMT()]},
+  {name:'الطريقة 2: الممحاة',d:'نفس الجدول 6 × 7، لكن بدل «دمج الخلايا» استخدم «الممحاة» من تصميم الجدول: امسح الخط بين الخليتين فتصيران خلية واحدة.',
+   list:()=>[...START(7,6),...E([0,0],[0,1],'الممحاة: امسح الخط'),...E([0,2],[0,3]),...E([0,4],[0,5]),...[1,2].flatMap(r=>[...E([r,0],[r,1]),...E([r,4],[r,5])]),
+     ...E([3,2],[4,2]),...E([3,3],[4,3]),...E([3,4],[4,5],'المربع الكبير'),...E([5,0],[5,5],'الصف الأخضر'),...E([6,0],[6,1]),...FMT()]},
+  {name:'الطريقة 3: التقسيم والدمج معًا',d:'أدرج جدولًا أصغر: 4 أعمدة × 6 صفوف (أعمدة الصف البنفسجي). ثم قسّم ما يحتاج خلايا أكثر، وادمج ما يحتاج خلايا أقل.',
+   list:()=>[...START(6,4),...SPL(3,0,2,2,'المربعات الأربعة الصغيرة: قسّم الخلية 2×2'),...SPL(6,4,2,1,'الصف الأخير: قسّم الخلية الأخيرة إلى عمودين'),
+     ...M([0,2],[0,3],'الصف الأول: ادمج خليتي الوسط'),...M([5,0],[5,5],'الصف الأخضر: ادمج الصف كله'),...FMT()]}];
+ it.demoAll=it.demoMethods[0].list})();
 })();

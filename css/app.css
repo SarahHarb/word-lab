@@ -283,3 +283,5 @@ body.demo #lhead{position:relative;z-index:1005}
 .lg.lgb .lgt{flex:1}.lg.lgb small{font-weight:700;color:#8ea0bd;background:rgba(255,255,255,.07);border-radius:20px;padding:1px 8px}.lg.lgb .chev{transition:transform .2s;display:inline-block;color:#8ea0bd}.lg.lgb.open .chev{transform:rotate(-90deg)}
 .lg.lgb:hover{color:#fff}.lgd{font-size:12px;color:#9fb0cb;margin:0 12px 4px;line-height:1.6}
 .topic .lg.lgb .chev{transform:none}.topic .lg.lgb.open .chev{transform:rotate(-90deg)}
+.mtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.mtab{border:1px solid #cfd8e6;background:#f4f7fb;border-radius:10px;padding:8px 12px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer;color:#334}.mtab.on{background:#e8f0fe;border-color:#2b579a;color:#1e3a6e}
+.mdesc{margin:0;line-height:1.8;font-size:14.5px}
