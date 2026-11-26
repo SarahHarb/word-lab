@@ -89,6 +89,31 @@ D(SY2.reqs[1],[{caret:'الهاتف'},...symIns('☎'),{type:' '}]);
 D(SY2.reqs[2],[{caret:'تمّت المهمة',at:'end'},{type:' '},...symIns('✓')]);
 /* ---- المعادلات ---- */
 const setEq=(pi,html)=>({js:()=>{const p=paras()[pi];if(!p)return;let e=p.querySelector('.eq');if(!e){p.innerHTML='<span class="eq disp"></span>';e=p.querySelector('.eq')}e.innerHTML=html;try{SIM.emit('change')}catch(x){}}});
+/* تطبيقات (EXAMS) — «▶ شاهد» لكل مطلوب */
+try{const E=EXAMS;
+ if(E.u1){const q=E.u1.reqs;D(q[0],[{say:'النقر على «ابدأ»',click:'#startbtn'},{say:'كتابة: Word',fill:'#startq',value:'Word'},{say:'النقر على «Word»',click:'#startres .best'},{js:async()=>{for(let i=0;i<60&&S.app==='desktop';i++)await new Promise(r=>setTimeout(r,100));await new Promise(r=>setTimeout(r,1200))}}]);
+  D(q[1],[{say:'النقر على «مستند فارغ»',click:'[data-hid="bs-blank"]'},{wait:600}]);
+  D(q[2],[cpEnd(()=>firstBody().lastElementChild),{cmd:'blankPage',say:'إدراج ← صفحة فارغة'}]);
+  D(q[3],[cp(()=>firstBody().firstElementChild),{type:'أول مستند لي'}]);
+  D(q[4],[cpEnd(()=>firstBody().lastElementChild),{cmd:'insPic',arg:'2',say:'إدراج ← صور'}])}
+ if(E.u4){const q=E.u4.reqs;D(q[0],[cpEnd(()=>firstBody().lastElementChild),{cmd:'blankPage',say:'إدراج ← صفحة فارغة'}]);D(q[1],[{cmd:'margins',arg:'narrow',say:'تخطيط ← الهوامش ← ضيقة'}]);
+  D(q[2],[{cmd:'orient',arg:'landscape',say:'تخطيط ← الاتجاه ← أفقي'}]);D(q[3],[{cmd:'pageColor',arg:'#deebf6',say:'تصميم ← لون الصفحة ← أزرق فاتح'}])}
+ if(E.e2){const q=E.e2.reqs;D(q[0],[cp(()=>$('#k1')),{cmd:'style',arg:'h1',say:'«المقدمة» ← الصفحة الرئيسية ← أنماط ← عنوان 1'},cp(()=>$('#k2')),{cmd:'style',arg:'h1',say:'«الأشجار» ← عنوان 1'},cp(()=>$('#k3')),{cmd:'style',arg:'h1',say:'«الخاتمة» ← عنوان 1'}]);
+  D(q[1],[cp(()=>firstBody().firstElementChild),{cmd:'tocIns',arg:'auto1',say:'مراجع ← جدول المحتويات ← تلقائي 1'}]);
+  D(q[2],[{cmd:'updateToc',say:'مراجع ← تحديث الجدول'},{wait:400},{js:()=>{const b=$('#dlgs .df .pri');if(b)b.click()}}])}
+ if(E.e8){const q=E.e8.reqs;D(q[0],[{cmd:'header',arg:'0',say:'إدراج ← رأس الصفحة ← فارغ'},{wait:400},hfT('hdr',0,'سارة حرب')]);
+  D(q[1],[{cmd:'footer',arg:'0',say:'إدراج ← تذييل الصفحة ← فارغ'},{wait:400},hfT('ftr',0,'مدرسة الأمل')]);
+  D(q[2],[{say:'النقر مرتين على الرأس لتحريره',js:()=>{try{enterHF('hdr',1)}catch(e){}const b=pages()[1]?.querySelector('.pg-hdr')||pages()[0]?.querySelector('.pg-hdr');if(b){placeCaretIn(b,false);S.range=curRange()}}},{cmd:'datetime',say:'رأس وتذييل ← التاريخ والوقت'},{wait:500},{say:'موافق',click:'#dlgs .df .pri'}]);
+  D(q[3],[{say:'النقر مرتين على الرأس لتحريره',js:()=>{try{enterHF('hdr',1)}catch(e){}}},{wait:300},{cmd:'firstDiff',arg:'1',say:'رأس وتذييل ← صفحة أولى مختلفة'}])}
+ if(E.e11){const q=E.e11.reqs;D(q[0],[{caret:'أريحا',at:'end'},{cmd:'footnote',say:'مراجع ← إدراج حاشية سفلية'},{wait:400},{type:'مدينة فلسطينية قديمة'}]);
+  D(q[1],[{caret:'هشام',at:'end'},{cmd:'footnote',say:'مراجع ← إدراج حاشية سفلية'},{wait:300}])}
+}catch(e){console.warn(e)}
+/* تطبيقات الرموز والمعادلات (EXAMS) */
+const addEq=(pi,html)=>({js:()=>{const p=paras()[pi];if(!p)return;let e=p.querySelector('.eq');if(!e){p.innerHTML='<span class="eq disp"></span>';e=p.querySelector('.eq')}e.insertAdjacentHTML('beforeend',html);try{SIM.emit('change')}catch(x){}}});
+try{const X13=EXAMS.e13;if(X13){D(X13.reqs[0],[{caret:'30',at:'end'},...symIns('°','رمز الدرجة °')]);D(X13.reqs[1],[{caret:'12 ',at:'end'},...symIns('÷','علامة القسمة ÷')]);D(X13.reqs[2],[{caret:'مدرسة'},...symIns('©','©'),{type:' '}])}
+ const X14=EXAMS.e14;if(X14){D(X14.reqs[0],[cp(()=>paras()[1]),{cmd:'insEq',say:'إدراج ← معادلة (Alt + =)'},{wait:300}]);
+  D(X14.reqs[1],[{say:'معادلة ← بنيات ← كسر ← كسر مكدّس ← 1 ثم Tab ثم 2',show:'eqFrac'},addEq(1,'<span class="fr"><span class="slot">1</span><span class="slot">2</span></span>')]);
+  D(X14.reqs[2],[{say:'كتابة x ثم: معادلة ← نص مرتفع ← مرتفع ← 2',show:'eqScript'},addEq(1,'<i>x</i><sup class="slot">2</sup>')])}}catch(e){}
 D(EQ1.reqs[0],[cp(()=>paras()[1]),{cmd:'insEq',say:'إدراج ← معادلة (Alt + =)'},{wait:300}]);
 D(EQ1.reqs[1],[{say:'كتابة x ثم: معادلة ← نص مرتفع ← مرتفع ← 2',show:'eqScript'},setEq(1,'<i>x</i><sup class="slot">2</sup>')]);
 D(EQ1.reqs[2],[{say:'كتابة + ثم: كسر ← كسر مكدّس ← 1 ثم Tab ثم 2',show:'eqFrac'},setEq(1,'<i>x</i><sup class="slot">2</sup>+<span class="fr"><span class="slot">1</span><span class="slot">2</span></span>')]);

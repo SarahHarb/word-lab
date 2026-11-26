@@ -25,7 +25,7 @@ function realClick(el){const r=el.getBoundingClientRect();const o={bubbles:true,
   try{el.dispatchEvent(new PointerEvent('pointerdown',o))}catch(e){}el.dispatchEvent(new MouseEvent('mousedown',o));el.dispatchEvent(new MouseEvent('mouseup',o));el.dispatchEvent(new MouseEvent('click',o))}
 function selectIn(el,text){const tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while(n=tw.nextNode()){const i=n.data.indexOf(text);if(i>=0){const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+text.length);const s=getSelection();s.removeAllRanges();s.addRange(r);S.range=r.cloneRange();return true}}
   const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);S.range=r.cloneRange();return true}
-function bar(msg){let b=$('#playbar');if(!b){b=document.createElement('div');b.id='playbar';b.innerHTML='<span class="pb-dot"></span><span class="pb-txt"><b>▶ شاهد الحل</b><span class="pb-msg"></span></span><button type="button">⏹ إيقاف</button>';document.body.appendChild(b);b.querySelector('button').onclick=()=>{PL.stop=true}}
+function bar(msg){if(PL.quiet&&msg!=='تجهيز الخطوات السابقة…')return;let b=$('#playbar');if(!b){b=document.createElement('div');b.id='playbar';b.innerHTML='<span class="pb-dot"></span><span class="pb-txt"><b>▶ شاهد الحل</b><span class="pb-msg"></span></span><button type="button">⏹ إيقاف</button>';document.body.appendChild(b);b.querySelector('button').onclick=()=>{PL.stop=true}}
   b.querySelector('.pb-msg').textContent=msg||'';b.style.display='flex'}
 function shield(on){let s=$('#playshield');if(!s){s=document.createElement('div');s.id='playshield';document.body.appendChild(s)}s.style.display=on?'block':'none'}
 function snapState(){return {pen:JSON.stringify(S.pen||null),grid:S.gridOn,vg:doc.classList.contains('vgrid'),ruler:S.ruler,html:doc.innerHTML,page:JSON.stringify(S.page),hf:JSON.stringify(S.hf),marks:S.marks,view:S.view,zoom:S.zoom,app:S.app,log:SIM.log.slice()}}
@@ -96,7 +96,28 @@ async function demoOp(o){if(PL.stop)return;
 async function runDemo(list){for(const o of list){if(PL.stop)break;await demoOp(o)}}
 window.runDemo=runDemo;
 window.APL={showAt,ribbonCmd,typeText,W,bar,moveTo,clickFx,realClick};
-async function playReq(i,whole,prep){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;if(it.demoAll&&(!r.demo||(whole&&!prep&&it.demoMethods))){if(PL.didAll)return;PL.didAll=true;await runDemo(typeof it.demoAll==='function'?it.demoAll():it.demoAll);try{hideCoach()}catch(e){}return}let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
+/* «▶ شاهد» لمطلوب واحد في تمرين حلّه عرض واحد كامل (demoAll):
+   تشغيل سريع حتى يتحقق هذا المطلوب، ثم الرجوع إلى آخر نقطة تحقق فيها مطلوب آخر، وعرض الخطوات من هناك بالسرعة العادية */
+const nodePath=n=>{const p=[];while(n&&n!==doc){const par=n.parentNode;if(!par)return null;p.unshift([...par.childNodes].indexOf(n));n=par}return n===doc?p:null};
+const nodeAt=p=>{let n=doc;for(const k of p||[]){n=n&&n.childNodes[k]}return n};
+function capSel(){try{return{cells:(S.selCells||[]).map(nodePath).filter(Boolean),cur:S.curCell?nodePath(S.curCell):null,obj:S.obj?[...doc.querySelectorAll('.obj')].indexOf(S.obj):-1,tool:S.tool||null,
+  rng:S.range&&doc.contains(S.range.startContainer)?[nodePath(S.range.startContainer),S.range.startOffset,nodePath(S.range.endContainer),S.range.endOffset]:null}}catch(e){return{cells:[],cur:null,obj:-1,rng:null}}}
+function putSel(x){if(!x)return;try{if(x.tool&&typeof setTool==='function')setTool(x.tool)}catch(e){}try{if(x.cells.length)setCells(x.cells.map(nodeAt).filter(Boolean));if(x.cur){const c=nodeAt(x.cur);if(c)S.curCell=c}}catch(e){}
+  try{if(x.obj>=0){const o=doc.querySelectorAll('.obj')[x.obj];if(o)selectObj(o)}}catch(e){}
+  try{if(x.rng){const a=nodeAt(x.rng[0]),b=nodeAt(x.rng[2]);if(a&&b){const r=document.createRange();r.setStart(a,x.rng[1]);r.setEnd(b,x.rng[3]);S.range=r;const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}}}catch(e){}}
+async function playOne(i){const it=CO.item;const list=typeof it.demoAll==='function'?it.demoAll():it.demoAll;
+  const st=()=>it.reqs.map(r=>{try{return r.check()?1:0}catch(e){return 0}}).join('');let cur=st();
+  const s0={s:snapState(),sel:capSel(),idx:0};
+  if(cur[i]==='1'){await runDemo(list);return}
+  let mk=s0,e=-1;const k0=PL.k;PL.k=Math.min(PL.k,.004);bar('تجهيز الخطوات السابقة…');PL.quiet=true;
+  for(let j=0;j<list.length;j++){if(PL.stop)break;try{await demoOp(list[j])}catch(er){console.warn(er)}const now=st();if(now[i]==='1'){e=j;break}if(now!==cur){cur=now;mk={s:snapState(),sel:capSel(),idx:j+1}}}
+  PL.k=k0;PL.quiet=false;if(PL.stop)return;
+  const back=m=>{try{hideCoach();closeMenus();closeDialog()}catch(er){}restore(m.s);putSel(m.sel)};
+  if(e<0){back(s0);await W(200);await runDemo(list);return}
+  back(mk);window.__seg=[mk.idx,e,list.length];await W(350);await runDemo(list.slice(mk.idx,e+1))}
+async function playReq(i,whole,prep){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;
+  if(it.demoAll&&!r.demo&&!whole){await playOne(i);try{hideCoach()}catch(e){}return}
+  if(it.demoAll&&(!r.demo||(whole&&!prep&&it.demoMethods))){if(PL.didAll)return;PL.didAll=true;await runDemo(typeof it.demoAll==='function'?it.demoAll():it.demoAll);try{hideCoach()}catch(e){}return}let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
   if(r.demo){await runDemo(typeof r.demo==='function'?r.demo():r.demo);try{hideCoach()}catch(e){}return}
   if(!r.path&&(r.mi||r.cmd)){let w=null;try{w=r.where&&r.where()}catch(e){}const ops=[];
     if(r.selText)ops.push({sel:r.selText});else if(w&&w.classList&&w.classList.contains('obj'))ops.push({obj:()=>w});else if(w&&doc.contains(w)&&w!==firstBody()&&!r.cmd?.startsWith('ins'))ops.push({js:async()=>{await showAt(w);placeCaretIn(w,true);S.range=curRange()}});
@@ -112,7 +133,7 @@ async function playReq(i,whole,prep){const it=CO.item;const r=it&&it.reqs[i];if(
 async function play(list,pre){if(PL.on)return;if(typeof stopGuide==='function')try{stopGuide()}catch(e){}
   const it=CO.item;if(!it||!it.reqs)return;PL.on=true;PL.stop=false;PL.didAll=false;const st0=snapState();shield(true);
   try{if(isPhone&&isPhone()){const p=$('#refpanel');if(p)p.classList.add('mcol')}}catch(e){}
-  try{if(pre&&pre.length){const k0=PL.k;PL.k=Math.min(PL.k,.02);bar('تجهيز الخطوات السابقة…');const c=$('#cursor');for(const j of pre){if(PL.stop)break;await playReq(j,true,true)}PL.k=k0;try{hideCoach()}catch(e){}const cv=$('#canvas');await W(300)}
+  try{if(pre&&pre.length){const k0=PL.k;PL.k=Math.min(PL.k,.02);bar('تجهيز الخطوات السابقة…');PL.quiet=true;const c=$('#cursor');try{for(const j of pre){if(PL.stop)break;await playReq(j,true,true)}}finally{PL.quiet=false}PL.k=k0;try{hideCoach()}catch(e){}const cv=$('#canvas');await W(300)}
     for(const i of list){if(PL.stop)break;await playReq(i,list.length>1);await W(400)}}catch(e){console.warn(e)}
   bar(PL.stop?'إيقاف العرض':'انتهى العرض — الآن تجربة أنت ✍️');await W(PL.stop?400:1600);
   try{hideCoach();closeMenus();closeDialog()}catch(e){}restore(st0);$('#cursor').style.display='none';shield(false);const b=$('#playbar');if(b)b.style.display='none';PL.on=false;
