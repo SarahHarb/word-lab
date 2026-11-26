@@ -25,7 +25,9 @@ function eraseEdge(td,side){const t=td.closest('table'),g=gridMap(t),a=g.get(td)
 function colEdges(t){const g=gridMap(t),rtl=getComputedStyle(t).direction==='rtl',m={};g.forEach((v,td)=>{const R=td.getBoundingClientRect();if(m[v.c1]==null)m[v.c1]=rtl?R.right:R.left;if(m[v.c2+1]==null)m[v.c2+1]=rtl?R.left:R.right});return m}
 window.colEdges=colEdges;
 function splitByLine(td,dir,pos){const t=td.closest('table'),g=gridMap(t),v=g.get(td);
-  if(dir==='v'){ if(td.colSpan>1){let k=Math.floor(td.colSpan/2);if(pos!=null){const m=colEdges(t);let best=1e9;for(let j=v.c1+1;j<=v.c2;j++){if(m[j]!=null&&Math.abs(m[j]-pos)<best){best=Math.abs(m[j]-pos);k=td.colSpan-(j-v.c1)}}}td.colSpan-=k;const n=newCell();n.colSpan=k;n.rowSpan=td.rowSpan;td.after(n);return}
+  if(dir==='v'){ if(td.colSpan>1){let k=Math.floor(td.colSpan/2);if(pos!=null){const m=colEdges(t);let best=1e9;for(let j=v.c1+1;j<=v.c2;j++){if(m[j]!=null&&Math.abs(m[j]-pos)<best){best=Math.abs(m[j]-pos);k=td.colSpan-(j-v.c1)}}
+      /* الخط بعيد عن أي حدّ موجود: عمود جديد في مكان الرسم (مثل Word) */
+      if(best>8){for(let j=v.c1;j<=v.c2;j++){const a=m[j],b=m[j+1];if(a==null||b==null)continue;if(pos>Math.min(a,b)&&pos<Math.max(a,b)){const n=newCell();n.rowSpan=td.rowSpan;n.colSpan=v.c2-j+1;td.colSpan=j-v.c1+1;td.after(n);g.forEach((w,x)=>{if(x!==td&&w.c1<=j&&w.c2>=j)x.colSpan+=1});return}}}}td.colSpan-=k;const n=newCell();n.colSpan=k;n.rowSpan=td.rowSpan;td.after(n);return}
     const n=newCell();n.rowSpan=td.rowSpan;td.after(n);g.forEach((w,x)=>{if(x!==td&&w.c1<=v.c1&&w.c2>=v.c1&&!(w.r1>=v.r1&&w.r2<=v.r2))x.colSpan+=1});
     /* other rows covered by td's rows are fine; rows outside get the wider cell */ return}
   /* horizontal */

@@ -39,7 +39,7 @@ function gridMap(t){const occ=[];const m=new Map();[...t.rows].forEach((tr,r)=>{
 function splitCellNM(c,n,rr){const t=c.closest('table');const w0=c.offsetWidth,auto=t.style.tableLayout==='auto';let g=gridMap(t);const v=g.get(c);const group=[c];
   if(n>1){if(c.colSpan>=n){const extra=c.colSpan-n;c.colSpan=1;let last=c;for(let i=0;i<n-1;i++){const x=newCell();x.rowSpan=c.rowSpan;last.after(x);last=x;group.push(x)}if(extra>0)last.colSpan+=extra}
     else{const add=n-c.colSpan;c.colSpan=1;let last=c;for(let i=0;i<n-1;i++){const x=newCell();x.rowSpan=c.rowSpan;last.after(x);last=x;group.push(x)}
-      const seen=new Set();g.forEach((w,td)=>{if(td===c||seen.has(td))return;if(w.r2<v.r1||w.r1>v.r2){if(w.c1<=v.c2&&w.c2>=v.c1){seen.add(td);td.colSpan+=add}}})}}
+      const seen=new Set();g.forEach((w,td)=>{if(td===c||seen.has(td))return;if(w.r2<v.r1||w.r1>v.r2){if(w.c1<=v.c2&&w.c2>=v.c2){seen.add(td);td.colSpan+=add}}})}}
   if(rr>1&&c.rowSpan===1){const tr=c.parentElement;g=gridMap(t);const seen=new Set();g.forEach((w,td)=>{if(group.includes(td))return;if(w.r1<=v.r1&&w.r2>=v.r1&&!seen.has(td)){seen.add(td);td.rowSpan+=rr-1}});
     let after=tr;for(let i=0;i<rr-1;i++){const nr=document.createElement('tr');group.forEach(gc=>{const x=newCell();x.colSpan=gc.colSpan;nr.appendChild(x)});after.after(nr);after=nr}}
   if(n>1){const ws=Math.max(24,Math.round(w0/n))+'px';group.forEach((x,i)=>{if(i===0||!x.textContent.trim()){x.style.width=ws;x.style.minWidth=auto?'':ws}})}}
@@ -96,11 +96,20 @@ Object.assign(OPS,{
   splitTable(){if(!needCell())return;snap();const t=S.curCell.closest('table'),tr=S.curCell.parentElement;if(tr.rowIndex===0)return;const t2=t.cloneNode(false);const tb=document.createElement('tbody');t2.appendChild(tb);let r=tr;while(r){const n=r.nextElementSibling;tb.appendChild(r);r=n}const p=document.createElement('p');p.innerHTML='<br>';t.after(p,t2);logAct('splitTable')},
   autofit(a){if(!needCell())return;snap();const t=S.curCell.closest('table');t.style.tableLayout=a==='content'?'auto':'fixed';t.style.width=a==='content'?'auto':'100%'},
   rowH(v){if(!needCell())return;snap();new Set(targetCells().map(c=>c.parentElement)).forEach(r=>[...r.cells].forEach(c=>c.style.height=(+v*CM)+'px'));logAct('rowH')},
-  colW(v){if(!needCell())return;snap();const t=S.curCell.closest('table');t.style.tableLayout='auto';const g=gridMap(t);const want=new Set();targetCells().forEach(c=>{const x=g.get(c);if(x)for(let k=x.c1;k<=x.c2;k++)want.add(k)});g.forEach((x,td)=>{if(x.c1===x.c2&&want.has(x.c1))td.style.width=(+v*CM)+'px'});logAct('colW')},
+  colW(v){if(!needCell())return;snap();const t=S.curCell.closest('table');const g=gridMap(t);const want=new Set();targetCells().forEach(c=>{const x=g.get(c);if(x)for(let k=x.c1;k<=x.c2;k++)want.add(k)});
+    /* مثل Word: يتغيّر عرض العمود المحدّد فقط وتبقى الأعمدة الأخرى كما هي (يتغيّر عرض الجدول) */
+    let nc=0;g.forEach(x=>{nc=Math.max(nc,x.c2+1)});const W=Array(nc).fill(null);g.forEach((x,td)=>{if(x.c1===x.c2&&W[x.c1]==null)W[x.c1]=td.offsetWidth});
+    g.forEach((x,td)=>{const un=[];let kn=0;for(let k=x.c1;k<=x.c2;k++){if(W[k]==null)un.push(k);else kn+=W[k]}if(un.length)un.forEach(k=>W[k]=Math.max(20,(td.offsetWidth-kn)/un.length))});for(let j=0;j<nc;j++)if(W[j]==null)W[j]=60;
+    want.forEach(j=>W[j]=+v*CM);t.style.tableLayout='auto';t.style.width=Math.round(W.reduce((s,x)=>s+x,0))+'px';
+    g.forEach((x,td)=>{let w=0;for(let k=x.c1;k<=x.c2;k++)w+=W[k];td.style.width=Math.round(w)+'px';td.style.minWidth=''});logAct('colW')},
   distRows(){if(!needCell())return;const t=S.curCell.closest('table');const h=Math.max(...[...t.rows].map(r=>r.offsetHeight));[...t.rows].forEach(r=>[...r.cells].forEach(c=>c.style.height=h+'px'))},
   distCols(){if(!needCell())return;const t=S.curCell.closest('table');t.style.tableLayout='fixed';t.querySelectorAll('td').forEach(c=>c.style.width='')},
   calign(a){const cs=targetCells();if(!cs.length){simToast('النقر داخل خلية أولًا');return}snap();const [v,h]=a.split('-');cs.forEach(c=>{c.style.verticalAlign=v;c.style.textAlign=h})},
-  textDir(){if(S.obj&&S.obj.classList.contains('shp')){const t=S.obj.querySelector('.stxt');t.style.writingMode=t.style.writingMode?'':'vertical-rl';return}const cs=targetCells();cs.forEach(c=>c.style.writingMode=c.style.writingMode?'':'vertical-rl')},
+  textDir(){if(S.obj&&S.obj.classList.contains('shp')){const t=S.obj.querySelector('.stxt');t.style.writingMode=t.style.writingMode?'':'vertical-rl';return}const cs=targetCells();if(!cs.length)return;snap();
+    /* مثل Word: كل نقرة تنقل للاتجاه التالي — أفقي ← من الأعلى للأسفل ← من الأسفل للأعلى ← أفقي */
+    const st=c=>!c.style.writingMode?0:(c.style.transform&&c.style.transform!=='none'?2:1);const nx=(st(cs[0])+1)%3;
+    cs.forEach(c=>{c.style.writingMode=nx?'vertical-rl':'';c.style.transform=nx===2?'rotate(180deg)':''});
+    try{simToast(['اتجاه النص: أفقي','اتجاه النص: من الأعلى إلى الأسفل','اتجاه النص: من الأسفل إلى الأعلى'][nx])}catch(e){}logAct('textDir:'+nx)},
   cellMargins(){simToast('هوامش الخلايا: للعرض فقط')},
   tsort(){if(!needCell())return;snap();const t=S.curCell.closest('table');const rows=[...t.rows].slice(t.classList.contains('nohdr')?0:1);const ci=S.curCell.cellIndex;rows.sort((a,b)=>(a.cells[ci]?.textContent||'').localeCompare(b.cells[ci]?.textContent||'','ar',{numeric:true}));rows.forEach(r=>t.tBodies[0].appendChild(r));simToast('تم فرز الجدول')},
   repeatHeader(){simToast('تكرار صفوف الرأس: مفعّل')},formula(){simToast('صيغة: للعرض فقط')},

@@ -60,7 +60,13 @@ async function ribbonCmd(cmd,arg,say){bar(say||'');const tab=tabOfCmd(cmd);if(ta
   /* أمر له قائمة منسدلة: افتح القائمة وأرِ الخيار ثم اختره (مثل Word) */
   const w=b&&b.dataset.dd&&b.closest('.ddw');if(w&&arg!=null&&!PL.stop){try{hideCoach()}catch(e){}try{openMenu(w)}catch(e){}await W(450);
     const A=String(arg).toLowerCase();const it=[...w.querySelectorAll('.dd [data-arg]')].find(x=>String(x.dataset.arg).toLowerCase()===A&&(!x.dataset.cmd||x.dataset.cmd===cmd||!w.querySelector(`.dd [data-cmd="${cmd}"]`)));
-    if(it&&it.offsetParent){await W(500);await moveTo(it,650);it.classList.add('hov');clickFx();await W(350)}else await W(500);
+    if(it&&it.offsetParent){await W(500);await moveTo(it,650);it.classList.add('hov');clickFx();await W(350)}
+    else{const mo=/^#[0-9a-f]{6}$/i.test(String(arg))&&[...w.querySelectorAll('.dd [data-arg="more"]')].find(x=>x.dataset.cmd===cmd);
+      /* اللون ليس في اللوحة: «ألوان أخرى...» ثم اختيار اللون نفسه (مثل Word) */
+      if(mo&&mo.offsetParent){await W(400);await moveTo(mo,650);mo.classList.add('hov');clickFx();await W(350);mo.classList.remove('hov');try{closeMenus()}catch(e){}
+        if(r0)setSel(r0);run(cmd,'more');await W(450);const inp=$('#cdc');if(inp){await moveTo(inp,600);clickFx();inp.value=String(arg).toLowerCase();const hx=$('#cdh');if(hx)hx.value=inp.value;inp.style.outline='3px solid #f0a020';await W(700);inp.style.outline='';
+          const ok=$('#dlgs .df button.pri');if(ok){await moveTo(ok,550);clickFx();await W(200);ok.click()}}await W(400);try{hideCoach()}catch(e){}return}
+      await W(500)}
     it&&it.classList.remove('hov');try{closeMenus()}catch(e){}}
   if(r0){setSel(r0)}run(cmd,arg);await W(500);try{hideCoach()}catch(e){}}
 async function demoOp(o){if(PL.stop)return;
@@ -89,7 +95,7 @@ async function demoOp(o){if(PL.stop)return;
   if(o.wait){await W(o.wait)}}
 async function runDemo(list){for(const o of list){if(PL.stop)break;await demoOp(o)}}
 window.runDemo=runDemo;
-window.APL={showAt,ribbonCmd,typeText,W,bar};
+window.APL={showAt,ribbonCmd,typeText,W,bar,moveTo,clickFx,realClick};
 async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;if(it.demoAll&&!r.demo){if(PL.didAll)return;PL.didAll=true;await runDemo(typeof it.demoAll==='function'?it.demoAll():it.demoAll);try{hideCoach()}catch(e){}return}let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
   if(r.demo){await runDemo(typeof r.demo==='function'?r.demo():r.demo);try{hideCoach()}catch(e){}return}
   if(!r.path&&(r.mi||r.cmd)){let w=null;try{w=r.where&&r.where()}catch(e){}const ops=[];

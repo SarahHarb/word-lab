@@ -193,8 +193,10 @@ const purpleRow=()=>rowsArr().find(tr=>isRow(tr,C_PUR))||null;
 const lastRow=()=>rowsArr().at(-1)||null;
 const visAt=(g,r,c)=>{let o=null;g.forEach((v,td)=>{if(r>=v.r1&&r<=v.r2&&c>=v.c1&&c<=v.c2)o=td});return o};
 function bigBlock(){const t=HT();if(!t)return null;const g=gridMap(t),nc=cols(t);const pr=purpleRow(),gr=greenRow2();if(!pr||!gr)return null;const pi=pr.rowIndex,gi=gr.rowIndex;let hit=null;
-  g.forEach((v,td)=>{if(hit||td.rowSpan<2||td.colSpan<2)return;if(!(v.r1>pi&&v.r2<gi))return;const right=v.c2===nc-1,left=v.c1===0;if(!right&&!left)return;
-    const oc=right?[0,1]:[nc-1,nc-2];let ok=true;for(let r=v.r1;r<=v.r2;r++)oc.forEach(c=>{const x=visAt(g,r,c);if(!x||x.rowSpan!==1||x.colSpan!==1)ok=false});if(ok)hit=td});return hit}
+  g.forEach((v,td)=>{if(hit||td.rowSpan<2)return;if(!(v.r1>pi&&v.r2<gi))return;const right=v.c2===nc-1,left=v.c1===0;if(!right&&!left)return;
+    const oc=right?[0,1]:[nc-1,nc-2];let ok=true,sw=0;for(let r=v.r1;r<=v.r2;r++)oc.forEach(c=>{const x=visAt(g,r,c);if(!x||x.rowSpan!==1||x.colSpan!==1)ok=false;else sw=Math.max(sw,x.offsetWidth)});
+    /* بالدمج: عمودان؛ بتقسيم الخلايا قد يكون عمودًا واحدًا لكن عرضه ضعف المربع الصغير */
+    if(ok&&(td.colSpan>=2||(sw&&td.offsetWidth>=1.6*sw)))hit=td});return hit}
 const dbl=td=>td.style.borderRightStyle==='double'&&td.style.borderLeftStyle==='double';
 const HOUSE_TASK={t:'تطبيق: إعادة رسم جدول المبنى',kind:'do',goalImg:'img/house-table.jpg',g:'مشروع: إعادة رسم الجدول',
  intro:'بدء من الصفر: إدراج جدول، ثم دمج وتظليل ورسم الحدود حتى يصبح مثل الصورة. الصورة ستبقى أمام المستخدم طوال الوقت.<br><small>في Word العربي يبدأ الجدول من اليمين، فقد يظهر معكوسًا عن الصورة — هذا طبيعي.</small>',
@@ -213,7 +215,7 @@ const HOUSE_TASK={t:'تطبيق: إعادة رسم جدول المبنى',kind:'
   R('إطار الباب مزدوج',()=>{const p=purpleRow(),l=lastRow();return !!p&&!!l&&[...p.cells].some(dbl)&&[...l.cells].some(dbl)},()=>HT()?.rows[2],'«نمط الخط» ← مزدوج، ثم تحديد خلايا الباب بالسحب ← حدود ← حدود خارجية، وفي الصف الأخير حدّان أيمن وأيسر للباب','tborders'),
   R('خط مزدوج بالأسفل',()=>{const r=lastRow();return !!r&&[...r.cells].every(td=>td.style.borderBottomStyle==='double')},()=>lastRow(),'«نمط الخط» ← مزدوج، تحديد الصف الأخير ← حدود ← حد سفلي','tborders'),
   R('Bottom center alignment',()=>{const b=bigBlock();return !!b&&fuzzyHas(b.textContent,'Bottom center alignment')&&b.style.verticalAlign==='bottom'&&b.style.textAlign==='center'},()=>hcells().find(td=>td.colSpan>=2&&td.rowSpan>=2)||HT(),'كتابة العبارة في المربع الكبير ← تخطيط ← «محاذاة لأسفل الوسط»','calign'),
-  R('Hebron عمودية',()=>!!hebron()&&!!hebron().style.writingMode,()=>greenRow2()?.cells[0]||HT(),'كتابة Hebron في الصف الأخضر ← تخطيط ← اتجاه النص','textDir'),
+  R('Hebron عمودية من الأسفل للأعلى',()=>!!hebron()&&!!hebron().style.writingMode&&/rotate/.test(hebron().style.transform||''),()=>greenRow2()?.cells[0]||HT(),'كتابة Hebron في الصف الأخضر ← تخطيط ← اتجاه النص (النقر مرتين: المرة الأولى من الأعلى للأسفل، والثانية من الأسفل للأعلى)','textDir'),
   R('Hebron أصفر وعريض',()=>{const td=hebron();if(!td)return false;const w=document.createTreeWalker(td,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(fuzzyHas(n.nodeValue,'Hebron')){const cs=getComputedStyle(n.parentElement);return C_YEL(cs.color)&&(+cs.fontWeight>=600||cs.fontWeight==='bold')}}return false},()=>hebron()||greenRow2()?.cells[0]||HT(),'تحديد الكلمة ← الصفحة الرئيسية ← لون الخط أصفر + غامق','fontcolor'),
   R('الصف الأخضر أعلى (1.5 سم+)',()=>{const r=greenRow2();return !!r&&parseFloat(r.cells[0].style.height)>=1.5*CM-2},()=>greenRow2()||HT(),'النقر في الصف الأخضر ← تخطيط ← الارتفاع: 1.8','rowH'),
  ]};

@@ -315,7 +315,7 @@ function symbolDlg(){let cur=null;
    onOpen:d=>d.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{cur=b.dataset.s;d.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on',x===b));$('#sname').textContent=(SYM_NAMES[cur]||'رمز')+'  —  رمز الحرف: '+cur.codePointAt(0).toString(16).toUpperCase().padStart(4,'0')}),
    buttons:[{label:'إدراج',pri:1,act:()=>{if(!cur){simToast('اختيار رمز أولًا');return false}OPS.insSymbol(cur);return false}},{label:'إغلاق'}]});
 }
-function colorDlg(cb){dialog({title:'ألوان',body:`<label class="row">اختيار لون: <input type="color" id="cdc" value="#2b579a"></label>`,buttons:[{label:'موافق',pri:1,act:()=>cb($('#cdc').value)},{label:'إلغاء'}]})}
+function colorDlg(cb){dialog({title:'ألوان',body:`<label class="row">اختيار لون: <input type="color" id="cdc" value="#2b579a" oninput="document.getElementById('cdh').value=this.value"></label><label class="row">ست عشري #: <input id="cdh" value="#2b579a" dir="ltr" style="width:90px" oninput="if(/^#[0-9a-f]{6}$/i.test(this.value))document.getElementById('cdc').value=this.value.toLowerCase()"></label>`,buttons:[{label:'موافق',pri:1,act:()=>cb($('#cdc').value)},{label:'إلغاء'}]})}
 
 /* clicking a footnote reference selects it (so Delete removes it) */
 document.addEventListener('mousedown',e=>{const r=e.target.closest&&e.target.closest('#doc .fnr,#doc .enr');if(!r)return;e.preventDefault();const rr=document.createRange();rr.selectNode(r);editHost(r.parentElement).focus();const s=getSelection();s.removeAllRanges();s.addRange(rr);S.range=rr.cloneRange();logAct('noteRefSel')});
