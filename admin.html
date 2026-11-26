@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة المتابعة — برنامج وورد</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=11260046">
+<link rel="stylesheet" href="css/app.css?v=11260846">
 <style>
 body{overflow:auto;height:auto;min-height:100vh}
 .atop{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--side);color:#fff;position:sticky;top:0;z-index:5}
@@ -42,6 +42,11 @@ a.stu,a.th{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:700
 .legend{columns:2;font-size:13.5px;line-height:1.9;margin-top:12px}@media(max-width:700px){.legend{columns:1}}
 .mbg{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:20;display:grid;place-items:center;padding:14px}.mdl{background:#fff;border-radius:16px;padding:18px;width:min(900px,100%);max-height:90vh;overflow:auto}.mdl h3{margin:16px 0 6px;font-size:16px}
 table.mini{font-size:13px}table.mini th{position:static}table.mini tr.r2 td:nth-child(2){color:#137a37;font-weight:800}table.mini tr.r1 td:nth-child(2){color:#8a6200;font-weight:800}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}.tcard{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fbfcfe}
+.th1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}.tb{display:flex;gap:6px}.btn.sm{padding:6px 10px;font-size:13px}
+.tstats{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:10px 0 6px}.ts{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 4px;text-align:center}.ts b{display:block;font-size:17px}.ts span{font-size:11.5px;color:var(--mute)}
+.tprog small{color:var(--mute);font-size:12px}
+@media(max-width:700px){.tgrid{grid-template-columns:1fr}.atop{flex-wrap:wrap;padding:10px 12px;gap:8px}#who select{max-width:62vw}}
 </style>
 </head>
 <body>
@@ -49,8 +54,8 @@ table.mini{font-size:13px}table.mini th{position:static}table.mini tr.r2 td:nth-
 <div class="atop"><span class="logo">W</span><b>لوحة المتابعة</b><span class="sp"></span><span id="who" class="muted" style="color:#93a2ba"></span><a href="index.html">فتح الموقع</a><button id="out">خروج</button></div>
 <div class="atabs" id="atabs"><button data-v="track" class="on">📊 المتابعة</button><button data-v="unlock">🔓 فتح الدروس</button><button data-v="students">👩‍🎓 الطلاب</button><button data-v="sections">🏫 الشعب</button></div>
 <div class="wrap" id="view"></div>
-<script src="js/config.js?v=11260046"></script>
-<script src="js/topics-meta.js?v=11260046"></script>
+<script src="js/config.js?v=11260846"></script>
+<script src="js/topics-meta.js?v=11260846"></script>
 <script>
 const inSec=(st,id)=>st.section_id===id||(st.extra||[]).includes(id);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=(window.ONLY_TOPICS?window.TOPICS_META.filter(t=>ONLY_TOPICS.includes(t.id)):window.TOPICS_META);
@@ -103,12 +108,18 @@ const tName=e=>{if(e===ME)return 'أنا';const t=TEA.find(x=>x.email===e);retur
 function renderWho(){const w=$('#who');if(!w)return;if(!SUPER){w.innerHTML=`${ME} · مدرّس`;return}
   w.innerHTML=`<select id="viewAs" title="لوحة أي مدرّس؟" style="background:#1e293b;color:#fff;border:1px solid #334155;border-radius:8px;padding:4px 8px;font:inherit"><option value="${ME}">لوحتي (${ME})</option>${TEA.filter(t=>t.email!==ME).map(t=>`<option value="${t.email}" ${t.email===VIEW_AS?'selected':''}>لوحة: ${t.name||t.email}</option>`).join('')}</select>`;
   $('#viewAs').onchange=e=>{VIEW_AS=e.target.value;selSec='';stuOpen=null;SEC=SEC_ALL.filter(s=>ownerOf(s)===VIEW_AS);selSec=SEC[0]?.id||'';render()}}
-function renderTeachers(v){const rows=[{email:ME,name:'أنا (المسؤولة)'},...TEA.filter(t=>t.email!==ME)].map(t=>{const ss=SEC_ALL.filter(s=>ownerOf(s)===t.email);const n=STU.filter(st=>ss.some(s=>inSec(st,s.id))).length;
-    const p=PRO[t.email];let dn=0,tot=0;T.forEach(x=>{const [a,b]=topicPct(p,x);dn+=a;tot+=b});const pc=tot?Math.round(dn/tot*100):0;
-    return `<tr><td>${t.email!==ME?`<a class="stu" data-stu="${t.email}"><b>${t.name||t.email}</b></a>`:`<b>${t.name||'—'}</b>`}</td><td class="ltr">${t.email}</td><td>${ss.length}</td><td>${n}</td><td>${t.email!==ME?`<div class="pbar" style="min-width:70px"><i style="width:${pc}%"></i></div><small>${pc}% · ${dn}/${tot}</small>`:'—'}</td><td class="muted">${t.email!==ME?fmtD(p?.last):''}</td><td><button class="btn g" data-open="${t.email}">📊 فتح لوحته</button> ${t.email!==ME?`<button class="btn r" data-tdel="${t.email}">حذف</button>`:''}</td></tr>`}).join('');
+function actOf(p){const r={t:0,a:0,h:0,w:0,ws:0,n:+(p?.done?.__v?.n)||0,last:p?.done?.__v?.last||null};Object.entries(p?.done||{}).forEach(([k,d])=>{if(k==='__v')return;Object.values(d?.s||{}).forEach(x=>{r.t+=+x.t||0;r.a+=+x.a||0;r.h+=+x.h||0;r.w+=+x.w||0;r.ws+=+x.ws||0})});return r}
+function renderTeachers(v){const list=[{email:ME,name:'أنا (المسؤولة)',me:1},...TEA.filter(t=>t.email!==ME)];
+  const cards=list.map(t=>{const ss=SEC_ALL.filter(s=>ownerOf(s)===t.email);const n=STU.filter(st=>ss.some(s=>inSec(st,s.id))).length;
+    const p=PRO[t.email];let dn=0,tot=0;T.forEach(x=>{const [a,b]=topicPct(p,x);dn+=a;tot+=b});const pc=tot?Math.round(dn/tot*100):0;const A=actOf(p);
+    const stat=(i,v,l)=>`<div class="ts"><b>${v}</b><span>${i} ${l}</span></div>`;
+    return `<div class="tcard"><div class="th1"><div>${t.me?`<b>${t.name}</b>`:`<a class="stu" data-stu="${t.email}"><b>${esc(t.name||t.email)}</b></a>`}<div class="muted ltr" style="font-size:12.5px">${t.email}</div></div>
+      <div class="tb">${t.me?'':`<button class="btn r sm" data-tdel="${t.email}">حذف</button>`}<button class="btn g sm" data-open="${t.email}">📊 فتح لوحته</button></div></div>
+      <div class="tstats">${stat('🏫',ss.length,'شعب')}${stat('👩‍🎓',n,'طلاب')}${t.me?'':stat('🔁',A.n,'مرة فتح الموقع')+stat('⏱',fmtT(A.t),'وقت التدريب')+stat('✔',A.a,'تحقّق')+stat('👆',A.h,'أرني أين')+stat('▶',A.w+A.ws,'شاهد الحل')}</div>
+      ${t.me?'':`<div class="tprog"><div class="pbar"><i style="width:${pc}%"></i></div><small>أنجز ${dn} من ${tot} مهمة (${pc}%) · آخر دخول: ${fmtD(A.last||p?.last)}</small></div>`}</div>`}).join('');
   v.innerHTML=`<div class="card"><h2>إضافة مدرّسين</h2><p class="muted">الصقي سطرًا لكل مدرّس: <b>الإيميل، الاسم</b>. كل مدرّس يدخل «لوحة المتابعة» بحسابه، ويضيف شعبه وطلابه ويفتح الدروس لهم، ولا يرى شعب غيره. وأنتِ ترين الجميع.</p>
     <textarea id="tbulk" placeholder="teacher1@ppu.edu, أحمد علي&#10;teacher2@ppu.edu.ps, هالة محمد"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="tadd">إضافة المدرّسين</button><span id="tmsg" class="muted"></span></div></div>
-    <div class="card"><h2>المدرّسون (${TEA.length})</h2><table><tr><th>الاسم</th><th>الإيميل</th><th>الشعب</th><th>الطلاب</th><th>تقدّمه هو بالدروس</th><th>آخر دخول</th><th></th></tr>${rows}</table><p class="muted">اضغطي اسم المدرّس لتري كل ما أنجزه في الدروس والمهام، مثل بطاقة الطالب.</p></div>${stuOpen?stuHTML(stuOpen,T):''}`;
+    <div class="card"><h2>المدرّسون (${TEA.length})</h2><p class="muted" style="margin-top:-4px">اضغطي اسم المدرّس لتري كل ما أنجزه في الدروس والمهام. «مرّات فتح الموقع» تُحسب من الآن فصاعدًا.</p><div class="tgrid">${cards}</div></div>${stuOpen?stuHTML(stuOpen,T):''}`;
   $$('[data-stu]').forEach(a=>a.onclick=()=>{stuOpen=a.dataset.stu;render()});$('#mx')&&($('#mx').onclick=()=>{stuOpen=null;render()});$('#mbg')&&($('#mbg').onclick=e=>{if(e.target.id==='mbg'){stuOpen=null;render()}});
   $('#tadd').onclick=async()=>{const r=[];$('#tbulk').value.split(/\n+/).map(l=>l.trim()).filter(Boolean).forEach(l=>{const [e,...nm]=l.split(/[,،\t]/);const em=(e||'').trim().toLowerCase();if(/^\S+@\S+\.\S+$/.test(em)&&em!==ME)r.push({email:em,name:nm.join(' ').trim()})});if(!r.length)return;
     if(ok(await sb.from('teachers').upsert(r))){$('#tmsg').textContent=`تمت إضافة ${r.length} مدرّس ✓`;$('#tbulk').value='';load()}};
@@ -174,8 +185,8 @@ function renderTrack(v){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.un
     navigator.clipboard.writeText(rows.map(r=>r.map(c=>/[,"\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n')).then(()=>alert('تم النسخ — الصقيه في Excel'))};
 }
 function stuHTML(em,TT){const st=STU.find(x=>x.email===em)||(TEA.find(x=>x.email===em)&&{...TEA.find(x=>x.email===em),teacher:1});const p=PRO[em];if(!st)return '';if(st.teacher)TT=T;
-  return `<div class="mbg" id="mbg"><div class="mdl"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(st.name||em)}</h2><button class="btn g" id="mx">✕ إغلاق</button></div><div class="muted ltr">${em} · آخر دخول: ${fmtD(p?.last)}</div>
-   ${TT.map(t=>{const [a,b]=topicPct(p,t);return `<h3>${t.title} <span class="chip c${a===0?0:a<b?1:2}">${a}/${b}</span></h3><table class="mini"><tr><th>المهمة</th><th>الحالة</th><th>الخطوات</th><th>الوقت</th><th>تحقّق</th><th>أرني</th><th>شاهد</th><th>آخر نشاط</th></tr>${ITEMS(t).map((i,n)=>{const o=stOf(p,t,i.k),s=o.s||{};return `<tr class="r${o.st}"><td>${n+1}. ${esc(i.t)}</td><td>${['—','بدأ','✓'][o.st]}</td><td>${s.n?(o.done?s.n:(s.r||0))+'/'+s.n:''}</td><td>${fmtT(s.t)}</td><td>${s.a||''}</td><td>${s.h||''}</td><td>${(s.w||0)+(s.ws||0)||''}</td><td class="muted">${fmtD(s.l)}</td></tr>`}).join('')}</table>`}).join('')||'<p class="empty">لا توجد مواضيع مفتوحة</p>'}</div></div>`}
+  return `<div class="mbg" id="mbg"><div class="mdl"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(st.name||em)}</h2><button class="btn g" id="mx">✕ إغلاق</button></div><div class="muted ltr">${em} · آخر دخول: ${fmtD(p?.last)}</div>${(()=>{const A=actOf(p);return `<div class="tstats" style="margin-top:10px"><div class="ts"><b>${A.n}</b><span>🔁 مرة فتح الموقع</span></div><div class="ts"><b>${fmtT(A.t)}</b><span>⏱ وقت التدريب</span></div><div class="ts"><b>${A.a}</b><span>✔ تحقّق</span></div><div class="ts"><b>${A.h}</b><span>👆 أرني أين</span></div><div class="ts"><b>${A.w+A.ws}</b><span>▶ شاهد الحل</span></div></div>`})()}
+   ${TT.map(t=>{const [a,b]=topicPct(p,t);return `<h3>${t.title} <span class="chip c${a===0?0:a<b?1:2}">${a}/${b}</span></h3><div style="overflow:auto"><table class="mini"><tr><th>المهمة</th><th>الحالة</th><th>الخطوات</th><th>الوقت</th><th>تحقّق</th><th>أرني</th><th>شاهد</th><th>آخر نشاط</th></tr>${ITEMS(t).map((i,n)=>{const o=stOf(p,t,i.k),s=o.s||{};return `<tr class="r${o.st}"><td>${n+1}. ${esc(i.t)}</td><td>${['—','بدأ','✓'][o.st]}</td><td>${s.n?(o.done?s.n:(s.r||0))+'/'+s.n:''}</td><td>${fmtT(s.t)}</td><td>${s.a||''}</td><td>${s.h||''}</td><td>${(s.w||0)+(s.ws||0)||''}</td><td class="muted">${fmtD(s.l)}</td></tr>`}).join('')}</table></div>`}).join('')||'<p class="empty">لا توجد مواضيع مفتوحة</p>'}</div></div>`}
 
 init();
 </script>
