@@ -279,3 +279,7 @@ body.demo #lhead{position:relative;z-index:1005}
 .tfile{display:flex;align-items:center;gap:10px;margin:8px 6px 4px;padding:9px 12px;border-radius:12px;background:#eaf1fb;border:1px solid #c7d8f2;color:#1e3a6e;text-decoration:none}
 .tfile:hover{background:#dce8f8}.tfile .fi{width:30px;height:30px;border-radius:7px;background:#2b579a;color:#fff;font:800 16px/30px Arial;text-align:center;flex:none}
 .tfile b{display:block;font-size:14px}.tfile small{font-size:12px;color:#5b6b85}.tfile .dl{margin-inline-start:auto;font-size:18px}
+.lg.lgb{display:flex;align-items:center;gap:8px;width:calc(100% - 16px);background:none;border:0;border-top:1px solid rgba(255,255,255,.07);color:#c9d4e6;font:inherit;font-size:13px;font-weight:800;cursor:pointer;text-align:start;padding:8px 4px 4px;margin:6px 8px 2px}
+.lg.lgb .lgt{flex:1}.lg.lgb small{font-weight:700;color:#8ea0bd;background:rgba(255,255,255,.07);border-radius:20px;padding:1px 8px}.lg.lgb .chev{transition:transform .2s;display:inline-block;color:#8ea0bd}.lg.lgb.open .chev{transform:rotate(-90deg)}
+.lg.lgb:hover{color:#fff}.lgd{font-size:12px;color:#9fb0cb;margin:0 12px 4px;line-height:1.6}
+.topic .lg.lgb .chev{transform:none}.topic .lg.lgb.open .chev{transform:rotate(-90deg)}

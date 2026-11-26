@@ -121,7 +121,7 @@ document.addEventListener('mousedown',hideTip,true);
 /* hit detection for command lessons */
 ['click','change'].forEach(ev=>document.addEventListener(ev,e=>{const f=CO.item&&CO.item.final;if(!f||!e.target.closest)return;if(e.target.closest(f))setTimeout(()=>{if(CO.mode==='try'||CO.mode==='free'||CO.mode==='demo')CO.hit=true},40)},true));
 /* nav */
-let openTopic=null;const secOpen={};
+let openTopic=null;const secOpen={},grpOpen={};
 const TOPIC_FILES={t5:[['files/tables-exercises.docx','تمارين الجداول.docx']],t10:[['files/pictures-exercises.docx','تمارين الصور.docx']],t4:[['files/shapes-exercises.docx','تمارين الأشكال.docx']],t11:[['files/wordart-exercises.docx','تمارين WordArt.docx']]};
 function renderNav2(){
   const all=allUnits();let d=0,t=0;all.forEach(u=>L(u).forEach(l=>{t++;if(isDone(u,l))d++}));
@@ -130,12 +130,13 @@ function renderNav2(){
   const wsBtn=`<button class="wsbtn ${CO.ws?'on':''}" id="wsBtn"><span class="tic">${icon('pen',22)}</span><span class="tt"><b>مساحتي الحرة</b><small>جرّب أي شيء على Word بحرية</small></span></button>`;
   $('#topics').innerHTML=wsBtn+all.map(u=>{if(!isUnlocked(u))return `<div class="topic locked"><div class="th"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>لم يُفتح بعد</small></span><span class="lock">🔒</span></div></div>`;const ls=L(u),dn=ls.filter(l=>isDone(u,l)).length,op=u===openTopic;
     const sec=(k,title,arr)=>{if(!arr.length)return '';const id=u.id+k;const has=arr.includes(CO.item)&&CO.unit===u;if(secOpen[id]==null)secOpen[id]=has||k==='l';const o=secOpen[id];const sd=arr.filter(l=>isDone(u,l)).length;
-      return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map((l,k)=>{const i=ls.indexOf(l);const gh=l.g&&(k===0||arr[k-1].g!==l.g)?`<div class="lg">${l.g}</div>`:'';return gh+`<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
+      return `<div class="sec ${o?'open':''}"><button class="sh" data-s="${id}"><span class="chev">‹</span>${title}<small>${sd}/${arr.length}</small></button>${o?`<div class="sl">${arr.map((l,k)=>{const i=ls.indexOf(l);let gh='';if(l.g&&(k===0||arr[k-1].g!==l.g)){const gid=u.id+'|'+l.g;const ga=arr.filter(x=>x.g===l.g);const gdn=ga.filter(x=>isDone(u,x)).length;if(grpOpen[gid]==null)grpOpen[gid]=(CO.unit===u&&ga.includes(CO.item))||(CO.unit!==u&&ga.some(x=>!isDone(u,x))&&!arr.slice(0,k).some(x=>!isDone(u,x)));gh=`<button class="lg lgb ${grpOpen[gid]?'open':''}" data-g="${gid}"><span class="chev">‹</span><span class="lgt">${l.g}</span><small>${gdn}/${ga.length}</small></button>${grpOpen[gid]&&l.gd?`<div class="lgd">${l.gd}</div>`:''}`}if(l.g&&!grpOpen[u.id+'|'+l.g])return gh;return gh+`<button class="lrow ${CO.unit===u&&CO.item===l?'on':''} ${isDone(u,l)?'done':''}" data-u="${u.id}" data-i="${i}"><span class="st">${isDone(u,l)?'✓':''}</span><span class="lt">${l.t}</span>${tag(l)}</button>`}).join('')}</div>`:''}</div>`};
     return `<div class="topic ${op?'open':''} ${CO.unit===u?'cur':''}"><button class="th" data-t="${u.id}"><span class="tic">${icon(u.icon,22)}</span><span class="tt"><b>${u.title}</b><small>${u.sub}</small></span><span class="tc">${dn}/${ls.length}</span><span class="chev">‹</span></button>
       ${op?`<div class="tbody">${(TOPIC_FILES[u.id]||[]).map(f=>`<a class="tfile" href="${f[0]}" download="${f[1]}"><span class="fi">W</span><span><b>${f[1].replace('.docx','')}</b><small>ملف Word للتحميل</small></span><span class="dl">⬇</span></a>`).join('')}${sec('l',u.learnTitle||'تعلّم',ls.filter(l=>l.key[0]==='l'&&!l.proj))}${sec('t','تحدَّ نفسك',ls.filter(l=>l.key[0]!=='l'))}</div>`:''}</div>`}).join('');
   $('#wsBtn').onclick=()=>{openWorkspace();document.body.classList.remove('drawer')};
   $$('#topics [data-t]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.t);openTopic=openTopic===u?null:u;renderNav2()});
   $$('#topics [data-s]').forEach(b=>b.onclick=()=>{secOpen[b.dataset.s]=!secOpen[b.dataset.s];renderNav2()});
+  $$('#topics [data-g]').forEach(b=>b.onclick=()=>{grpOpen[b.dataset.g]=!grpOpen[b.dataset.g];renderNav2()});
   $$('#topics [data-i]').forEach(b=>b.onclick=()=>{const u=all.find(x=>x.id===b.dataset.u);openLesson(u,+b.dataset.i);document.body.classList.remove('drawer')});
   const on=$('#topics .lrow.on');if(on)on.scrollIntoView({block:'nearest'});
 }
@@ -208,6 +209,10 @@ SIM.on('change',()=>{if(!CO.ws||S.app!=='doc')return;clearTimeout(wsT);wsT=setTi
 function initApp(){
   if(window.ONLY_TOPICS){const keep=TOPICS.filter(t=>ONLY_TOPICS.includes(t.id));if(keep.length)TOPICS.splice(0,TOPICS.length,...keep)}
   TOPICS.forEach((t,i)=>{t.num=String(i+1)});
+  /* الجداول: تجميع المهام حسب الفكرة (الحدود معًا…) */
+  {const t5=TOPICS.find(t=>t.id==='t5');if(t5){const G=[['إنشاء الجدول والكتابة','',['l0','l1','l2']],['الصفوف والأعمدة','',['l3','l4','l5']],['الدمج والحجم والمحاذاة','',['l6','l7','l8','l9']],['الأنماط والتظليل','',['l10','l11']],
+     ['🖊️ الحدود','نفس الفكرة بتطبيقات مختلفة: اختر القلم (النمط، السُّمك، اللون) ثم طبّقه على الحدود المطلوبة.',['l12','l13','l14','l15','l16','l17']],['تقسيم الجدول وتحويله','',['l18']]];
+    try{L(t5).forEach(l=>{const g=G.find(x=>x[2].includes(l.key));if(g){l.g=g[0];l.gd=g[1]}})}catch(e){}}}
   buildTips();if(window.applyTableTips)applyTableTips();if(typeof applyMoreTips==='function')applyMoreTips();$('#stopDemo').onclick=stopDemo;$('#scrim').onclick=()=>document.body.classList.remove('drawer');
   const open=TOPICS.filter(isUnlocked);if(!open.length){openWorkspace();setTimeout(()=>{$('#simcard').innerHTML=`<div class="ocard"><div class="big">🔒</div><h2>لم تُفتح دروس بعد</h2><p>ستفتح المعلّمة الدروس بعد كل محاضرة.<br>حتى ذلك الحين جرّب Word بحرية في «مساحتي الحرة».</p><div class="cbtns"><button class="try" onclick="hideSimCard()">حسنًا</button></div></div>`;$('#simcard').className='simcard show'},200);return}
   if((localStorage.getItem(PKEY+'-last')||'')==='ws'){openWorkspace();return}
