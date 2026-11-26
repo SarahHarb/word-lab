@@ -96,7 +96,7 @@ async function demoOp(o){if(PL.stop)return;
 async function runDemo(list){for(const o of list){if(PL.stop)break;await demoOp(o)}}
 window.runDemo=runDemo;
 window.APL={showAt,ribbonCmd,typeText,W,bar,moveTo,clickFx,realClick};
-async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;if(it.demoAll&&!r.demo){if(PL.didAll)return;PL.didAll=true;await runDemo(typeof it.demoAll==='function'?it.demoAll():it.demoAll);try{hideCoach()}catch(e){}return}let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
+async function playReq(i,whole,prep){const it=CO.item;const r=it&&it.reqs[i];if(!r)return;if(it.demoAll&&(!r.demo||(whole&&!prep&&it.demoMethods))){if(PL.didAll)return;PL.didAll=true;await runDemo(typeof it.demoAll==='function'?it.demoAll():it.demoAll);try{hideCoach()}catch(e){}return}let ok0=false;try{ok0=r.check()}catch(e){}if(ok0&&whole)return;
   if(r.demo){await runDemo(typeof r.demo==='function'?r.demo():r.demo);try{hideCoach()}catch(e){}return}
   if(!r.path&&(r.mi||r.cmd)){let w=null;try{w=r.where&&r.where()}catch(e){}const ops=[];
     if(r.selText)ops.push({sel:r.selText});else if(w&&w.classList&&w.classList.contains('obj'))ops.push({obj:()=>w});else if(w&&doc.contains(w)&&w!==firstBody()&&!r.cmd?.startsWith('ins'))ops.push({js:async()=>{await showAt(w);placeCaretIn(w,true);S.range=curRange()}});
@@ -112,12 +112,14 @@ async function playReq(i,whole){const it=CO.item;const r=it&&it.reqs[i];if(!r)re
 async function play(list,pre){if(PL.on)return;if(typeof stopGuide==='function')try{stopGuide()}catch(e){}
   const it=CO.item;if(!it||!it.reqs)return;PL.on=true;PL.stop=false;PL.didAll=false;const st0=snapState();shield(true);
   try{if(isPhone&&isPhone()){const p=$('#refpanel');if(p)p.classList.add('mcol')}}catch(e){}
-  try{if(pre&&pre.length){const k0=PL.k;PL.k=Math.min(PL.k,.02);bar('تجهيز الخطوات السابقة…');const c=$('#cursor');for(const j of pre){if(PL.stop)break;await playReq(j,true)}PL.k=k0;try{hideCoach()}catch(e){}const cv=$('#canvas');await W(300)}
+  try{if(pre&&pre.length){const k0=PL.k;PL.k=Math.min(PL.k,.02);bar('تجهيز الخطوات السابقة…');const c=$('#cursor');for(const j of pre){if(PL.stop)break;await playReq(j,true,true)}PL.k=k0;try{hideCoach()}catch(e){}const cv=$('#canvas');await W(300)}
     for(const i of list){if(PL.stop)break;await playReq(i,list.length>1);await W(400)}}catch(e){console.warn(e)}
   bar(PL.stop?'إيقاف العرض':'انتهى العرض — الآن تجربة أنت ✍️');await W(PL.stop?400:1600);
   try{hideCoach();closeMenus();closeDialog()}catch(e){}restore(st0);$('#cursor').style.display='none';shield(false);const b=$('#playbar');if(b)b.style.display='none';PL.on=false;
   try{CO.rpSig='';renderRefList()}catch(e){}simToast('شاهدتَ الحل ▶ — الآن تطبيقه بنفسك');logAct('watchSolution')}
-window.playSolution=i=>{if(i==null)return play(CO.item.reqs.map((_,k)=>k));const it=CO.item;if(it.demoAll)return play([i]);
-  const prev=[];for(let j=0;j<i;j++){let ok=false;try{ok=it.reqs[j].check()}catch(e){}if(!ok)prev.push(j)}return play([i],prev)};
+window.playSolution=i=>{if(i==null)return play(CO.item.reqs.map((_,k)=>k));const it=CO.item;if(it.demoAll&&!(it.reqs[i]&&it.reqs[i].demo))return play([i]);
+  /* تجهيز: المطالب السابقة + المطالب التي يعتمد عليها هذا المطلوب (need) — غير المنجزة فقط */
+  const want=new Set();for(let j=0;j<i;j++)want.add(j);const add=k=>{(it.reqs[k]?.need||[]).forEach(x=>{if(x!==i&&!want.has(x)){want.add(x);add(x)}})};add(i);[...want].forEach(add);
+  const prev=[...want].filter(j=>j!==i).sort((a,b)=>a-b).filter(j=>{let ok=false;try{ok=it.reqs[j].check()}catch(e){}return !ok});return play([i],prev)};
 window.PLAY=PL;
 })();
