@@ -46,16 +46,16 @@ function insertPicture(src){
   insertInline(o);applyObj(o);selectObj(o);showCtxTab('pformat');logAct('picture');SIM.emit('change');
 }
 Object.assign(OPS,{
-  pictures(){simToast('اختر «هذا الجهاز...» أو صورة جاهزة من القائمة')},
+  pictures(){simToast('اختيار «هذا الجهاز...» أو صورة جاهزة من القائمة')},
   picDevice(){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>insertPicture(r.result);r.readAsDataURL(f)};i.click()},
-  picStock(){OPS.insPic(1)},picOnline(){dialog({title:'صور عبر الإنترنت',body:`<p>اختر صورة:</p><div class="pgal" style="grid-template-columns:repeat(4,96px)">${SAMPLE_IMGS.map((s,i)=>`<button data-i="${i}"><img src="${s}"></button>`).join('')}</div>`,buttons:[{label:'إلغاء'}],onOpen:d=>d.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{closeDialog();OPS.insPic(+b.dataset.i)})})},
+  picStock(){OPS.insPic(1)},picOnline(){dialog({title:'صور عبر الإنترنت',body:`<p>اختيار صورة:</p><div class="pgal" style="grid-template-columns:repeat(4,96px)">${SAMPLE_IMGS.map((s,i)=>`<button data-i="${i}"><img src="${s}"></button>`).join('')}</div>`,buttons:[{label:'إلغاء'}],onOpen:d=>d.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{closeDialog();OPS.insPic(+b.dataset.i)})})},
   onlinePic(){OPS.picOnline()},
   insPic(i){insertPicture(SAMPLE_IMGS[+i])},
   icons(){OPS.insShape('smiley')},smartart(){simToast('SmartArt: للعرض فقط')},chart(){simToast('مخطط: للعرض فقط')},screenshot(){simToast('لقطة شاشة: للعرض فقط')},
-  insShape(k){if(!needDoc())return;S.drawKind=k;doc.classList.add('drawing');closeMenus();simToast(k==='textbox'?'اسحب على الصفحة لرسم مربع النص':'اسحب على الصفحة لرسم الشكل (مع Shift يبقى متناسقًا)');logAct('drawStart:'+k)},
+  insShape(k){if(!needDoc())return;S.drawKind=k;doc.classList.add('drawing');closeMenus();simToast(k==='textbox'?'سحب على الصفحة لرسم مربع النص':'سحب على الصفحة لرسم الشكل (مع Shift يبقى متناسقًا)');logAct('drawStart:'+k)},
   drawTextbox(){OPS.insShape('textbox')},newCanvas(){simToast('لوحة رسم: للعرض فقط')},
   insTextbox(a){if(!needDoc())return;snap();const body=(inText()&&bodyOf(S.range.startContainer.nodeType===1?S.range.startContainer:S.range.startContainer.parentElement))||firstBody();
-    const tmp=document.createElement('div');tmp.innerHTML=shapeHTML('textbox',240,110,{text:a==='quote'?'<p style="font-style:italic;font-size:14pt;color:#4472c4">[«احصل على انتباه القارئ باقتباس رائع من المستند»]</p>':'<p>[احصل على انتباه القارئ باقتباس رائع من المستند أو استخدم هذه المساحة للتركيز على نقطة رئيسية.]</p>',x:Math.max(0,body.clientWidth/2-120),y:60});
+    const tmp=document.createElement('div');tmp.innerHTML=shapeHTML('textbox',240,110,{text:a==='quote'?'<p style="font-style:italic;font-size:14pt;color:#4472c4">[«احصل على انتباه القارئ باقتباس رائع من المستند»]</p>':'<p>[احصل على انتباه القارئ باقتباس رائع من المستند أو استخدام هذه المساحة للتركيز على نقطة رئيسية.]</p>',x:Math.max(0,body.clientWidth/2-120),y:60});
     const o=tmp.firstChild;placeFloat(o,body,o.dataset.x,o.dataset.y);selectObj(o);showCtxTab('sformat');setTimeout(()=>{const t=o.querySelector('.stxt');selectNode(t)},20);logAct('textbox')},
   insWordArt(i){if(!needDoc())return;if(!inText())placeCaretIn(firstBody(),true);restoreSel();snap();const s=WA_STYLES[+i||0];const tmp=document.createElement('div');
     tmp.innerHTML=shapeHTML('wordart',300,70,{text:'النص هنا',tfill:s.fill,tout:s.out,tfx:s.fx,wrap:'inline'});const o=tmp.firstChild;const p=document.createElement('p');p.appendChild(o);insertBlock(p);applyObj(o);selectObj(o);showCtxTab('sformat');
@@ -71,8 +71,8 @@ Object.assign(OPS,{
   pstyle(id){const o=picOnly();if(!o)return;snap();o.dataset.ps=id;applyObj(o);logAct('pstyle:'+id)},
   picBorder(c){const o=picOnly();if(!o)return;if(c==='more'){colorDlg(v=>OPS.picBorder(v));return}snap();o.dataset.border=c;applyObj(o);logAct('picBorder')},
   picEffects(f){const o=picOnly();if(!o)return;snap();o.dataset.fx=f;applyObj(o);logAct('picEffects:'+f)},
-  picLayout(){const o=picOnly();if(!o)return;snap();let c=o.querySelector('.pcap');if(c){c.remove();logAct('picLayout:off');return}c=document.createElement('div');c.className='pcap';c.contentEditable='true';c.textContent='اكتب التسمية هنا';o.appendChild(c);logAct('picLayout');simToast('تخطيط الصورة: تسمية تحت الصورة — انقر عليها واكتب')},
-  crop(){const o=picOnly();if(!o)return;o.classList.toggle('cropping');if(o.classList.contains('cropping')){snap();simToast('اسحب المقابض السوداء لاقتصاص الصورة، ثم انقر خارجها')}logAct('crop:'+o.classList.contains('cropping'))},
+  picLayout(){const o=picOnly();if(!o)return;snap();let c=o.querySelector('.pcap');if(c){c.remove();logAct('picLayout:off');return}c=document.createElement('div');c.className='pcap';c.contentEditable='true';c.textContent='كتابة التسمية هنا';o.appendChild(c);logAct('picLayout');simToast('تخطيط الصورة: تسمية تحت الصورة — النقر على عليها وكتابة')},
+  crop(){const o=picOnly();if(!o)return;o.classList.toggle('cropping');if(o.classList.contains('cropping')){snap();simToast('سحب المقابض السوداء لاقتصاص الصورة، ثم النقر خارجها')}logAct('crop:'+o.classList.contains('cropping'))},
   /* shape format */
   sstyle(i){const o=shpOnly();if(!o)return;snap();const s=SSTYLES[i];o.dataset.fill=s.fill;o.dataset.line=s.line;o.dataset.tcol=s.text;applyObj(o);logAct('sstyle')},
   shapeFill(c){const o=shpOnly();if(!o)return;if(c==='more'){colorDlg(v=>OPS.shapeFill(v));return}snap();o.dataset.fill=c;applyObj(o);logAct('shapeFill:'+c)},
@@ -103,19 +103,19 @@ Object.assign(OPS,{
     if(d.wrap==='inline'){if(['right','center','left'].includes(a))d.align=a}else if(['square','tight','through','topbottom'].includes(d.wrap)){delete d.pos;if(a==='center'){d.side='center'}else if(['right','left'].includes(a))d.side=a}
     else{if(a==='right')d.x=body.clientWidth-o.offsetWidth;if(a==='left')d.x=0;if(a==='center')d.x=(body.clientWidth-o.offsetWidth)/2;if(a==='top')d.y=0;if(a==='middle')d.y=Math.max(0,(body.clientHeight-o.offsetHeight)/2);if(a==='bottom')d.y=Math.max(0,body.clientHeight-o.offsetHeight)}
     applyObj(o);logAct('alignObj:'+a)},
-  groupObj(a){const o=S.obj;if(!o){simToast('حدّد شكلًا أولًا');return}
+  groupObj(a){const o=S.obj;if(!o){simToast('تحديد شكل أولًا');return}
     if(a==='ungroup'||(!a&&o.dataset.grp&&!doc.querySelector('.obj.sel2:not([data-grp="'+o.dataset.grp+'"])'))){const g=o.dataset.grp;if(!g){simToast('هذا الكائن غير مُجمَّع');return}snap();doc.querySelectorAll(`.obj[data-grp="${g}"]`).forEach(x=>{delete x.dataset.grp;x.classList.remove('sel2')});simToast('تم إلغاء التجميع');logAct('ungroup');return}
-    const list=[o,...doc.querySelectorAll('.obj.sel2')].filter((x,i,a)=>a.indexOf(x)===i);if(list.length<2){simToast('للتجميع: حدّد شكلًا، ثم اضغط Ctrl (أو Shift) وانقر على شكل آخر، ثم «تجميع»');return}
-    if(list.some(x=>!['front','behind'].includes(x.dataset.wrap))){simToast('اجعل التفاف النص «أمام النص» أو «خلف النص» لكل الكائنات أولًا');return}
+    const list=[o,...doc.querySelectorAll('.obj.sel2')].filter((x,i,a)=>a.indexOf(x)===i);if(list.length<2){simToast('للتجميع: تحديد شكل، ثم الضغط على Ctrl (أو Shift) والنقر على شكل آخر، ثم «تجميع»');return}
+    if(list.some(x=>!['front','behind'].includes(x.dataset.wrap))){simToast('جعل التفاف النص «أمام النص» أو «خلف النص» لكل الكائنات أولًا');return}
     snap();const g='g'+Date.now().toString(36);list.forEach(x=>{x.dataset.grp=g;x.classList.add('sel2')});o.classList.remove('sel2');simToast('تم التجميع — تتحرك معًا الآن');logAct('group');SIM.emit('change')},
   rotate(a){const o=objOnly();if(!o)return;snap();const d=o.dataset;if(a==='reset'){d.rot=0;delete d.flipH;delete d.flipV}else if(a==='flipH')d.flipH=d.flipH?'':'1';else if(a==='flipV')d.flipV=d.flipV?'':'1';else d.rot=((+d.rot||0)+(+a))%360;applyObj(o);logAct('rotate:'+a)},
   delObj(){delSelObj()},
   objH(v){const o=objOnly();if(!o)return;snap();const d=o.dataset;const nh=+v*CM;if(o.classList.contains('pic')){scaleObj(o,nh/+d.h)}else{d.h=nh;applyObj(o)}logAct('objH')},
   objW(v){const o=objOnly();if(!o)return;snap();const d=o.dataset;const nw=+v*CM;if(o.classList.contains('pic')){scaleObj(o,nw/+d.w)}else{d.w=nw;d.fixedW=1;applyObj(o)}logAct('objW')},
 });
-function objOnly(){if(!S.obj){simToast('انقر على الصورة أو الشكل أولًا');return null}return S.obj}
-function picOnly(){if(!S.obj||!S.obj.classList.contains('pic')){simToast('انقر على الصورة أولًا');return null}return S.obj}
-function shpOnly(){if(!S.obj||!S.obj.classList.contains('shp')){simToast('انقر على الشكل أولًا');return null}return S.obj}
+function objOnly(){if(!S.obj){simToast('النقر على الصورة أو الشكل أولًا');return null}return S.obj}
+function picOnly(){if(!S.obj||!S.obj.classList.contains('pic')){simToast('النقر على الصورة أولًا');return null}return S.obj}
+function shpOnly(){if(!S.obj||!S.obj.classList.contains('shp')){simToast('النقر على الشكل أولًا');return null}return S.obj}
 function scaleObj(o,f){const d=o.dataset;['w','h','iw','ih','ix','iy'].forEach(k=>{if(d[k]!=null)d[k]=Math.round(+d[k]*f)});applyObj(o)}
 /* mouse interactions */
 let drag=null;
@@ -204,7 +204,7 @@ document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const eq=curEq()
 function delSelObj(){if(!S.obj)return;snap();const o=S.obj,p=o.parentElement;o.remove();if(p&&p.tagName==='P'&&!p.textContent.trim()&&!p.querySelector('.obj,img'))p.innerHTML='<br>';clearObjSel();updateCtx();logAct('objDelete');SIM.emit('change');placeObjBar()}
 function placeObjBar(){let b=document.getElementById('objbar');const o=S.obj;
   if(!o||!doc.contains(o)||S.drawKind||o.classList.contains('cropping')||document.querySelector('#dlgs .dlg')||(window.PLAY&&PLAY.on)){if(b)b.style.display='none';return}
-  if(!b){b=document.createElement('div');b.id='objbar';b.innerHTML='<button type="button" class="ob-txt" data-hid="obj-text">✏️ اكتب</button><button type="button" data-hid="obj-delete">🗑 حذف</button>';(document.getElementById('ovl')||document.body).appendChild(b);
+  if(!b){b=document.createElement('div');b.id='objbar';b.innerHTML='<button type="button" class="ob-txt" data-hid="obj-text">✏️ كتابة</button><button type="button" data-hid="obj-delete">🗑 حذف</button>';(document.getElementById('ovl')||document.body).appendChild(b);
     const btn=b.querySelector('[data-hid="obj-delete"]');const go=e=>{e.preventDefault();e.stopPropagation();delSelObj()};btn.addEventListener('mousedown',go);btn.addEventListener('touchstart',go,{passive:false});const bt=b.querySelector('.ob-txt');const gt=e=>{e.preventDefault();e.stopPropagation();if(S.obj)startShapeText(S.obj)};bt.addEventListener('mousedown',gt);bt.addEventListener('touchstart',gt,{passive:false})}
   {const bt=b.querySelector('.ob-txt');const st=o.querySelector('.stxt');bt.style.display=o.classList.contains('shp')&&!(st&&st.isContentEditable)?'':'none'}
   const R=typeof realRect==='function'?realRect(o):o.getBoundingClientRect();if(!R.width&&!R.height){b.style.display='none';return}
@@ -222,7 +222,7 @@ document.addEventListener('keydown',e=>{if(!S.obj||e.ctrlKey||e.metaKey||e.altKe
 document.addEventListener('mousedown',e=>{if(!(e.ctrlKey||e.shiftKey||e.metaKey)||e.button!==0)return;const o=e.target.closest&&e.target.closest('#doc .obj');if(!o||!S.obj||o===S.obj)return;e.preventDefault();e.stopPropagation();o.classList.toggle('sel2')},true);
 document.addEventListener('mousedown',e=>{const o=e.target.closest&&e.target.closest('#doc .obj');if(e.ctrlKey||e.shiftKey||e.metaKey)return;doc.querySelectorAll('.obj.sel2').forEach(x=>{if(!o||!x.dataset.grp||x.dataset.grp!==o.dataset.grp)x.classList.remove('sel2')});if(o&&o.dataset.grp)doc.querySelectorAll(`.obj[data-grp="${o.dataset.grp}"]`).forEach(x=>{if(x!==o)x.classList.add('sel2')})},true);
 /* خيارات تخطيط إضافية: التفاف النص + الموضع */
-function layoutDlg(){const o=S.obj;if(!o){simToast('حدّد صورة أو شكلًا أولًا');return}const d=o.dataset;
+function layoutDlg(){const o=S.obj;if(!o){simToast('تحديد صورة أو شكلًا أولًا');return}const d=o.dataset;
   const W=[['inline','مع النص','⬚▬'],['square','مربع','▣'],['tight','ضيق','◈'],['through','خلال','◇'],['topbottom','أعلى وأسفل','☰'],['behind','خلف النص','▤'],['front','أمام النص','▦']];
   dialog({title:'التخطيط',w:520,body:`<div class="bdtabs"><button class="on">التفاف النص</button></div><p class="sm" style="margin:6px 0">نمط الالتفاف:</p><div class="lay-g">${W.map(([k,l,i])=>`<button data-w="${k}" class="${d.wrap===k?'on':''}"><b>${i}</b><small>${l}</small></button>`).join('')}</div>
    <p class="sm" style="margin:10px 0 4px">التفاف النص على:</p><label class="row"><input type="radio" name="ls" value="both" ${!d.side||d.side==='both'?'checked':''}> كلا الجانبين</label><label class="row"><input type="radio" name="ls" value="right" ${d.side==='right'?'checked':''}> الأيمن فقط (الصورة يسارًا)</label><label class="row"><input type="radio" name="ls" value="left" ${d.side==='left'?'checked':''}> الأيسر فقط (الصورة يمينًا)</label>`,

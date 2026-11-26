@@ -90,7 +90,7 @@ function renderStartRes(){
   const q=$('#startq').value.trim().toLowerCase();const r=$('#startres');
   if(!q){r.innerHTML=`<h5>مثبّت</h5><div class="pins">${[['w','W','Word'],['x','X','Excel'],['p','P','PowerPoint'],['e','','Edge'],['f','📁','مستكشف الملفات'],['f','⚙️','الإعدادات']].map(a=>`<button class="pin" data-app="${a[2]}"><span class="applogo ${a[0]}">${a[1]}</span>${a[2]}</button>`).join('')}</div>`;}
   else if('word'.startsWith(q)||'وورد'.startsWith(q)||q.startsWith('word')||'ورد'.startsWith(q)){r.innerHTML=`<h5>أفضل تطابق</h5><button class="best" data-app="Word"><span class="applogo w">W</span><span><b>Word</b>تطبيق</span></button>`}
-  else r.innerHTML=`<div class="noresult">لا توجد نتائج لـ «${q}» — جرّب كتابة Word</div>`;
+  else r.innerHTML=`<div class="noresult">لا توجد نتائج لـ «${q}» — تجربة كتابة Word</div>`;
   r.querySelectorAll('[data-app]').forEach(b=>b.onclick=()=>{if(b.dataset.app==='Word')launchWord();else simToast('هذا التطبيق للعرض فقط')});
 }
 async function launchWord(){

@@ -3,7 +3,7 @@
    وينتقل للخطوة التالية عندما ينفّذها الطالب بنفسه. */
 const GP={
  cell:(fn,say)=>({el:fn,say,done:()=>{const e=fn();return !!e&&!!S.curCell&&(e===S.curCell||e.contains(S.curCell)||(S.selCells||[]).some(c=>e.contains(c)||e===c))}}),
- tab:(tab)=>({el:()=>$(`#wtabs [data-tab="${tab}"]`),say:`افتح تبويب «${$(`#wtabs [data-tab="${tab}"]`)?.textContent.trim()||tab}»`,done:()=>!!$(`#wtabs [data-tab="${tab}"]`)?.classList.contains('on')}),
+ tab:(tab)=>({el:()=>$(`#wtabs [data-tab="${tab}"]`),say:`فتح تبويب «${$(`#wtabs [data-tab="${tab}"]`)?.textContent.trim()||tab}»`,done:()=>!!$(`#wtabs [data-tab="${tab}"]`)?.classList.contains('on')}),
  btn:(tab,hid,say)=>({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`),say,click:1}),
  dd:(tab,hid,say)=>({el:()=>{const b=$(`#ribbon [data-panel="${tab}"] [data-hid="${hid}"]`);if(!b)return null;const w=b.closest('.split')||b;return w.querySelector('.car')||b},say,done:()=>!!$('.ddw.open')}),
  mi:(cmd,arg,say)=>{const A=arg==null||arg==='null'?'':`[data-arg="${arg}"]`;return {avoid:1,el:()=>$(`.ddw.open .mi[data-cmd="${cmd}"]${A}`)||$(`.ddw.open [data-cmd="${cmd}"]${A}`),say,click:1}},
@@ -12,7 +12,7 @@ const GP={
 };
 const GD={on:false,steps:[],i:0,r:null,clicked:false};
 const ARGLBL={tdelete:{col:'حذف أعمدة',row:'حذف صفوف',table:'حذف جدول',cells:'حذف خلايا...'},tselect:{col:'تحديد عمود',row:'تحديد صف',table:'تحديد الجدول',cell:'تحديد خلية'},autofit:{content:'احتواء تلقائي للمحتويات',window:'احتواء تلقائي للإطار',fixed:'عرض عمود ثابت'},tborders:{none:'بلا حدود',all:'كل الحدود',outside:'حدود خارجية',inside:'حدود داخلية',bottom:'حد سفلي',top:'حد علوي',left:'حد أيسر',right:'حد أيمن',more:'حدود وتظليل...'}};
-const DDSAY={shading:'اختر اللون المطلوب',penColor:'اختر اللون المطلوب',fontcolor:'اختر اللون المطلوب',penWeight:'اختر السُّمك المطلوب',penStyle:'اختر نمط الخط المطلوب',tborders:'اختر نوع الحد المطلوب',table:'مرّر على المربعات حتى العدد المطلوب ثم انقر'};
+const DDSAY={shading:'اختيار اللون المطلوب',penColor:'اختيار اللون المطلوب',fontcolor:'اختيار اللون المطلوب',penWeight:'اختيار السُّمك المطلوب',penStyle:'اختيار نمط الخط المطلوب',tborders:'اختيار نوع الحد المطلوب',table:'تمرير على المربعات حتى العدد المطلوب ثم النقر'};
 function guideArg(r){const f=(r.fix||'')+'';const c=r.cmd;
  if(c==='tdelete')return /حذف أعمدة|حذف عمود/.test(f)?'col':/حذف جدول/.test(f)?'table':/حذف صفوف|حذف صف/.test(f)?'row':null;
  if(c==='tselect')return /تحديد عمود/.test(f)?'col':/تحديد صف/.test(f)?'row':/تحديد الجدول/.test(f)?'table':null;
@@ -20,20 +20,20 @@ function guideArg(r){const f=(r.fix||'')+'';const c=r.cmd;
  if(c==='tborders')return /بلا حدود/.test(f)?'none':/كل الحدود/.test(f)?'all':/حدود خارجية/.test(f)?'outside':/حدود داخلية/.test(f)?'inside':/حد سفلي/.test(f)?'bottom':/حد علوي/.test(f)?'top':/حد أيسر/.test(f)?'left':/حد أيمن/.test(f)?'right':null;
  return null}
 function buildGuide(r){if(r.path)return (typeof r.path==='function'?r.path():r.path).slice();const st=[];let where=null;try{where=r.where&&r.where()}catch(e){}
- if(where&&doc.contains(where)&&where.tagName!=='TABLE'&&where.closest&&where.closest('table'))st.push(GP.cell(()=>{try{return r.where()}catch(e){return null}},where.tagName==='TR'?'انقر في هذا الصف (أو حدّده)':'انقر في الخلية المضيئة'));
- if(where&&doc.contains(where)&&where.classList&&where.classList.contains('obj'))st.push({el:()=>{try{return r.where()}catch(e){return null}},say:where.classList.contains('pic')?'انقر على الصورة لتحديدها':'انقر على حدّ الشكل لتحديده',done:()=>{let w=null;try{w=r.where()}catch(e){}return !!w&&S.obj===w}});
- if(r.hfFirst)st.push({el:()=>pages()[r.hfPage||0]?.querySelector(r.hfFirst==='ftr'?'.pg-ftr':'.pg-hdr'),say:'انقر نقرًا مزدوجًا هنا لفتح '+(r.hfFirst==='ftr'?'التذييل':'الرأس'),done:()=>S.hfMode});
- if(r.caretIn){const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:'انقر في هذا السطر',done:()=>{const e=w(),g=S.range||curRange();return (!!e&&!!g&&e.contains(g.startContainer))||(()=>{try{return r.check()}catch(x){return false}})()}})}
- if(r.selText){const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:`حدّد «${r.selText.length>18?r.selText.slice(0,18)+'…':r.selText}» — اسحب عليها بالفأرة، أو انقر على الكلمة نقرًا مزدوجًا`,done:()=>{const t=selText().replace(/\s+/g,' ').trim();return !!t&&(t.includes(r.selText)||r.selText.includes(t)&&t.length>=Math.min(2,r.selText.length))||(()=>{try{return r.check()}catch(x){return false}})()}})}
- if(r.tab==='eqdesign'){if(doc.querySelector('.pg-body .eq'))st.push({el:()=>doc.querySelector('.pg-body .eq'),say:'انقر داخل المعادلة',done:()=>!!curEq()});
-   else{const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:'انقر في السطر الفارغ',done:()=>{const e=w(),g=S.range;return !!curEq()||(!!e&&!!g&&e.contains(g.startContainer))}},{...GP.tab('insert'),done:()=>!!curEq()||!!$('#wtabs [data-tab="insert"]')?.classList.contains('on')},{el:()=>$('#ribbon [data-panel="insert"] [data-hid="equation"]'),say:'انقر «معادلة»',done:()=>!!curEq()})}}
+ if(where&&doc.contains(where)&&where.tagName!=='TABLE'&&where.closest&&where.closest('table'))st.push(GP.cell(()=>{try{return r.where()}catch(e){return null}},where.tagName==='TR'?'النقر في هذا الصف (أو تحديده)':'النقر في الخلية المضيئة'));
+ if(where&&doc.contains(where)&&where.classList&&where.classList.contains('obj'))st.push({el:()=>{try{return r.where()}catch(e){return null}},say:where.classList.contains('pic')?'النقر على الصورة لتحديدها':'النقر على حدّ الشكل لتحديده',done:()=>{let w=null;try{w=r.where()}catch(e){}return !!w&&S.obj===w}});
+ if(r.hfFirst)st.push({el:()=>pages()[r.hfPage||0]?.querySelector(r.hfFirst==='ftr'?'.pg-ftr':'.pg-hdr'),say:'النقر نقرًا مزدوجًا هنا لفتح '+(r.hfFirst==='ftr'?'التذييل':'الرأس'),done:()=>S.hfMode});
+ if(r.caretIn){const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:'النقر في هذا السطر',done:()=>{const e=w(),g=S.range||curRange();return (!!e&&!!g&&e.contains(g.startContainer))||(()=>{try{return r.check()}catch(x){return false}})()}})}
+ if(r.selText){const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:`تحديد «${r.selText.length>18?r.selText.slice(0,18)+'…':r.selText}» — سحب عليها بالفأرة، أو النقر على الكلمة نقرًا مزدوجًا`,done:()=>{const t=selText().replace(/\s+/g,' ').trim();return !!t&&(t.includes(r.selText)||r.selText.includes(t)&&t.length>=Math.min(2,r.selText.length))||(()=>{try{return r.check()}catch(x){return false}})()}})}
+ if(r.tab==='eqdesign'){if(doc.querySelector('.pg-body .eq'))st.push({el:()=>doc.querySelector('.pg-body .eq'),say:'النقر داخل المعادلة',done:()=>!!curEq()});
+   else{const w=()=>{let e=null;try{e=r.where()}catch(x){}return e};st.push({el:w,say:'النقر في السطر الفارغ',done:()=>{const e=w(),g=S.range;return !!curEq()||(!!e&&!!g&&e.contains(g.startContainer))}},{...GP.tab('insert'),done:()=>!!curEq()||!!$('#wtabs [data-tab="insert"]')?.classList.contains('on')},{el:()=>$('#ribbon [data-panel="insert"] [data-hid="equation"]'),say:'النقر على «معادلة»',done:()=>!!curEq()})}}
  if(r.cmd&&r.gal&&(r.tab||tabOfCmd(r.cmd))){const tab=r.tab||tabOfCmd(r.cmd);st.push(GP.tab(tab));st.push({avoid:1,el:()=>$(`#ribbon [data-panel="${tab}"] ${r.gal[0]}`),say:r.gal[1],click:1})}
  else if(r.cmd){const tab=r.tab||tabOfCmd(r.cmd);const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`);
    if(tab&&b){st.push(GP.tab(tab));const lbl=(b.dataset.tip||b.textContent||'').trim().replace(/▾/g,'');
-     if(b.dataset.dd){st.push(GP.dd(tab,r.cmd,`افتح قائمة «${lbl}» ▾`));const a=guideArg(r);if(r.sub)st.push({avoid:1,el:()=>$(`.ddw.open [data-sub="${r.sub[0]}"]`),say:`مرّر على «${r.sub[1]}» ◂`,done:()=>!!$(`.ddw.open .subm[data-subm="${r.sub[0]}"].open`)});if(r.mi)st.push(GP.mi(r.mi[0],r.mi[1],`اختر: «${r.mi[2]}»`));else if(a)st.push(GP.mi(r.cmd,a,`اختر: «${(ARGLBL[r.cmd]||{})[a]||a}»`));else st.push(GP.menu(DDSAY[r.cmd]||'اختر من القائمة'))}
+     if(b.dataset.dd){st.push(GP.dd(tab,r.cmd,`فتح قائمة «${lbl}» ▾`));const a=guideArg(r);if(r.sub)st.push({avoid:1,el:()=>$(`.ddw.open [data-sub="${r.sub[0]}"]`),say:`تمرير على «${r.sub[1]}» ◂`,done:()=>!!$(`.ddw.open .subm[data-subm="${r.sub[0]}"].open`)});if(r.mi)st.push(GP.mi(r.mi[0],r.mi[1],`اختيار: «${r.mi[2]}»`));else if(a)st.push(GP.mi(r.cmd,a,`اختيار: «${(ARGLBL[r.cmd]||{})[a]||a}»`));else st.push(GP.menu(DDSAY[r.cmd]||'اختيار من القائمة'))}
      else if(b.querySelector('input[type=checkbox]')||b.matches('label'))st.push({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"]`),say:`${/أزل|ألغِ/.test(r.fix||'')?'أزل':'ضع'} ✓ على «${lbl}»`,done:()=>{try{return r.check()}catch(e){return false}}});
-     else if(b.querySelector('input'))st.push({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"] input`),say:`«${lbl}»: اكتب الرقم ثم Enter`,done:()=>{try{return r.check()}catch(e){return false}}});
-     else st.push(GP.btn(tab,r.cmd,`انقر «${lbl}»`))}else if(tab&&r.gal){st.push(GP.tab(tab));st.push({avoid:1,el:()=>$(`#ribbon [data-panel="${tab}"] ${r.gal[0]}`),say:r.gal[1],click:1})}}
+     else if(b.querySelector('input'))st.push({el:()=>$(`#ribbon [data-panel="${tab}"] [data-hid="${r.cmd}"] input`),say:`«${lbl}»: كتابة الرقم ثم Enter`,done:()=>{try{return r.check()}catch(e){return false}}});
+     else st.push(GP.btn(tab,r.cmd,`النقر على «${lbl}»`))}else if(tab&&r.gal){st.push(GP.tab(tab));st.push({avoid:1,el:()=>$(`#ribbon [data-panel="${tab}"] ${r.gal[0]}`),say:r.gal[1],click:1})}}
  return st}
 function startGuide(i){const r=CO.item&&CO.item.reqs&&CO.item.reqs[i];if(!r)return false;const st=buildGuide(r);if(!st.length)return false;
  st.push({el:()=>{let e=null;try{e=r.where&&r.where()}catch(x){}return e||PT_()},say:fixOf(r),done:()=>false,last:1});
@@ -59,17 +59,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&GD.on)stopGuide()},
 (function(){const old=window.showReqHint;window.showReqHint=function(i){if(startGuide(i))return;return old(i)}})();
 /* explicit, deeper paths */
 (function(){
- const pat=(cellFn,cellSay)=>()=>[GP.cell(cellFn,cellSay),GP.tab('tdesign'),GP.dd('tdesign','tborders','افتح قائمة «حدود» ▾'),GP.mi('tborders','more','اختر «حدود وتظليل...» (آخر القائمة)'),
-   GP.sel('.bdtabs [data-t="shade"]','افتح تبويب «التظليل»',()=>!!$('.bdtabs [data-t="shade"]')?.classList.contains('on')),
-   GP.sel('.bdP','افتح قائمة «النمط» وانزل بالتمرير حتى «قطري لأسفل داكن»',()=>/^(dkD|dkU|ltD|ltU)$/.test($('.bdP')?.value||'')),
-   GP.sel('[data-p="shade"] .bdApply','تأكد أن «تطبيق على» = «الخلية» (وليس الجدول)',()=>$('[data-p="shade"] .bdApply')?.value==='cell'),
-   GP.sel('#dlgs .df .pri','اضغط «موافق»')];
- if(typeof PIC_SHADE!=='undefined'){const r=PIC_SHADE.reqs.find(q=>/كعك/.test(q.t));if(r)r.path=pat(()=>findCell('كعك'),'انقر في خلية «كعك»')}
- if(typeof HOUSE_TASK!=='undefined'){const r=HOUSE_TASK.reqs.find(q=>/نقش/.test(q.t));if(r)r.path=pat(()=>{const t=HT();return t&&t.rows[1]?t.rows[1].cells[t.rows[1].cells.length-1]:null},'انقر في الخلية التي سيكون فيها النقش (الصف الثاني، فوق المربع الكبير)')}
- const dlgBorders=(cellFn,say,setting,extra)=>()=>[GP.cell(cellFn,say),GP.tab('tdesign'),GP.dd('tdesign','tborders','افتح قائمة «حدود» ▾'),GP.mi('tborders','more','اختر «حدود وتظليل...»'),...(extra||[]),GP.sel('#dlgs .df .pri','اضغط «موافق»')];
- if(typeof PIC_DASH!=='undefined'){const r=PIC_DASH.reqs[0];if(r)r.path=dlgBorders(()=>PT_()?.rows[1]?.cells[0],'انقر داخل الجدول',null,[
-   GP.sel('.bln[data-s="dashed"]','من «النمط» اختر الخط المتقطع',()=>!!$('.bln[data-s="dashed"]')?.classList.contains('on')),
-   GP.sel('.bp.h','في المعاينة: انقر الخط الداخلي الأفقي ═',()=>!!$('.bp.h')?.classList.contains('on')&&$('.bset[data-set="custom"]')?.classList.contains('on')),
-   GP.sel('.bp.v','وانقر الخط الداخلي العمودي ║',()=>!!$('.bp.v')?.classList.contains('on')&&$('.bset[data-set="custom"]')?.classList.contains('on')),
+ const pat=(cellFn,cellSay)=>()=>[GP.cell(cellFn,cellSay),GP.tab('tdesign'),GP.dd('tdesign','tborders','فتح قائمة «حدود» ▾'),GP.mi('tborders','more','اختيار «حدود وتظليل...» (آخر القائمة)'),
+   GP.sel('.bdtabs [data-t="shade"]','فتح تبويب «التظليل»',()=>!!$('.bdtabs [data-t="shade"]')?.classList.contains('on')),
+   GP.sel('.bdP','فتح قائمة «النمط» وانزل بالتمرير حتى «قطري لأسفل داكن»',()=>/^(dkD|dkU|ltD|ltU)$/.test($('.bdP')?.value||'')),
+   GP.sel('[data-p="shade"] .bdApply','التأكد أن «تطبيق على» = «الخلية» (وليس الجدول)',()=>$('[data-p="shade"] .bdApply')?.value==='cell'),
+   GP.sel('#dlgs .df .pri','الضغط على «موافق»')];
+ if(typeof PIC_SHADE!=='undefined'){const r=PIC_SHADE.reqs.find(q=>/كعك/.test(q.t));if(r)r.path=pat(()=>findCell('كعك'),'النقر في خلية «كعك»')}
+ if(typeof HOUSE_TASK!=='undefined'){const r=HOUSE_TASK.reqs.find(q=>/نقش/.test(q.t));if(r)r.path=pat(()=>{const t=HT();return t&&t.rows[1]?t.rows[1].cells[t.rows[1].cells.length-1]:null},'النقر في الخلية التي سيكون فيها النقش (الصف الثاني، فوق المربع الكبير)')}
+ const dlgBorders=(cellFn,say,setting,extra)=>()=>[GP.cell(cellFn,say),GP.tab('tdesign'),GP.dd('tdesign','tborders','فتح قائمة «حدود» ▾'),GP.mi('tborders','more','اختيار «حدود وتظليل...»'),...(extra||[]),GP.sel('#dlgs .df .pri','الضغط على «موافق»')];
+ if(typeof PIC_DASH!=='undefined'){const r=PIC_DASH.reqs[0];if(r)r.path=dlgBorders(()=>PT_()?.rows[1]?.cells[0],'النقر داخل الجدول',null,[
+   GP.sel('.bln[data-s="dashed"]','من «النمط» اختيار الخط المتقطع',()=>!!$('.bln[data-s="dashed"]')?.classList.contains('on')),
+   GP.sel('.bp.h','في المعاينة: النقر على الخط الداخلي الأفقي ═',()=>!!$('.bp.h')?.classList.contains('on')&&$('.bset[data-set="custom"]')?.classList.contains('on')),
+   GP.sel('.bp.v','والنقر على الخط الداخلي العمودي ║',()=>!!$('.bp.v')?.classList.contains('on')&&$('.bset[data-set="custom"]')?.classList.contains('on')),
    GP.sel('[data-p="borders"] .bdApply','«تطبيق على» = الجدول',()=>$('[data-p="borders"] .bdApply')?.value==='table')])}
 })();

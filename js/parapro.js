@@ -34,7 +34,7 @@ const mside=b=>getComputedStyle(b).direction==='ltr'?'marginLeft':'marginRight';
 OPS.indentInc=function(){if(!needSel())return;snap();if(listOf()){ex('indent');logAct('indentInc');return}pbBlocks().forEach(b=>{const k=mside(b);b.style[k]=((parseFloat(b.style[k])||0)+48)+'px'});logAct('indentInc');SIM.emit('change')};
 const lvl1=()=>{const l=listOf();if(!l)return false;return !(l.parentElement&&l.parentElement.closest('ul,ol')&&firstBody().contains(l.parentElement))};
 window.listLvl1=lvl1;
-OPS.indentDec=function(){if(!needSel())return;if(listOf()){if(lvl1()){simToast('هذا المستوى الأول من القائمة — لإلغاء الترقيم اضغط زر «ترقيم» مرة ثانية');return}snap();ex('outdent');logAct('indentDec');return}snap();pbBlocks().forEach(b=>{const k=mside(b);b.style[k]=Math.max(0,(parseFloat(b.style[k])||0)-48)+'px'||''});logAct('indentDec');SIM.emit('change')};
+OPS.indentDec=function(){if(!needSel())return;if(listOf()){if(lvl1()){simToast('هذا المستوى الأول من القائمة — لإلغاء الترقيم الضغط زر «ترقيم» مرة ثانية');return}snap();ex('outdent');logAct('indentDec');return}snap();pbBlocks().forEach(b=>{const k=mside(b);b.style[k]=Math.max(0,(parseFloat(b.style[k])||0)-48)+'px'||''});logAct('indentDec');SIM.emit('change')};
 /* علامات التنسيق: ¶ نهاية الفقرة، · للمسافة، → للجدولة */
 function markSpaces(on){doc.querySelectorAll('.pg-body .spm').forEach(s=>s.replaceWith(document.createTextNode(s.textContent)));doc.querySelectorAll('.pg-body').forEach(b=>b.normalize());
   if(!on)return;doc.querySelectorAll('.pg-body').forEach(b=>{const w=document.createTreeWalker(b,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('.obj,.eq,.spm')||!/ /.test(n.data)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});const ns=[];let n;while(n=w.nextNode())ns.push(n);
@@ -47,7 +47,7 @@ window.paraBordersDlg=function(tab){if(!needSel())return;const bs=pbBlocks();if(
  const b0=bs[0];let setting=null;let sides={top:has(b0,'top'),bottom:has(bs[bs.length-1],'bottom'),left:has(b0,'left'),right:has(b0,'right'),ih:bs.length>1&&has(b0,'bottom')};
  const st={style:p.s||'solid',color:p.c||'#000000',w:String(p.w||1),fill:null,pat:'clear',pcol:'#000000',apply:'para',papply:'para'};let bCh=false,sCh=false;
  const PRE={none:{top:0,bottom:0,left:0,right:0,ih:0},box:{top:1,bottom:1,left:1,right:1,ih:0},shadow:{top:1,bottom:1,left:1,right:1,ih:0},all:{top:1,bottom:1,left:1,right:1,ih:1}};
- const DESC={none:'<b>بلا:</b> يزيل الحدود.',box:'<b>مربع:</b> إطار حول الفقرة (أو الفقرات المحدّدة معًا).',shadow:'<b>ظل:</b> إطار مع ظل أسفل ويسار.',all:'<b>الكل:</b> إطار + خط بين كل فقرتين.',custom:'<b>مخصّص:</b> اختر النمط واللون والعرض، ثم انقر الجوانب في المعاينة.'};
+ const DESC={none:'<b>بلا:</b> يزيل الحدود.',box:'<b>مربع:</b> إطار حول الفقرة (أو الفقرات المحدّدة معًا).',shadow:'<b>ظل:</b> إطار مع ظل أسفل ويسار.',all:'<b>الكل:</b> إطار + خط بين كل فقرتين.',custom:'<b>مخصّص:</b> اختيار النمط واللون والعرض، ثم النقر على الجوانب في المعاينة.'};
  const sw=(cls,arr)=>arr.map(c=>`<button class="${cls}" data-c="${c}" title="${c||'بلا لون'}" style="background:${c||'#fff'}">${c?'':'✕'}</button>`).join('');
  const LS=(typeof LINE_STYLES!=='undefined'?LINE_STYLES:[['solid','متصل'],['dotted','منقّط'],['dashed','متقطّع'],['double','مزدوج']]);
  const FL=typeof FILLS!=='undefined'?FILLS:['','#ffffff','#f2f2f2','#d9d9d9','#bfbfbf','#fff2cc','#fbe4d5','#e2efda','#ddebf7','#d9e2f3','#ededed','#ffff00','#ffc000','#92d050','#00b0f0','#c00000'];
@@ -58,7 +58,7 @@ window.paraBordersDlg=function(tab){if(!needSel())return;const bs=pbBlocks();if(
    <div class="bd-mid"><b>النمط:</b><div class="bd-lines">${LS.map(([k])=>`<button class="bln" data-s="${k}"><span style="border-top:${k==='double'?4:2}px ${k} #000"></span></button>`).join('')}</div>
     <label>اللون:<span class="bd-cols">${sw('bdc',['#000000','#7f7f7f','#0070c0','#00b0f0','#00b050','#92d050','#ffc000','#c00000','#7030a0','#ffffff'])}</span></label>
     <label>العرض:<select class="bdW"><option value="1">½ نقطة</option><option value="2">1½ نقطة</option><option value="3">2¼ نقطة</option><option value="4">3 نقاط</option><option value="6">4½ نقاط</option></select></label></div>
-   <div class="bd-prev"><b>معاينة</b><small>انقر الجوانب لإضافة حدّ أو إزالته</small><div class="bp-box"><div class="bp-in pp-in"><span class="ih"></span><i class="ppl"></i><i class="ppl"></i></div>
+   <div class="bd-prev"><b>معاينة</b><small>النقر على الجوانب لإضافة حدّ أو إزالته</small><div class="bp-box"><div class="bp-in pp-in"><span class="ih"></span><i class="ppl"></i><i class="ppl"></i></div>
     <button class="bp t" data-s="top" title="حد علوي">▔</button><button class="bp b" data-s="bottom" title="حد سفلي">▁</button><button class="bp r" data-s="right" title="حد أيمن">▕</button><button class="bp l" data-s="left" title="حد أيسر">▏</button><button class="bp h" data-s="ih" title="حد بين الفقرات">═</button></div>
     <label class="bd-apl">تطبيق على: <select class="pbApply"><option value="para">الفقرة</option><option value="text">النص</option></select></label></div>
   </div><div class="bd-desc" id="bdDesc">${DESC.custom}</div></div>

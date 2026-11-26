@@ -75,7 +75,7 @@ async function demoOp(o){if(PL.stop)return;
   if(o.selPart){/* selPart:[text, from, len] */const f=findText(o.selPart[0]);if(!f)return;await ensureVis(f[0].parentElement);const r=document.createRange();r.setStart(f[0],f[1]+o.selPart[1]);r.setEnd(f[0],f[1]+o.selPart[1]+o.selPart[2]);setSel(r);const rc=r.getBoundingClientRect();const c=$('#cursor');c.style.display='block';c.style.left=rc.left+'px';c.style.top=(rc.top+rc.height/2)+'px';await W(600);return}
   if(o.obj){const el=o.obj();if(!el)return;await showAt(el);selectObj(el);try{updateCtx()}catch(e){}await W(300);return}
   if(o.type!=null){await typeText(o.type);return}
-  if(o.key){const k=o.key;bar(o.say||('اضغط '+({Enter:'Enter',Tab:'Tab',ShiftEnter:'Shift + Enter',CtrlA:'Ctrl + A',Backspace:'Backspace',ShiftTab:'Shift + Tab'}[k]||k)));
+  if(o.key){const k=o.key;bar(o.say||('الضغط '+({Enter:'Enter',Tab:'Tab',ShiftEnter:'Shift + Enter',CtrlA:'Ctrl + A',Backspace:'Backspace',ShiftTab:'Shift + Tab'}[k]||k)));
     const t=(S.range&&S.range.startContainer)||document.activeElement||document.body;const tg=t.nodeType===1?t:t.parentElement;
     if(k==='Enter'){const ev=new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true});tg.dispatchEvent(ev);if(!ev.defaultPrevented)document.execCommand('insertParagraph')}else if(k==='Backspace'){document.execCommand('delete')}
     else if(k==='CtrlA'){run('selectAll')}else{tg.dispatchEvent(new KeyboardEvent('keydown',{key:k==='ShiftEnter'?'Enter':k==='ShiftTab'?'Tab':k,shiftKey:/Shift/.test(k),bubbles:true,cancelable:true}))}
@@ -108,9 +108,9 @@ async function play(list,pre){if(PL.on)return;if(typeof stopGuide==='function')t
   try{if(isPhone&&isPhone()){const p=$('#refpanel');if(p)p.classList.add('mcol')}}catch(e){}
   try{if(pre&&pre.length){const k0=PL.k;PL.k=Math.min(PL.k,.02);bar('تجهيز الخطوات السابقة…');const c=$('#cursor');for(const j of pre){if(PL.stop)break;await playReq(j,true)}PL.k=k0;try{hideCoach()}catch(e){}const cv=$('#canvas');await W(300)}
     for(const i of list){if(PL.stop)break;await playReq(i,list.length>1);await W(400)}}catch(e){console.warn(e)}
-  bar(PL.stop?'أُوقف العرض':'انتهى العرض — الآن جرّب أنت ✍️');await W(PL.stop?400:1600);
+  bar(PL.stop?'إيقاف العرض':'انتهى العرض — الآن تجربة أنت ✍️');await W(PL.stop?400:1600);
   try{hideCoach();closeMenus();closeDialog()}catch(e){}restore(st0);$('#cursor').style.display='none';shield(false);const b=$('#playbar');if(b)b.style.display='none';PL.on=false;
-  try{CO.rpSig='';renderRefList()}catch(e){}simToast('شاهدتَ الحل ▶ — الآن نفّذه بنفسك');logAct('watchSolution')}
+  try{CO.rpSig='';renderRefList()}catch(e){}simToast('شاهدتَ الحل ▶ — الآن تطبيقه بنفسك');logAct('watchSolution')}
 window.playSolution=i=>{if(i==null)return play(CO.item.reqs.map((_,k)=>k));const it=CO.item;if(it.demoAll)return play([i]);
   const prev=[];for(let j=0;j<i;j++){let ok=false;try{ok=it.reqs[j].check()}catch(e){}if(!ok)prev.push(j)}return play([i],prev)};
 window.PLAY=PL;

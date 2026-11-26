@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة المتابعة — برنامج وورد</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=11261208">
+<link rel="stylesheet" href="css/app.css?v=11261238">
 <style>
 body{overflow:auto;height:auto;min-height:100vh}
 .atop{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--side);color:#fff;position:sticky;top:0;z-index:5}
@@ -54,8 +54,8 @@ table.mini{font-size:13px}table.mini th{position:static}table.mini tr.r2 td:nth-
 <div class="atop"><span class="logo">W</span><b>لوحة المتابعة</b><span class="sp"></span><span id="who" class="muted" style="color:#93a2ba"></span><a href="index.html">فتح الموقع</a><button id="out">خروج</button></div>
 <div class="atabs" id="atabs"><button data-v="track" class="on">📊 المتابعة</button><button data-v="unlock">🔓 فتح الدروس</button><button data-v="students">👩‍🎓 الطلاب</button><button data-v="sections">🏫 الشعب</button></div>
 <div class="wrap" id="view"></div>
-<script src="js/config.js?v=11261208"></script>
-<script src="js/topics-meta.js?v=11261208"></script>
+<script src="js/config.js?v=11261238"></script>
+<script src="js/topics-meta.js?v=11261238"></script>
 <script>
 const inSec=(st,id)=>st.section_id===id||(st.extra||[]).includes(id);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const T=(window.ONLY_TOPICS?window.TOPICS_META.filter(t=>ONLY_TOPICS.includes(t.id)):window.TOPICS_META);
@@ -67,10 +67,10 @@ async function load(){const [a,b,c]=await Promise.all([sb.from('sections').selec
   if(SUPER){const t=await sb.from('teachers').select('*');TEA=(t.data||[]).sort((x,y)=>(x.name||x.email).localeCompare(y.name||y.email,'ar'))}
   SEC_ALL=(a.data||[]).sort((x,y)=>(x.name||'').localeCompare(y.name||'','ar'));SEC=SEC_ALL.filter(s=>ownerOf(s)===VIEW_AS);STU=b.data||[];PRO={};(c.data||[]).forEach(r=>PRO[r.email]=r);if(!selSec&&SEC[0])selSec=SEC[0].id;if(selSec&&!SEC.find(x=>x.id===selSec))selSec=SEC[0]?.id||'';render()}
 async function init(){
-  if(!window.SUPABASE_URL||!window.SUPABASE_ANON_KEY){gateMsg('<div class="notice">لم يتم ربط Supabase بعد.<br>اتبعي خطوات ملف <b>SUPABASE-SETUP.md</b> ثم ضعي الإعدادات في <b>js/config.js</b>.</div>');return}
+  if(!window.SUPABASE_URL||!window.SUPABASE_ANON_KEY){gateMsg('<div class="notice">لم يتم ربط Supabase بعد.<br>اتباع خطوات ملف <b>SUPABASE-SETUP.md</b> ثم وضع الإعدادات في <b>js/config.js</b>.</div>');return}
   await ld('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');sb=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){gateMsg('<p>سجّلي الدخول بحساب Google الخاص بالمعلّمة.</p><button class="gbtn" id="gi">تسجيل الدخول بحساب Google</button>');$('#gi').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});return}
+  if(!session){gateMsg('<p>تسجيل الدخول بحساب Google الخاص بالمدرّس.</p><button class="gbtn" id="gi">تسجيل الدخول بحساب Google</button>');$('#gi').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});return}
   const em=session.user.email.toLowerCase();const ad=await sb.from('admins').select('email').eq('email',em).maybeSingle();let te={data:null};if(!ad.data){try{te=await sb.from('teachers').select('email').eq('email',em).maybeSingle()}catch(e){}}
   ME=em;VIEW_AS=em;SUPER=!!ad.data;if(SUPER)$('#atabs').insertAdjacentHTML('beforeend','<button data-v="teachers">👩‍🏫 المدرّسون</button>');
   if(!ad.data&&!te.data){gateMsg(`<div class="gwarn">الحساب <b dir="ltr">${em}</b> غير مسجّل كمدرّس. اطلب من مسؤولة الموقع إضافتك.</div><button class="gbtn alt" id="go">خروج</button>`);$('#go').onclick=()=>sb.auth.signOut().then(()=>location.reload());return}
@@ -89,14 +89,14 @@ function render(){const v=$('#view');renderWho();
     $$('[data-del]').forEach(b=>b.onclick=async()=>{if(confirm('حذف الشعبة؟ (الطلاب يبقون بلا شعبة)')&&ok(await sb.from('sections').delete().eq('id',b.dataset.del)))load()});return}
   if(!SEC.length){v.innerHTML=`<div class="card notice">${VIEW_AS===ME?'ابدأ بإضافة شعبة من تبويب «🏫 الشعب».':'لا توجد شعب لهذا المدرّس بعد.'}</div>`;return}
   if(view==='students'){const list=STU.filter(s=>inSec(s,selSec)).sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
-    v.innerHTML=`<div class="card"><h2>إضافة طلاب</h2><div class="row">الشعبة: ${secSel('sec')}</div><p class="muted">الصقي سطرًا لكل طالب: <b>الإيميل، الاسم</b> (الاسم اختياري)</p><textarea id="bulk" placeholder="student1@gmail.com, سارة أحمد&#10;student2@gmail.com, محمد علي"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="add">إضافة إلى الشعبة</button><span id="msg" class="muted"></span></div></div>
+    v.innerHTML=`<div class="card"><h2>إضافة طلاب</h2><div class="row">الشعبة: ${secSel('sec')}</div><p class="muted">لصق سطر لكل طالب: <b>الإيميل، الاسم</b> (الاسم اختياري)</p><textarea id="bulk" placeholder="student1@gmail.com, سارة أحمد&#10;student2@gmail.com, محمد علي"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="add">إضافة إلى الشعبة</button><span id="msg" class="muted"></span></div></div>
     <div class="card"><h2>طلاب شعبة ${secName(selSec)} (${list.length})</h2><table><tr><th>الاسم</th><th>الإيميل</th><th>الشعبة</th><th></th></tr>${list.map(s=>`<tr><td>${s.name||'—'}</td><td class="ltr">${s.email}</td><td><select data-mv="${s.email}">${SEC.map(x=>`<option value="${x.id}" ${x.id===s.section_id?'selected':''}>${x.name}</option>`).join('')}</select></td><td><button class="btn r" data-rm="${s.email}">حذف</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا يوجد طلاب في هذه الشعبة</td></tr>'}</table></div>`;
     $('#sec').onchange=e=>{selSec=e.target.value;render()};
     $('#add').onclick=async()=>{const rows=[];$('#bulk').value.split(/\n+/).map(l=>l.trim()).filter(Boolean).forEach(l=>{const [e,...nm]=l.split(/[,،\t]/);const em=(e||'').trim().toLowerCase();if(/^\S+@\S+\.\S+$/.test(em))rows.push({email:em,name:nm.join(' ').trim(),section_id:selSec})});if(!rows.length)return;const r=await sb.from('students').upsert(rows);if(r.error&&/row-level|policy/i.test(r.error.message)){let n=0,bad=[];for(const x of rows){const q=await sb.from('students').upsert(x);if(q.error)bad.push(x.email);else n++}alert(`أُضيف ${n} طالب/ة.`+(bad.length?`\n\nهؤلاء مسجّلون عند مدرّس آخر، فلم يُضافوا:\n${bad.join('\n')}`:''));$('#bulk').value=bad.join('\n');load();return}if(ok(r)){$('#msg').textContent=`تمت إضافة ${rows.length} طالب/ة ✓`;$('#bulk').value='';load()}};
     $$('[data-mv]').forEach(s=>s.onchange=async()=>{if(ok(await sb.from('students').update({section_id:s.value}).eq('email',s.dataset.mv)))load()});
     $$('[data-rm]').forEach(b=>b.onclick=async()=>{if(confirm('حذف الطالب/ة؟')&&ok(await sb.from('students').delete().eq('email',b.dataset.rm)))load()});return}
   if(view==='unlock'){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.unlocked||[];
-    v.innerHTML=`<div class="card"><h2>فتح الدروس</h2><div class="row">الشعبة: ${secSel('sec')}<button class="btn g" id="cpy">تطبيق نفس الإعداد على كل الشعب</button></div><p class="muted">افتحي الموضوع بعد شرحه في المحاضرة. يظهر للطلاب خلال لحظات.</p>
+    v.innerHTML=`<div class="card"><h2>فتح الدروس</h2><div class="row">الشعبة: ${secSel('sec')}<button class="btn g" id="cpy">تطبيق نفس الإعداد على كل الشعب</button></div><p class="muted">فتح الموضوع بعد شرحه في المحاضرة. يظهر للطلاب خلال لحظات.</p>
      ${T.map((t,i)=>`<div class="tgl"><div><b>${i+1}. ${t.title}</b><div class="muted">${t.learn.length} درس · ${t.tasks.length} تحدٍّ</div></div><label class="sw2"><input type="checkbox" data-u="${t.id}" ${un.includes(t.id)?'checked':''}><span></span></label></div>`).join('')}</div>`;
     $('#sec').onchange=e=>{selSec=e.target.value;render()};
     $$('[data-u]').forEach(c=>c.onchange=async()=>{const set=new Set(un);c.checked?set.add(c.dataset.u):set.delete(c.dataset.u);if(ok(await sb.from('sections').update({unlocked:[...set]}).eq('id',s.id)))load()});
@@ -109,7 +109,7 @@ function renderWho(){const w=$('#who');if(!w)return;if(!SUPER){w.innerHTML=`${ME
   w.innerHTML=`<select id="viewAs" title="لوحة أي مدرّس؟" style="background:#1e293b;color:#fff;border:1px solid #334155;border-radius:8px;padding:4px 8px;font:inherit"><option value="${ME}">لوحتي (${ME})</option>${TEA.filter(t=>t.email!==ME).map(t=>`<option value="${t.email}" ${t.email===VIEW_AS?'selected':''}>لوحة: ${t.name||t.email}</option>`).join('')}</select>`;
   $('#viewAs').onchange=e=>{VIEW_AS=e.target.value;selSec='';stuOpen=null;SEC=SEC_ALL.filter(s=>ownerOf(s)===VIEW_AS);selSec=SEC[0]?.id||'';render()}}
 function actOf(p){const r={t:0,a:0,h:0,w:0,ws:0,n:+(p?.done?.__v?.n)||0,last:p?.done?.__v?.last||null};Object.entries(p?.done||{}).forEach(([k,d])=>{if(k==='__v')return;Object.values(d?.s||{}).forEach(x=>{r.t+=+x.t||0;r.a+=+x.a||0;r.h+=+x.h||0;r.w+=+x.w||0;r.ws+=+x.ws||0})});return r}
-function renderTeachers(v){const list=[{email:ME,name:'أنا (المسؤولة)',me:1},...TEA.filter(t=>t.email!==ME)];
+function renderTeachers(v){const list=[{email:ME,name:'أنا (المسؤول)',me:1},...TEA.filter(t=>t.email!==ME)];
   const cards=list.map(t=>{const ss=SEC_ALL.filter(s=>ownerOf(s)===t.email);const n=STU.filter(st=>ss.some(s=>inSec(st,s.id))).length;
     const p=PRO[t.email];let dn=0,tot=0;T.forEach(x=>{const [a,b]=topicPct(p,x);dn+=a;tot+=b});const pc=tot?Math.round(dn/tot*100):0;const A=actOf(p);
     const stat=(i,v,l)=>`<div class="ts"><b>${v}</b><span>${i} ${l}</span></div>`;
@@ -117,14 +117,14 @@ function renderTeachers(v){const list=[{email:ME,name:'أنا (المسؤولة)
       <div class="tb">${t.me?'':`<button class="btn r sm" data-tdel="${t.email}">حذف</button>`}<button class="btn g sm" data-open="${t.email}">📊 فتح لوحته</button></div></div>
       <div class="tstats">${stat('🏫',ss.length,'شعب')}${stat('👩‍🎓',n,'طلاب')}${t.me?'':stat('🔁',A.n,'مرة فتح الموقع')+stat('⏱',fmtT(A.t),'وقت التدريب')+stat('✔',A.a,'تحقّق')+stat('👆',A.h,'أرني أين')+stat('▶',A.w+A.ws,'شاهد الحل')}</div>
       ${t.me?'':`<div class="tprog"><div class="pbar"><i style="width:${pc}%"></i></div><small>أنجز ${dn} من ${tot} مهمة (${pc}%) · آخر دخول: ${fmtD(A.last||p?.last)}</small></div>`}</div>`}).join('');
-  v.innerHTML=`<div class="card"><h2>إضافة مدرّسين</h2><p class="muted">الصقي سطرًا لكل مدرّس: <b>الإيميل، الاسم</b>. كل مدرّس يدخل «لوحة المتابعة» بحسابه، ويضيف شعبه وطلابه ويفتح الدروس لهم، ولا يرى شعب غيره. وأنتِ ترين الجميع.</p>
+  v.innerHTML=`<div class="card"><h2>إضافة مدرّسين</h2><p class="muted">لصق سطر لكل مدرّس: <b>الإيميل، الاسم</b>. كل مدرّس يدخل «لوحة المتابعة» بحسابه، ويضيف شعبه وطلابه ويفتح الدروس لهم، ولا يرى شعب غيره. والمسؤول يرى الجميع.</p>
     <textarea id="tbulk" placeholder="teacher1@ppu.edu, أحمد علي&#10;teacher2@ppu.edu.ps, هالة محمد"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="tadd">إضافة المدرّسين</button><span id="tmsg" class="muted"></span></div></div>
-    <div class="card"><h2>المدرّسون (${TEA.length})</h2><p class="muted" style="margin-top:-4px">اضغطي اسم المدرّس لتري كل ما أنجزه في الدروس والمهام. «مرّات فتح الموقع» تُحسب من الآن فصاعدًا.</p><div class="tgrid">${cards}</div></div>${stuOpen?stuHTML(stuOpen,T):''}`;
+    <div class="card"><h2>المدرّسون (${TEA.length})</h2><p class="muted" style="margin-top:-4px">الضغط على اسم المدرّس لتري كل ما أنجزه في الدروس والمهام. «مرّات فتح الموقع» تُحسب من الآن فصاعدًا.</p><div class="tgrid">${cards}</div></div>${stuOpen?stuHTML(stuOpen,T):''}`;
   $$('[data-stu]').forEach(a=>a.onclick=()=>{stuOpen=a.dataset.stu;render()});$('#mx')&&($('#mx').onclick=()=>{stuOpen=null;render()});$('#mbg')&&($('#mbg').onclick=e=>{if(e.target.id==='mbg'){stuOpen=null;render()}});
   $('#tadd').onclick=async()=>{const r=[];$('#tbulk').value.split(/\n+/).map(l=>l.trim()).filter(Boolean).forEach(l=>{const [e,...nm]=l.split(/[,،\t]/);const em=(e||'').trim().toLowerCase();if(/^\S+@\S+\.\S+$/.test(em)&&em!==ME)r.push({email:em,name:nm.join(' ').trim()})});if(!r.length)return;
     if(ok(await sb.from('teachers').upsert(r))){$('#tmsg').textContent=`تمت إضافة ${r.length} مدرّس ✓`;$('#tbulk').value='';load()}};
   $$('[data-open]').forEach(b=>b.onclick=()=>{VIEW_AS=b.dataset.open;SEC=SEC_ALL.filter(s=>ownerOf(s)===VIEW_AS);selSec=SEC[0]?.id||'';view='track';$$('#atabs button').forEach(x=>x.classList.toggle('on',x.dataset.v==='track'));render()});
-  $$('[data-tdel]').forEach(b=>b.onclick=async()=>{if(confirm('حذف المدرّس؟ (شعبه وطلابه يبقون، ويمكنك رؤيتهم من لوحته إذا أعدتِ إضافته)')&&ok(await sb.from('teachers').delete().eq('email',b.dataset.tdel)))load()})}
+  $$('[data-tdel]').forEach(b=>b.onclick=async()=>{if(confirm('حذف المدرّس؟ (شعبه وطلابه يبقون، ويمكن رؤيتهم من لوحته عند إعادة إضافته)')&&ok(await sb.from('teachers').delete().eq('email',b.dataset.tdel)))load()})}
 /* ================= المتابعة ================= */
 let tmode='all',selT='',selI='',stuOpen=null;
 const ITEMS=t=>(t.items&&t.items.map(i=>({...i,t:String(i.t).replace(/^\d+\.\s*/,'')})))||[...t.learn.map(k=>({k,t:k,g:'',n:0,x:0})),...t.tasks.map(k=>({k:k[0],t:k[1],g:'',n:0,x:1}))];
@@ -140,7 +140,7 @@ function renderTrack(v){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.un
   const tSel=`<select id="tsel">${T.map(x=>`<option value="${x.id}" ${x.id===selT?'selected':''}>${x.title}${un.includes(x.id)?'':' (مغلق)'}</option>`).join('')}</select>`;
   const iSel=`<select id="isel">${its.map((i,n)=>`<option value="${i.k}" ${i.k===selI?'selected':''}>${n+1}. ${esc(i.t)}</option>`).join('')}</select>`;
   let body='';
-  if(!list.length)body=`<p class="empty">لا يوجد طلاب في هذه الشعبة — أضيفيهم من تبويب «👩‍🎓 الطلاب».</p>`;
+  if(!list.length)body=`<p class="empty">لا يوجد طلاب في هذه الشعبة — إضافتهم من تبويب «👩‍🎓 الطلاب».</p>`;
   else if(tmode==='all'){
     let started=0,act=0,sum=0;const day=Date.now()-864e5;
     const rows=list.map(st=>{const p=PRO[st.email];let dn=0,tot=0;TT.forEach(t=>{const [a,b]=topicPct(p,t);dn+=a;tot+=b});const pc=tot?Math.round(dn/tot*100):0;sum+=pc;if(p&&Object.keys(p.done||{}).length)started++;if(p?.last&&new Date(p.last)>day)act++;
@@ -154,7 +154,7 @@ function renderTrack(v){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.un
     const hasG=groups.some(g=>g.g);
     const cell=(p,i)=>{const o=stOf(p,t,i.k);const s=o.s||{};const tip=`${i.t}\nالوقت: ${fmtT(s.t)} · تحقّق: ${s.a||0} · أرني أين: ${s.h||0} · شاهد الحل: ${(s.w||0)+(s.ws||0)}`;const eye=(s.w||s.ws)?'<i class="eye">👁</i>':'';
       return `<td class="tc" title="${esc(tip)}">${o.done?`<span class="dot d2">✓</span>`:o.st?`<span class="dot d1">${s.n?(s.r||0)+'/'+s.n:'…'}</span>`:'<span class="dot d0"></span>'}${eye}</td>`};
-    body=`<div class="row">الموضوع: ${tSel}<span class="muted">✓ أنجز · <span class="dot d1" style="display:inline-grid">2/5</span> بدأ (الخطوات المنجزة) · 👁 شاهد الحل · مرّري الماوس على الخانة للتفاصيل، واضغطي رقم المهمة لفتحها</span></div>
+    body=`<div class="row">الموضوع: ${tSel}<span class="muted">✓ أنجز · <span class="dot d1" style="display:inline-grid">2/5</span> بدأ (الخطوات المنجزة) · 👁 شاهد الحل · تمرير الماوس على الخانة يُظهر التفاصيل، والضغط على رقم المهمة يفتحها</span></div>
      <div style="overflow:auto"><table class="tt"><tr>${hasG?`<th rowspan="2">الطالب/ة</th><th rowspan="2">أنجز</th>${groups.map(g=>`<th colspan="${g.c}" class="gh">${esc(g.g)}</th>`).join('')}</tr><tr>`:'<th>الطالب/ة</th><th>أنجز</th>'}${its.map((i,n)=>`<th class="ih"><a class="th" data-item="${i.k}" title="${esc(i.t)}">${n+1}</a></th>`).join('')}</tr>
      ${list.map(st=>{const p=PRO[st.email];const [a,b]=topicPct(p,t);return `<tr><td><a class="stu" data-stu="${st.email}">${esc(st.name||st.email)}</a></td><td><span class="chip c${a===0?0:a<b?1:2}">${a}/${b}</span></td>${its.map(i=>cell(p,i)).join('')}</tr>`}).join('')}
      <tr class="foot"><td>عدد من أنجز</td><td></td>${its.map(i=>{const n=list.filter(st=>stOf(PRO[st.email],t,i.k).done).length;return `<td class="tc"><b>${n}</b><small>/${list.length}</small></td>`}).join('')}</tr></table></div>
@@ -170,7 +170,7 @@ function renderTrack(v){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.un
      ${R.map(r=>{const s=r.s||{};const n=s.n||i?.n||0;return `<tr><td><a class="stu" data-stu="${r.stu.email}">${esc(r.stu.name||r.stu.email)}</a></td><td>${lab[r.st]}</td><td>${n?`<div class="pbar" style="min-width:60px"><i style="width:${Math.round((r.done?n:(s.r||0))/n*100)}%"></i></div><small>${r.done?n:(s.r||0)}/${n}</small>`:'—'}</td><td>${fmtT(s.t)}</td><td>${s.a||0}</td><td>${s.h||0}</td><td>${(s.w||0)+(s.ws||0)?`👁 ${(s.w||0)} كامل · ${(s.ws||0)} خطوة`:'0'}</td><td class="muted">${fmtD(s.f)}</td><td class="muted">${fmtD(s.l)}</td><td class="muted">${fmtD(s.d)}</td></tr>`}).join('')}</table></div>
      <p class="muted">«الخطوات» = عدد بنود المهمة المحقّقة. «شاهد الحل» = مرات تشغيل الحل الكامل أو حل خطوة واحدة. التفاصيل الدقيقة (الوقت والمحاولات) تُسجَّل من الآن فصاعدًا.</p>`}
   v.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">متابعة شعبة ${s.name}</h2><div class="row" style="margin:0">الشعبة: ${secSel('sec')}<button class="btn g" id="rf">↻ تحديث</button><button class="btn g" id="csv">نسخ الجدول (CSV)</button></div></div>${modes}
-    ${!TT.length?'<p class="notice">لم تفتحي أي موضوع لهذه الشعبة بعد — من تبويب «🔓 فتح الدروس».</p>':''}${body}</div>${stuOpen?stuHTML(stuOpen,TT):''}`;
+    ${!TT.length?'<p class="notice">لم يُفتح أي موضوع لهذه الشعبة بعد — يمكن فتحه من تبويب «🔓 فتح الدروس».</p>':''}${body}</div>${stuOpen?stuHTML(stuOpen,TT):''}`;
   $('#sec').onchange=e=>{selSec=e.target.value;render()};$('#rf').onclick=load;
   $$('[data-tm]').forEach(b=>b.onclick=()=>{tmode=b.dataset.tm;render()});
   $('#tsel')&&($('#tsel').onchange=e=>{selT=e.target.value;selI='';render()});$('#isel')&&($('#isel').onchange=e=>{selI=e.target.value;render()});
@@ -182,7 +182,7 @@ function renderTrack(v){const s=SEC.find(x=>x.id===selSec)||SEC[0];const un=s.un
   $('#csv').onclick=()=>{let rows;if(tmode==='task'&&t){rows=[['الاسم','الإيميل','الحالة','الخطوات','الوقت (د)','تحقق','أرني أين','شاهد الحل']];list.forEach(st=>{const o=stOf(PRO[st.email],t,selI);const q=o.s||{};rows.push([st.name||'',st.email,['لم يبدأ','بدأ','أنجز'][o.st],(o.done?q.n:(q.r||0))+'/'+(q.n||''),Math.round((q.t||0)/60),q.a||0,q.h||0,(q.w||0)+(q.ws||0)])})}
     else if(tmode==='topic'&&t){rows=[['الاسم','الإيميل',...its.map(i=>i.t)]];list.forEach(st=>{const p=PRO[st.email];rows.push([st.name||'',st.email,...its.map(i=>{const o=stOf(p,t,i.k);return o.done?'✓':o.st?((o.s?.r||0)+'/'+(o.s?.n||'')):''})])})}
     else{rows=[['الاسم','الإيميل',...TT.map(t=>t.title)]];list.forEach(st=>{const p=PRO[st.email];rows.push([st.name||'',st.email,...TT.map(t=>topicPct(p,t).join('/'))])})}
-    navigator.clipboard.writeText(rows.map(r=>r.map(c=>/[,"\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n')).then(()=>alert('تم النسخ — الصقيه في Excel'))};
+    navigator.clipboard.writeText(rows.map(r=>r.map(c=>/[,"\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n')).then(()=>alert('تم النسخ — لصقه في Excel'))};
 }
 function stuHTML(em,TT){const st=STU.find(x=>x.email===em)||(TEA.find(x=>x.email===em)&&{...TEA.find(x=>x.email===em),teacher:1});const p=PRO[em];if(!st)return '';if(st.teacher)TT=T;
   return `<div class="mbg" id="mbg"><div class="mdl"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(st.name||em)}</h2><button class="btn g" id="mx">✕ إغلاق</button></div><div class="muted ltr">${em} · آخر دخول: ${fmtD(p?.last)}</div>${(()=>{const A=actOf(p);return `<div class="tstats" style="margin-top:10px"><div class="ts"><b>${A.n}</b><span>🔁 مرة فتح الموقع</span></div><div class="ts"><b>${fmtT(A.t)}</b><span>⏱ وقت التدريب</span></div><div class="ts"><b>${A.a}</b><span>✔ تحقّق</span></div><div class="ts"><b>${A.h}</b><span>👆 أرني أين</span></div><div class="ts"><b>${A.w+A.ws}</b><span>▶ شاهد الحل</span></div></div>`})()}

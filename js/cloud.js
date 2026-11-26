@@ -10,7 +10,7 @@ function gate(kind,extra=''){const g=$('#gate');g.hidden=false;
   const logo='<div class="glogo">W</div><h1>برنامج وورد</h1><p class="gs">دليل التطبيق العملي · إعداد: سارة حرب</p>';
   if(kind==='loading')g.innerHTML=`<div class="gcard">${logo}<p>جارٍ التحميل…</p></div>`;
   if(kind==='login')g.innerHTML=`<div class="gcard">${logo}<p>سجّل الدخول بحساب Google الخاص بك لتبدأ.</p><button class="gbtn" id="gIn">${GICON} تسجيل الدخول بحساب Google</button>${extra}</div>`;
-  if(kind==='denied')g.innerHTML=`<div class="gcard">${logo}<div class="gwarn">الحساب <b dir="ltr">${extra}</b> غير مسجّل في الصف.<br>تواصل مع المعلّمة لإضافتك.</div><button class="gbtn alt" id="gOut">تسجيل الدخول بحساب آخر</button></div>`;
+  if(kind==='denied')g.innerHTML=`<div class="gcard">${logo}<div class="gwarn">الحساب <b dir="ltr">${extra}</b> غير مسجّل في الصف.<br>يُرجى التواصل مع مدرّس المادة لإضافة الحساب.</div><button class="gbtn alt" id="gOut">تسجيل الدخول بحساب آخر</button></div>`;
   const i=$('#gIn');if(i)i.onclick=signInGoogle;const o=$('#gOut');if(o)o.onclick=signOut;
 }
 function alertGate(m){const g=$('#gate .gcard');if(g)g.insertAdjacentHTML('beforeend',`<div class="gwarn">${m}</div>`)}

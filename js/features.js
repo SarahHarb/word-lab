@@ -1,12 +1,12 @@
 /* ================= Commands: text, page, design, layout, references, review, view ================= */
 const ex=(c,v=null)=>{try{return document.execCommand(c,false,v)}catch(e){return false}};
-function needDoc(){if(S.app!=='doc'){simToast('افتح مستندًا أولًا');return false}return true}
+function needDoc(){if(S.app!=='doc'){simToast('فتح مستندًا أولًا');return false}return true}
 function inText(){return S.range&&editHost(S.range.startContainer)&&doc.contains(S.range.startContainer)}
-function needSel(msg){if(!inText()){simToast(msg||'ضع المؤشر داخل النص أولًا');return false}restoreSel();return true}
+function needSel(msg){if(!inText()){simToast(msg||'وضع المؤشر داخل النص أولًا');return false}restoreSel();return true}
 /* wrap the current selection in spans with given css (uses the font-size 7 trick) */
 function styleSel(css){
   if(!needSel())return;const r=S.range;
-  if(r.collapsed){simToast('حدِّد النص أولًا، ثم نسِّق');return}
+  if(r.collapsed){simToast('تحديد النص أولًا، ثم نسِّق');return}
   ex('styleWithCSS',false);ex('fontSize','7');
   const host=editHost(r.startContainer)||doc;
   const made=[];host.querySelectorAll('font[size="7"]').forEach(f=>{const s=document.createElement('span');s.style.cssText=css;s.innerHTML=f.innerHTML;f.replaceWith(s);made.push(s)});
@@ -27,16 +27,16 @@ Object.assign(OPS,{
   closeWin(){if(S.app==='desktop')return;confirmSave(()=>{showDesktop();S.app='desktop'})},
   share(){simToast('مشاركة: للعرض فقط')},openCmd(){openBackstage('open')},newCmd(){openBackstage('new')},print(){if(S.app==='doc')openBackstage('print')},
   /* clipboard */
-  copy(){if(!needSel())return;const r=S.range;if(r.collapsed){simToast('حدِّد النص أولًا');return}S.clip=clipOf(r);ex('copy');S.clip=clipOf(r);simToast('تم النسخ');logAct('copy')},
-  cut(){if(!needSel())return;const r=S.range;if(r.collapsed){simToast('حدِّد النص أولًا');return}snap();S.clip=clipOf(r);const bk=(r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement).closest('p,h1,h2,h3,li');ex('delete');if(S.clip.block&&bk&&bk.isConnected&&!bk.textContent.trim()&&!bk.querySelector('img,.obj')&&bk.parentElement&&bk.parentElement.children.length>1){const nx=bk.nextElementSibling||bk.previousElementSibling;bk.remove();if(nx)placeCaretIn(nx,true)}logAct('cut')},
-  paste(arg){if(!S.clip){simToast('الحافظة فارغة — انسخ نصًّا أولًا');return}if(!needSel())return;snap();const r0=curRange()||S.range;const bk=r0&&(r0.startContainer.nodeType===1?r0.startContainer:r0.startContainer.parentElement).closest('p,h1,h2,h3,li');
+  copy(){if(!needSel())return;const r=S.range;if(r.collapsed){simToast('تحديد النص أولًا');return}S.clip=clipOf(r);ex('copy');S.clip=clipOf(r);simToast('تم النسخ');logAct('copy')},
+  cut(){if(!needSel())return;const r=S.range;if(r.collapsed){simToast('تحديد النص أولًا');return}snap();S.clip=clipOf(r);const bk=(r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement).closest('p,h1,h2,h3,li');ex('delete');if(S.clip.block&&bk&&bk.isConnected&&!bk.textContent.trim()&&!bk.querySelector('img,.obj')&&bk.parentElement&&bk.parentElement.children.length>1){const nx=bk.nextElementSibling||bk.previousElementSibling;bk.remove();if(nx)placeCaretIn(nx,true)}logAct('cut')},
+  paste(arg){if(!S.clip){simToast('الحافظة فارغة — نسخ نص أولًا');return}if(!needSel())return;snap();const r0=curRange()||S.range;const bk=r0&&(r0.startContainer.nodeType===1?r0.startContainer:r0.startContainer.parentElement).closest('p,h1,h2,h3,li');
     if(S.clip.block&&bk&&arg!=='text'&&bk.closest('.pg-body')){const t=document.createElement('div');t.innerHTML=S.clip.html;const nb=t.firstChild;const pre=document.createRange();pre.selectNodeContents(bk);pre.setEnd(r0.startContainer,r0.startOffset);
       if(!pre.toString().trim()){bk.before(nb)}else{bk.after(nb)}placeCaretIn(nb,false)}
     else if(arg==='text')ex('insertText',S.clip.text);else ex('insertHTML',S.clip.html);logAct('paste:'+(arg||'keep'))},
   painter(){if(!needSel())return;const r=S.range;const n=r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement;const cs=getComputedStyle(n);
     const now=Date.now();const sticky=S.painter&&now-(S.painterT||0)<450;S.painterT=now;
     S.painter={css:`font-weight:${cs.fontWeight};font-style:${cs.fontStyle};text-decoration:${cs.textDecorationLine};color:${cs.color};font-size:${cs.fontSize};font-family:${cs.fontFamily};background-color:${cs.backgroundColor}`,sticky};
-    doc.style.cursor='copy';simToast(sticky?'نسخ التنسيق: عدة مرات (Esc للإلغاء)':'حدّد النص لتطبيق التنسيق عليه');},
+    doc.style.cursor='copy';simToast(sticky?'نسخ التنسيق: عدة مرات (Esc للإلغاء)':'تحديد النص لتطبيق التنسيق عليه');},
   /* font */
   fontName(v){styleSel(`font-family:${v}`)},
   fontSize(v){styleSel(`font-size:${v}pt`);const fz=$('#ribbon select[data-cmd="fontSize"]');fz&&[...fz.options].forEach(o=>{if(o.dataset.tmp&&o.value!==v)o.remove()})},
@@ -47,16 +47,16 @@ Object.assign(OPS,{
   underline(a){if(!needSel())return;if(!a||a==='single'){ex('underline');return}styleSel(`text-decoration:underline ${a}`)},
   strike(){if(needSel())ex('strikeThrough')},sub(){if(needSel())ex('subscript')},sup(){if(needSel())ex('superscript')},
   textfx(a){if(a==='none'){styleSel('text-shadow:none;-webkit-text-stroke:0')}else if(a==='outline')styleSel('color:#fff;-webkit-text-stroke:1px #000');else if(a==='shadow')styleSel('text-shadow:2px 2px 3px rgba(0,0,0,.45)');else if(a==='glow')styleSel('text-shadow:0 0 6px #ffc000,0 0 3px #ffc000');else if(a!=null)styleSel(TEXT_FX[+a].css)},
-  highlight(c){if(!needSel())return;if(S.range.collapsed){simToast('حدِّد النص أولًا، ثم اختر لون التمييز');return}if(c==='none'){ex('styleWithCSS',true);ex('hiliteColor','transparent');return}c=c||lastHilite;lastHilite=c;ex('styleWithCSS',true);ex('hiliteColor',c);logAct('highlight')},
-  fontcolor(c){if(c==='more'){colorDlg(v=>OPS.fontcolor(v));return}if(!needSel())return;if(S.range.collapsed){simToast('حدِّد النص أولًا، ثم اختر اللون');return}c=c==='auto'?'#000000':(c||lastFore);lastFore=c;ex('styleWithCSS',true);ex('foreColor',c);logAct('fontcolor')},
-  fontDlg(){simToast('استخدم أوامر مجموعة «خط» في الصفحة الرئيسية')},
+  highlight(c){if(!needSel())return;if(S.range.collapsed){simToast('تحديد النص أولًا، ثم اختيار لون التمييز');return}if(c==='none'){ex('styleWithCSS',true);ex('hiliteColor','transparent');return}c=c||lastHilite;lastHilite=c;ex('styleWithCSS',true);ex('hiliteColor',c);logAct('highlight')},
+  fontcolor(c){if(c==='more'){colorDlg(v=>OPS.fontcolor(v));return}if(!needSel())return;if(S.range.collapsed){simToast('تحديد النص أولًا، ثم اختيار اللون');return}c=c==='auto'?'#000000':(c||lastFore);lastFore=c;ex('styleWithCSS',true);ex('foreColor',c);logAct('fontcolor')},
+  fontDlg(){simToast('استخدام أوامر مجموعة «خط» في الصفحة الرئيسية')},
   /* paragraph */
   bullets(a){if(!needSel())return;snap();const inL=listOf()?.tagName==='UL';if(a==='none'){if(inL)ex('insertUnorderedList');return}if(!inL){ex('insertUnorderedList');S.range=curRange()||S.range}const l=listOf();if(l&&a){l.style.listStyleType=['disc','circle','square'].includes(a)?a:`"${a}  "`}logAct('bullets')},
   numbering(a){if(!needSel())return;snap();const inL=listOf()?.tagName==='OL';if(a==='none'){if(inL)ex('insertOrderedList');return}if(!inL){ex('insertOrderedList');S.range=curRange()||S.range}const l=listOf();if(l)l.style.listStyleType=a==='arabic-abjad'?'abjad':(a||'decimal');logAct('numbering')},
-  multilevel(a){if(!needSel())return;snap();if(!listOf()){ex('insertOrderedList');S.range=curRange()||S.range}const l=listOf();if(l){let top=l;while(top.parentElement&&top.parentElement.closest('ol,ul')&&top.parentElement.closest('#doc'))top=top.parentElement.closest('ol,ul');top.classList.remove('ml','ml2');top.classList.add(a==='2'?'ml2':'ml');top.style.listStyleType='';logAct('multilevel:'+(a||'1'))}simToast('استخدم Tab لمستوى أدنى، و Shift+Tab لمستوى أعلى')},
+  multilevel(a){if(!needSel())return;snap();if(!listOf()){ex('insertOrderedList');S.range=curRange()||S.range}const l=listOf();if(l){let top=l;while(top.parentElement&&top.parentElement.closest('ol,ul')&&top.parentElement.closest('#doc'))top=top.parentElement.closest('ol,ul');top.classList.remove('ml','ml2');top.classList.add(a==='2'?'ml2':'ml');top.style.listStyleType='';logAct('multilevel:'+(a||'1'))}simToast('استخدام Tab لمستوى أدنى، و Shift+Tab لمستوى أعلى')},
   indentInc(){if(!needSel())return;snap();if(listOf()){ex('indent');return}selBlocks().forEach(b=>b.style.marginRight=((parseFloat(b.style.marginRight)||0)+48)+'px')},
   indentDec(){if(!needSel())return;snap();if(listOf()){ex('outdent');return}selBlocks().forEach(b=>b.style.marginRight=Math.max(0,(parseFloat(b.style.marginRight)||0)-48)+'px')},
-  sort(){if(!needSel())return;const bs=selBlocks();if(bs.length<2){simToast('حدِّد عدة فقرات أو عناصر قائمة لفرزها');return}snap();const par=bs[0].parentElement;const sorted=[...bs].sort((a,b)=>a.textContent.localeCompare(b.textContent,'ar'));const anchor=document.createComment('');bs[0].before(anchor);sorted.forEach(b=>anchor.before(b));anchor.remove();simToast('تم الفرز تصاعديًا (أ ← ي)');logAct('sort')},
+  sort(){if(!needSel())return;const bs=selBlocks();if(bs.length<2){simToast('تحديد عدة فقرات أو عناصر قائمة لفرزها');return}snap();const par=bs[0].parentElement;const sorted=[...bs].sort((a,b)=>a.textContent.localeCompare(b.textContent,'ar'));const anchor=document.createComment('');bs[0].before(anchor);sorted.forEach(b=>anchor.before(b));anchor.remove();simToast('تم الفرز تصاعديًا (أ ← ي)');logAct('sort')},
   marks(){S.marks=!S.marks;applyPage();logAct('marks:'+S.marks)},
   alignR(){setAlign('right','justifyRight')},alignC(){setAlign('center','justifyCenter')},alignL(){setAlign('left','justifyLeft')},justify(){setAlign('justify','justifyFull')},
   rtl(){if(needSel())selBlocks().forEach(b=>{b.dir='rtl';b.style.textAlign=''})},ltr(){if(needSel())selBlocks().forEach(b=>{b.dir='ltr'})},
@@ -73,11 +73,11 @@ Object.assign(OPS,{
   find(){if(S.app!=='doc')return;S.nav=true;S.navTab='res';renderNav();setTimeout(()=>{const i=$('#navq');if(i){i.focus();i.select()}},30);logAct('find')},
   replace(){if(S.app!=='doc')return;replaceDlg();logAct('replaceDlg')},
   selectAll(){const h=S.range?editHost(S.range.startContainer):firstBody();placeCaretIn(h||firstBody(),true,true);logAct('selectAll')},
-  selectObjects(){doc.classList.toggle('selobj');simToast(doc.classList.contains('selobj')?'وضع تحديد الكائنات: انقر على الصورة أو الشكل (Esc للخروج)':'تم الخروج من وضع تحديد الكائنات')},
+  selectObjects(){doc.classList.toggle('selobj');simToast(doc.classList.contains('selobj')?'وضع تحديد الكائنات: النقر على الصورة أو الشكل (Esc للخروج)':'تم الخروج من وضع تحديد الكائنات')},
   selPane(){const os=[...doc.querySelectorAll('.obj')];dialog({title:'التحديد',body:os.length?os.map((o,i)=>`<button class="bs-row" data-o="${i}">${o.classList.contains('pic')?'صورة':SHAPE_NAMES[o.dataset.kind]||'شكل'} ${i+1}</button>`).join(''):'<p>لا توجد كائنات في المستند.</p>',buttons:[{label:'إغلاق'}],onOpen:d=>d.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{selectObj(os[+b.dataset.o]);closeDialog()})})},
   dictate(){simToast('الإملاء يحتاج ميكروفونًا — للعرض فقط')},editor(){simToast('المحرر: لم يتم العثور على أخطاء ✓')},
   /* pages */
-  pageBreak(){if(!needDoc())return;if(!inText()||S.hfMode){placeCaretIn(firstBody(),false)}restoreSel();snap();const np=splitAtCaret();afterPages();placeCaretIn(np.querySelector('.pg-body'),true);np.scrollIntoView({block:'start'});logAct('pageBreak');simToast('فاصل صفحات: ما بعد المؤشر انتقل إلى صفحة جديدة')},
+  pageBreak(){if(!needDoc())return;if(!inText()||S.hfMode){placeCaretIn(firstBody(),false)}restoreSel();snap();const np=splitAtCaret();afterPages();placeCaretIn(np.querySelector('.pg-body'),true);np.scrollIntoView({block:'start'});logAct('pageBreak');simToast('فاصل صفحات: ما بعد المؤشر الانتقال إلى صفحة جديدة')},
   blankPage(){if(!needDoc())return;if(!inText()){placeCaretIn(pages().at(-1).querySelector('.pg-body'),false)}restoreSel();snap();const np=splitAtCaret();const bp=makePage();np.before(bp);
     const nb=np.querySelector('.pg-body');if(!nb.textContent.trim()&&!nb.querySelector('.obj,table,.eq'))np.remove();
     afterPages();placeCaretIn(bp.querySelector('.pg-body'),true);bp.scrollIntoView({block:'start'});logAct('blankPage')},
@@ -113,11 +113,11 @@ Object.assign(OPS,{
   tocIns(t){if(!needDoc())return;if(!inText())placeCaretIn(firstBody(),true);restoreSel();snap();const old=doc.querySelector('.toc');const el=buildToc(t||'auto1');if(old)old.replaceWith(el);else insertBlock(el);logAct('toc');if(!el.querySelector('.te'))simToast('لا عناوين! نسّق العناوين بنمط «عنوان 1» أولًا')},
   tocRemove(){const t=doc.querySelector('.toc');if(t){snap();t.remove()}},
   updateToc(){const t=doc.querySelector('.toc');if(!t){simToast('لا يوجد جدول محتويات في المستند');return}
-    dialog({title:'تحديث جدول المحتويات',body:`<p>يقوم Word بتحديث جدول المحتويات. حدّد أحد الخيارات التالية:</p><label class="row"><input type="radio" name="tu" value="pages" checked> تحديث أرقام الصفحات فقط</label><label class="row"><input type="radio" name="tu" value="all" data-hid="dlg-toc-all"> تحديث الجدول بأكمله</label>`,buttons:[{label:'موافق',pri:1,act:d=>{snap();const all=d.querySelector('input[value="all"]').checked;updateTocEl(t,all);logAct('updateToc:'+(all?'all':'pages'))}},{label:'إلغاء'}]})},
+    dialog({title:'تحديث جدول المحتويات',body:`<p>يقوم Word بتحديث جدول المحتويات. تحديد أحد الخيارات التالية:</p><label class="row"><input type="radio" name="tu" value="pages" checked> تحديث أرقام الصفحات فقط</label><label class="row"><input type="radio" name="tu" value="all" data-hid="dlg-toc-all"> تحديث الجدول بأكمله</label>`,buttons:[{label:'موافق',pri:1,act:d=>{snap();const all=d.querySelector('input[value="all"]').checked;updateTocEl(t,all);logAct('updateToc:'+(all?'all':'pages'))}},{label:'إلغاء'}]})},
   tocCustom(){OPS.tocIns('auto1')},
   addText(a){if(!needSel())return;snap();const bs=selBlocks();bs.forEach(b=>setBlock(b,a==='1'?'h1':a==='2'?'h2':'p',''))},
-  footnote(){if(!needDoc())return;if(!inText()){simToast('ضع المؤشر بعد الكلمة أولًا');return}restoreSel();snap();const r=S.range;r.collapse(false);const s=document.createElement('sup');s.className='fnr';s.contentEditable='false';s.dataset.id='n'+(noteId++);insertInline(s);syncNotes();const t=doc.querySelector(`.fn[data-id="${s.dataset.id}"] .fnt`);if(t){placeCaretIn(t,false);t.scrollIntoView({block:'nearest'})}logAct('footnote')},
-  endnote(){if(!needDoc())return;if(!inText()){simToast('ضع المؤشر بعد الكلمة أولًا');return}restoreSel();snap();const r=S.range;r.collapse(false);const s=document.createElement('sup');s.className='enr';s.contentEditable='false';s.dataset.id='e'+(noteId++);insertInline(s);syncNotes();const t=doc.querySelector(`.en[data-id="${s.dataset.id}"] .fnt`);if(t){placeCaretIn(t,false);t.scrollIntoView({block:'nearest'})}logAct('endnote')},
+  footnote(){if(!needDoc())return;if(!inText()){simToast('وضع المؤشر بعد الكلمة أولًا');return}restoreSel();snap();const r=S.range;r.collapse(false);const s=document.createElement('sup');s.className='fnr';s.contentEditable='false';s.dataset.id='n'+(noteId++);insertInline(s);syncNotes();const t=doc.querySelector(`.fn[data-id="${s.dataset.id}"] .fnt`);if(t){placeCaretIn(t,false);t.scrollIntoView({block:'nearest'})}logAct('footnote')},
+  endnote(){if(!needDoc())return;if(!inText()){simToast('وضع المؤشر بعد الكلمة أولًا');return}restoreSel();snap();const r=S.range;r.collapse(false);const s=document.createElement('sup');s.className='enr';s.contentEditable='false';s.dataset.id='e'+(noteId++);insertInline(s);syncNotes();const t=doc.querySelector(`.en[data-id="${s.dataset.id}"] .fnt`);if(t){placeCaretIn(t,false);t.scrollIntoView({block:'nearest'})}logAct('endnote')},
   nextNote(a){const refs=[...doc.querySelectorAll(a==='en'?'.enr':'.fnr')];if(!refs.length){simToast('لا توجد حواشٍ في المستند');return}S.noteI=((S.noteI??-1)+(a==='fnPrev'?-1:1)+refs.length)%refs.length;const r=refs[S.noteI];doc.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl'));r.classList.add('hl');r.scrollIntoView({block:'center'});setTimeout(()=>r.classList.remove('hl'),1500)},
   showNotes(){const n=doc.querySelector('.fn,.en');if(n)n.scrollIntoView({block:'center'});else simToast('لا توجد حواشٍ')},
   citation(){simToast('إدراج اقتباس: للعرض فقط')},caption(){simToast('تسمية توضيحية: للعرض فقط')},
@@ -125,13 +125,13 @@ Object.assign(OPS,{
   newComment(){addComment()},insComment(){addComment()},
   delComment(a){if(a==='all'){if(!S.comments.length){simToast('لا توجد تعليقات');return}snap();doc.querySelectorAll('.cmt').forEach(s=>s.replaceWith(...s.childNodes));S.comments=[];renderComments();logAct('delComment:all');return}
     const id=S.activeC||(()=>{const r=S.range;const n=r&&(r.startContainer.nodeType===1?r.startContainer:r.startContainer.parentElement);return n&&n.closest&&n.closest('.cmt')?.dataset.c})();
-    if(!id){simToast('انقر على تعليق أولًا');return}snap();doc.querySelectorAll(`.cmt[data-c="${id}"]`).forEach(s=>s.replaceWith(...s.childNodes));S.comments=S.comments.filter(c=>c.id!=id);S.activeC=null;renderComments();logAct('delComment')},
+    if(!id){simToast('النقر على تعليق أولًا');return}snap();doc.querySelectorAll(`.cmt[data-c="${id}"]`).forEach(s=>s.replaceWith(...s.childNodes));S.comments=S.comments.filter(c=>c.id!=id);S.activeC=null;renderComments();logAct('delComment')},
   prevComment(){stepComment(-1)},nextComment(){stepComment(1)},
   showComments(){S.cmts=!S.cmts;renderComments()},
   wordCount(){dialog({title:'عدد الكلمات',body:`<table style="width:240px"><tr><td>الصفحات</td><td>${pages().length}</td></tr><tr><td>الكلمات</td><td>${wordCount()}</td></tr><tr><td>الأحرف</td><td>${[...doc.querySelectorAll('.pg-body')].map(b=>b.innerText).join('').replace(/\s/g,'').length}</td></tr></table>`})},
   spelling(){simToast('اكتمل التدقيق الإملائي ✓')},thesaurus(){simToast('قاموس المرادفات: للعرض فقط')},
   /* view */
-  readMode(){if(!needDoc())return;const rm=$('#readmode');rm.hidden=false;rm.innerHTML=`<div class="rmbar"><button>ملف</button><button>أدوات</button><button data-x>عرض ▾</button><span class="t">${S.file.name}</span><button data-x title="تحرير المستند">✎ تحرير</button></div><div class="rmc">${[...doc.querySelectorAll('.pg-body')].map(b=>b.innerHTML).join('')}</div><div class="rmhint">اضغط Esc للعودة</div>`;rm.querySelectorAll('[contenteditable]').forEach(e=>e.removeAttribute('contenteditable'));rm.querySelectorAll('[data-x]').forEach(b=>b.onclick=OPS.exitRead);S.view='read';logAct('view:read');SIM.emit('change')},
+  readMode(){if(!needDoc())return;const rm=$('#readmode');rm.hidden=false;rm.innerHTML=`<div class="rmbar"><button>ملف</button><button>أدوات</button><button data-x>عرض ▾</button><span class="t">${S.file.name}</span><button data-x title="تحرير المستند">✎ تحرير</button></div><div class="rmc">${[...doc.querySelectorAll('.pg-body')].map(b=>b.innerHTML).join('')}</div><div class="rmhint">Esc للعودة</div>`;rm.querySelectorAll('[contenteditable]').forEach(e=>e.removeAttribute('contenteditable'));rm.querySelectorAll('[data-x]').forEach(b=>b.onclick=OPS.exitRead);S.view='read';logAct('view:read');SIM.emit('change')},
   exitRead(){$('#readmode').hidden=true;S.view='print';applyPage();logAct('view:print');SIM.emit('change')},
   printLayout(){if(!$('#readmode').hidden){OPS.exitRead();return}S.view='print';applyPage();logAct('view:print')},
   webLayout(){S.view='web';applyPage();logAct('view:web')},
@@ -154,7 +154,7 @@ Object.assign(OPS,{
   oddEven(){simToast('صفحات فردية وزوجية مختلفة: للعرض فقط')},showDocText(){},
   docInfo(){if(needSel())ex('insertText',S.file.name)},
   pagenumIns(a){if(!needDoc())return;snap();
-    if(a==='current'){if(!inText()){simToast('ضع المؤشر داخل النص');return}const s=document.createElement('span');s.className='pnum';s.contentEditable='false';insertInline(s);fillPageNums();return}
+    if(a==='current'){if(!inText()){simToast('وضع المؤشر داخل النص');return}const s=document.createElement('span');s.className='pnum';s.contentEditable='false';insertInline(s);fillPageNums();return}
     let [pos,al]=a.split('-');if(pos==='margin'){pos='bottom';al='right'}const k=pos==='top'?'hdr':'ftr';
     const para=`<p class="pnp" style="text-align:${al}"><span class="pnum" contenteditable="false">#</span></p>`;
     const strip=h=>{const d=document.createElement('div');d.innerHTML=h||'';d.querySelectorAll('.pnp').forEach(x=>x.remove());return d.innerHTML.replace(/^<p><br><\/p>$/,'')};
@@ -164,8 +164,8 @@ Object.assign(OPS,{
     onOpen:()=>{$('#pnf').value=S.hf.pnFmt},buttons:[{label:'موافق',pri:1,act:d=>{snap();S.hf.pnFmt=$('#pnf').value;S.hf.pnStart=d.querySelector('input[value=s]').checked?+$('#pnst').value:1;fillPageNums();logAct('pnFormat:'+S.hf.pnFmt+':'+S.hf.pnStart)}},{label:'إلغاء'}]})},
   pnRemove(){snap();const strip=h=>{const d=document.createElement('div');d.innerHTML=h||'';d.querySelectorAll('.pnp').forEach(x=>x.remove());return d.innerHTML};S.hf.hdr=strip(S.hf.hdr);S.hf.ftr=strip(S.hf.ftr);doc.querySelectorAll('.pg-body .pnum').forEach(x=>x.remove());renderHF()},
   /* date & time, symbols */
-  datetime(){if(!needDoc())return;if(!inText()){simToast('ضع المؤشر حيث تريد التاريخ');return}dateDlg()},
-  insSymbol(s){if(!inText()){simToast('ضع المؤشر داخل النص أولًا');return}restoreSel();snap();ex('insertText',s);pushRecent(s);logAct('symbol:'+s)},
+  datetime(){if(!needDoc())return;if(!inText()){simToast('وضع المؤشر حيث تريد التاريخ');return}dateDlg()},
+  insSymbol(s){if(!inText()){simToast('وضع المؤشر داخل النص أولًا');return}restoreSel();snap();ex('insertText',s);pushRecent(s);logAct('symbol:'+s)},
   symbolDlg(){symbolDlg()},
   quickparts(){simToast('أجزاء سريعة: للعرض فقط')},sigline(){simToast('سطر التوقيع: للعرض فقط')},object(){simToast('كائن: للعرض فقط')},
   dropcap(a){if(!needSel())return;const b=selBlocks()[0];if(!b)return;snap();if(a==='none'){b.classList.remove('dropcap')}else b.classList.add('dropcap')},
@@ -239,9 +239,9 @@ function renderNav(){
     $('#navq').addEventListener('input',()=>{S.navTab='res';renderNav()});}
   np.querySelectorAll('[data-nt]').forEach(b=>b.classList.toggle('on',b.dataset.nt===S.navTab));
   const L=$('#nlist'),q=$('#navq').value.trim();
-  if(S.navTab==='heads'){clearMarks();const hs=[...doc.querySelectorAll('.pg-body h1,.pg-body h2')];L.innerHTML=hs.length?hs.map((h,i)=>`<button class="nh ${h.tagName==='H2'?'l2':''}" data-h="${i}">${h.textContent||'(عنوان فارغ)'}</button>`).join(''):`<div class="nmsg">أنشئ مخططًا تفصيليًا تفاعليًا للمستند.<br>إنها طريقة رائعة لتتبّع موقعك أو نقل المحتوى بسرعة.<br>للبدء، انتقل إلى علامة التبويب «الصفحة الرئيسية» وطبّق أنماط العناوين على العناوين في المستند.</div>`;L.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{const h=hs[+b.dataset.h];h.scrollIntoView({block:'center'});placeCaretIn(h,true)})}
+  if(S.navTab==='heads'){clearMarks();const hs=[...doc.querySelectorAll('.pg-body h1,.pg-body h2')];L.innerHTML=hs.length?hs.map((h,i)=>`<button class="nh ${h.tagName==='H2'?'l2':''}" data-h="${i}">${h.textContent||'(عنوان فارغ)'}</button>`).join(''):`<div class="nmsg">إنشاء مخطط تفصيلي تفاعليًا للمستند.<br>إنها طريقة رائعة لتتبّع موقعك أو نقل المحتوى بسرعة.<br>للبدء، الانتقال إلى علامة التبويب «الصفحة الرئيسية» وتطبيق أنماط العناوين على العناوين في المستند.</div>`;L.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{const h=hs[+b.dataset.h];h.scrollIntoView({block:'center'});placeCaretIn(h,true)})}
   else if(S.navTab==='pages'){clearMarks();L.innerHTML=pages().map((p,i)=>`<button class="nh" data-p="${i}" style="display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:90px;height:120px;border:1px solid #ccc;background:#fff;display:block"></span>${i+1}</button>`).join('');L.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>pages()[+b.dataset.p].scrollIntoView({block:'start'}))}
-  else{clearMarks();if(!q){L.innerHTML='<div class="nmsg">اكتب في مربع البحث للعثور على نص في المستند.</div>';return}
+  else{clearMarks();if(!q){L.innerHTML='<div class="nmsg">كتابة في مربع البحث للعثور على نص في المستند.</div>';return}
     let n=0;const hits=[];doc.querySelectorAll('.pg-body').forEach(b=>textNodes(b).forEach(tn=>{let i,from=0;const v=tn.nodeValue;const idx=[];while((i=v.indexOf(q,from))>=0){idx.push(i);from=i+q.length}
       for(let k=idx.length-1;k>=0;k--){const r=document.createRange();r.setStart(tn,idx[k]);r.setEnd(tn,idx[k]+q.length);const m=document.createElement('mark');m.className='fh';r.surroundContents(m);hits.unshift(m);n++}}));
     L.innerHTML=`<div class="nmsg"><b>${n}</b> ${n===1?'نتيجة':'نتائج'}</div>`+hits.map((m,i)=>`<button class="nres" data-m="${i}">…${(m.previousSibling?.nodeValue||'').slice(-18)}<mark>${q}</mark>${(m.nextSibling?.nodeValue||'').slice(0,18)}…</button>`).join('');
@@ -264,11 +264,11 @@ function updateTocEl(el,all){
 }
 doc&&0;document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('.toc');doc&&doc.querySelectorAll('.toc.sel').forEach(x=>{if(x!==t)x.classList.remove('sel')});if(!t)return;t.classList.add('sel');
   if(e.target.closest('[data-tu]')){OPS.updateToc();return}
-  const te=e.target.closest('.te[data-t]');if(te){if(e.ctrlKey||e.metaKey){const h=document.getElementById(te.dataset.t);if(h){h.scrollIntoView({block:'center'});placeCaretIn(h,true);logAct('tocJump')}}else simToast('اضغط Ctrl + نقر لتتبّع الارتباط')}});
+  const te=e.target.closest('.te[data-t]');if(te){if(e.ctrlKey||e.metaKey){const h=document.getElementById(te.dataset.t);if(h){h.scrollIntoView({block:'center'});placeCaretIn(h,true);logAct('tocJump')}}else simToast('الضغط على Ctrl + نقر لتتبّع الارتباط')}});
 /* comments */
 function addComment(){
-  if(!needDoc())return;if(!inText()){simToast('حدِّد الكلمة أولًا ثم أضف التعليق');return}restoreSel();let r=S.range;
-  if(r.collapsed){const s=getSelection();s.modify('move','backward','word');s.modify('extend','forward','word');r=s.getRangeAt(0);if(r.collapsed){simToast('حدِّد الكلمة أولًا ثم أضف التعليق');return}}
+  if(!needDoc())return;if(!inText()){simToast('تحديد الكلمة أولًا ثم إضافة التعليق');return}restoreSel();let r=S.range;
+  if(r.collapsed){const s=getSelection();s.modify('move','backward','word');s.modify('extend','forward','word');r=s.getRangeAt(0);if(r.collapsed){simToast('تحديد الكلمة أولًا ثم إضافة التعليق');return}}
   snap();const id=S.cid++;const sp=document.createElement('span');sp.className='cmt';sp.dataset.c=id;sp.appendChild(r.extractContents());r.insertNode(sp);
   S.comments.push({id,author:'سارة حرب',text:'',posted:false,replies:[]});S.activeC=id;S.cmts=true;renderComments();
   setTimeout(()=>{const t=$(`#cmtpane .ccard[data-c="${id}"] .ctext`);if(t){t.focus()}},30);logAct('comment:add');
@@ -285,7 +285,7 @@ function renderComments(){
   p.querySelectorAll('.ccard').forEach(card=>{const id=+card.dataset.c;const c=S.comments.find(x=>x.id===id);
     card.addEventListener('mousedown',e=>{if(S.activeC!==id){S.activeC=id;doc.querySelectorAll('.cmt').forEach(s=>s.classList.toggle('act',s.dataset.c==id));p.querySelectorAll('.ccard').forEach(x=>x.classList.toggle('act',+x.dataset.c===id))}});
     const t=card.querySelector('.ctext[contenteditable]');if(t)t.addEventListener('input',()=>c.text=t.innerHTML);
-    card.querySelector('[data-post]')?.addEventListener('click',()=>{if(!c.text.trim()){simToast('اكتب نص التعليق أولًا');return}c.posted=true;renderComments();logAct('comment:post')});
+    card.querySelector('[data-post]')?.addEventListener('click',()=>{if(!c.text.trim()){simToast('كتابة نص التعليق أولًا');return}c.posted=true;renderComments();logAct('comment:post')});
     card.querySelector('[data-cancel]')?.addEventListener('click',()=>{if(!c.text.trim()){doc.querySelectorAll(`.cmt[data-c="${id}"]`).forEach(s=>s.replaceWith(...s.childNodes));S.comments=S.comments.filter(x=>x.id!==id)}renderComments()});
     const send=()=>{const i=card.querySelector('.rbox input');if(!i.value.trim())return;c.replies.push({author:'سارة حرب',text:i.value.trim()});renderComments();logAct('comment:reply')};
     card.querySelector('[data-reply]')?.addEventListener('click',send);card.querySelector('.rbox input')?.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
@@ -313,9 +313,9 @@ function pushRecent(s){window.SYM_RECENT=[s,...SYM_RECENT.filter(x=>x!==s)].slic
 function symbolDlg(){let cur=null;
   dialog({title:'رمز',w:470,body:`<div style="margin-bottom:6px">الخط: (نص عادي)</div><div class="symgrid" id="sgrid">${SYMBOLS_ALL.map(s=>`<button data-s="${s}">${s}</button>`).join('')}</div><div style="margin-top:6px">الرموز المستخدمة مؤخرًا:</div><div class="symgrid" style="grid-template-columns:repeat(16,26px)">${SYM_RECENT.slice(0,16).map(s=>`<button data-s="${s}">${s}</button>`).join('')}</div><div id="sname" style="margin-top:6px;color:#605e5c;min-height:18px"></div>`,
    onOpen:d=>d.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{cur=b.dataset.s;d.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on',x===b));$('#sname').textContent=(SYM_NAMES[cur]||'رمز')+'  —  رمز الحرف: '+cur.codePointAt(0).toString(16).toUpperCase().padStart(4,'0')}),
-   buttons:[{label:'إدراج',pri:1,act:()=>{if(!cur){simToast('اختر رمزًا أولًا');return false}OPS.insSymbol(cur);return false}},{label:'إغلاق'}]});
+   buttons:[{label:'إدراج',pri:1,act:()=>{if(!cur){simToast('اختيار رمز أولًا');return false}OPS.insSymbol(cur);return false}},{label:'إغلاق'}]});
 }
-function colorDlg(cb){dialog({title:'ألوان',body:`<label class="row">اختر لونًا: <input type="color" id="cdc" value="#2b579a"></label>`,buttons:[{label:'موافق',pri:1,act:()=>cb($('#cdc').value)},{label:'إلغاء'}]})}
+function colorDlg(cb){dialog({title:'ألوان',body:`<label class="row">اختيار لون: <input type="color" id="cdc" value="#2b579a"></label>`,buttons:[{label:'موافق',pri:1,act:()=>cb($('#cdc').value)},{label:'إلغاء'}]})}
 
 /* clicking a footnote reference selects it (so Delete removes it) */
 document.addEventListener('mousedown',e=>{const r=e.target.closest&&e.target.closest('#doc .fnr,#doc .enr');if(!r)return;e.preventDefault();const rr=document.createRange();rr.selectNode(r);editHost(r.parentElement).focus();const s=getSelection();s.removeAllRanges();s.addRange(rr);S.range=rr.cloneRange();logAct('noteRefSel')});
