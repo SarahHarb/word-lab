@@ -106,12 +106,20 @@ Object.assign(OPS,{
   distCols(){if(!needCell())return;const t=S.curCell.closest('table');t.style.tableLayout='fixed';t.querySelectorAll('td').forEach(c=>c.style.width='')},
   calign(a){const cs=targetCells();if(!cs.length){simToast('النقر داخل خلية أولًا');return}snap();const [v,h]=a.split('-');cs.forEach(c=>{c.style.verticalAlign=v;c.style.textAlign=h})},
   textDir(){if(S.obj&&S.obj.classList.contains('shp')){const t=S.obj.querySelector('.stxt');t.style.writingMode=t.style.writingMode?'':'vertical-rl';return}const cs=targetCells();if(!cs.length)return;snap();
-    /* مثل Word: كل نقرة تنقل للاتجاه التالي — أفقي ← من الأعلى للأسفل ← من الأسفل للأعلى ← أفقي */
-    const st=c=>!c.style.writingMode?0:(c.style.transform&&c.style.transform!=='none'?2:1);const nx=(st(cs[0])+1)%3;
-    cs.forEach(c=>{c.style.writingMode=nx?'vertical-rl':'';c.style.transform=nx===2?'rotate(180deg)':''});
+    /* مثل Word: كل نقرة تنقل للاتجاه التالي — أفقي ← من الأعلى للأسفل ← من الأسفل للأعلى ← أفقي.
+       الكتابة العمودية داخل span (وليس على الخلية نفسها) لتعمل على iPhone وكل المتصفحات */
+    const nx=(tdirOf(cs[0])+1)%3;cs.forEach(c=>setTdir(c,nx));
     try{simToast(['اتجاه النص: أفقي','اتجاه النص: من الأعلى إلى الأسفل','اتجاه النص: من الأسفل إلى الأعلى'][nx])}catch(e){}logAct('textDir:'+nx)},
   cellMargins(){simToast('هوامش الخلايا: للعرض فقط')},
   tsort(){if(!needCell())return;snap();const t=S.curCell.closest('table');const rows=[...t.rows].slice(t.classList.contains('nohdr')?0:1);const ci=S.curCell.cellIndex;rows.sort((a,b)=>(a.cells[ci]?.textContent||'').localeCompare(b.cells[ci]?.textContent||'','ar',{numeric:true}));rows.forEach(r=>t.tBodies[0].appendChild(r));simToast('تم فرز الجدول')},
   repeatHeader(){simToast('تكرار صفوف الرأس: مفعّل')},formula(){simToast('صيغة: للعرض فقط')},
 });
 function addCol(right){if(!needCell())return;snap();const i=S.curCell.cellIndex;[...S.curCell.closest('table').rows].forEach(r=>{const ref=r.cells[Math.min(i,r.cells.length-1)];const td=newCell();right?ref.before(td):ref.after(td)});logAct(right?'insRight':'insLeft')}
+
+/* اتجاه النص في الخلية: 0 أفقي، 1 من الأعلى للأسفل، 2 من الأسفل للأعلى */
+function tdirOf(td){if(!td)return 0;const d=td.dataset.tdir;if(d==='btt')return 2;if(d==='ttb')return 1;if(td.style.writingMode)return td.style.transform&&td.style.transform!=='none'?2:1;return 0}
+function setTdir(td,n){td.style.writingMode='';td.style.transform='';td.querySelectorAll(':scope > span.tdir').forEach(sp=>{while(sp.firstChild)sp.parentNode.insertBefore(sp.firstChild,sp);sp.remove()});
+  if(!n){delete td.dataset.tdir;return}td.dataset.tdir=n===2?'btt':'ttb';const sp=document.createElement('span');sp.className='tdir';
+  sp.setAttribute('style','display:inline-block;writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;white-space:nowrap;text-align:start;'+(n===2?'transform:rotate(180deg);-webkit-transform:rotate(180deg);':''));
+  while(td.firstChild)sp.appendChild(td.firstChild);if(!sp.childNodes.length)sp.appendChild(document.createElement('br'));td.appendChild(sp)}
+window.tdirOf=tdirOf;window.setTdir=setTdir;

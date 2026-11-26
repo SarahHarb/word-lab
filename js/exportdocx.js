@@ -111,7 +111,7 @@ async function table(t){const g=typeof gridMap==='function'?gridMap(t):null;cons
       const bd=['top','left','bottom','right'].map(k=>{const K=k[0].toUpperCase()+k.slice(1);const st=s['border'+K+'Style'],bw=parseFloat(s['border'+K+'Width']),c=hex(s['border'+K+'Color']);
         if(st==='none'||st==='hidden'||!bw||!c)return `<w:${k} w:val="nil"/>`;return `<w:${k} w:val="${st==='double'?'double':st==='dashed'?'dashed':st==='dotted'?'dotted':'single'}" w:sz="${Math.max(2,Math.round(bw*6))}" w:space="0" w:color="${c}"/>`}).join('');
       const dg=td.dataset.dg||'';const dgc=(td.dataset.dgc||'#000000').replace('#','');const diag=(dg.includes('d')?`<w:tl2br w:val="single" w:sz="6" w:color="${dgc}"/>`:'')+(dg.includes('u')?`<w:tr2bl w:val="single" w:sz="6" w:color="${dgc}"/>`:'');
-      const bg=hex(s.backgroundColor);const va=s.verticalAlign==='middle'?'center':s.verticalAlign==='bottom'?'bottom':'top';const wm=s.writingMode;const tdir=/vertical/.test(wm)?(s.transform&&s.transform!=='none'?'btLr':'tbRl'):'';
+      const bg=hex(s.backgroundColor);const va=s.verticalAlign==='middle'?'center':s.verticalAlign==='bottom'?'bottom':'top';const tdn=window.tdirOf?tdirOf(td):0;const tdir=tdn===2?'btLr':tdn===1?'tbRl':'';
       x+=`<w:tc><w:tcPr><w:tcW w:w="${TW(w)}" w:type="dxa"/>${span>1?`<w:gridSpan w:val="${span}"/>`:''}${it.v.r2>it.v.r1?`<w:vMerge${it.cont?'':' w:val="restart"'}/>`:''}<w:tcBorders>${bd}${diag}</w:tcBorders>${bg?`<w:shd w:val="clear" w:color="auto" w:fill="${bg}"/>`:''}${tdir?`<w:textDirection w:val="${tdir}"/>`:''}<w:vAlign w:val="${va}"/></w:tcPr>`;
       if(it.cont){x+='<w:p/></w:tc>';continue}
       const inner=[],fl=[];const hasBlock=[...td.children].some(c=>/^(P|DIV|UL|OL|TABLE|H\d)$/.test(c.tagName));

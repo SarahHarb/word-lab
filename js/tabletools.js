@@ -80,7 +80,9 @@ function applyBorderSet(cs,spec,bd,thick){const t=cs[0].closest('table'),g=gridM
   const lowSide=rtl?'right':'left',highSide=rtl?'left':'right';
   cs.forEach(c=>{const v=g.get(c);const outer={top:v.r1===R1,bottom:v.r2===R2,[lowSide]:v.c1===C1,[highSide]:v.c2===C2};
     ['top','bottom','left','right'].forEach(s=>{const want=outer[s]?spec[s]:((s==='top'||s==='bottom')?spec.ih:spec.iv);if(want===undefined)return;
-      const val=want?(outer[s]&&thick?thick:bd):'none';c.style['border'+SIDE_CAP[s]]=val;const n=neighbour(c,s);if(n&&(!cs.includes(n)||true))n.style['border'+SIDE_CAP[OPP[s]]]=val})})}
+      const val=want?(outer[s]&&thick?thick:bd):'none';c.style['border'+SIDE_CAP[s]]=val;const n=neighbour(c,s);if(n){const a=g.get(c),b=g.get(n);
+        /* الجار يأخذ الحد فقط إذا كان الخط المشترك بطوله كاملًا؛ وإلا يبقى حدّه كما هو (مثل Word: يتغيّر جزء الخط الخاص بالخلية فقط) */
+        const sameSpan=b&&((s==='top'||s==='bottom')?(a.c1===b.c1&&a.c2===b.c2):(a.r1===b.r1&&a.r2===b.r2));if(sameSpan||cs.includes(n))n.style['border'+SIDE_CAP[OPP[s]]]=val}})})}
 const _tb=OPS.tborders;
 OPS.tborders=function(a){if(a==='more')return bordersDlg();if(!needCell())return;const t=S.curCell.closest('table');const cs=S.selCells.length?[...S.selCells]:[...t.querySelectorAll('td')];snap();
   const SP={none:{top:false,bottom:false,left:false,right:false,ih:false,iv:false},all:{top:true,bottom:true,left:true,right:true,ih:true,iv:true},outside:{top:true,bottom:true,left:true,right:true},inside:{ih:true,iv:true},

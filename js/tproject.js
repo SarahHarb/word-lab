@@ -134,8 +134,8 @@ const PROJ=[
   check:()=>[...TT().querySelectorAll('td')].every(td=>td.style.textAlign==='center')},
  {t:'جعل كتابة الفترة عمودية',adds:'كتابة عمودية',last:1,
   hint:'«اتجاه النص» يدير الكتابة داخل الخلية — مناسب للخلايا الطويلة الضيقة.',after:'🎉 اكتمل مشروع الجدول! الأوامر التالية إضافية.',
-  steps:[PC(2,0,'النقر في خلية «صباحًا»'),TAB('tlayout'),{...B('tlayout','textDir','النقر على «اتجاه النص»'),strong:1,done:()=>!!TC(2,0).style.writingMode},PC(5,0,'النقر في خلية «ظهرًا»'),{...B('tlayout','textDir','النقر على «اتجاه النص» مرة أخرى'),strong:1,done:()=>!!TC(5,0).style.writingMode}],
-  check:()=>!!TC(2,0).style.writingMode&&!!TC(5,0).style.writingMode},
+  steps:[PC(2,0,'النقر في خلية «صباحًا»'),TAB('tlayout'),{...B('tlayout','textDir','النقر على «اتجاه النص»'),strong:1,done:()=>tdirOf(TC(2,0))>0},PC(5,0,'النقر في خلية «ظهرًا»'),{...B('tlayout','textDir','النقر على «اتجاه النص» مرة أخرى'),strong:1,done:()=>tdirOf(TC(5,0))>0}],
+  check:()=>tdirOf(TC(2,0))>0&&tdirOf(TC(5,0))>0},
  /* ---------- 7. أوامر إضافية ---------- */
  {g:'٧ · أوامر إضافية',t:'إدراج جدول من نافذة «إدراج جدول»',adds:'جدول «ما نحمله»',fill:'itemsHead',
   hint:'النافذة مفيدة للجداول الكبيرة: نكتب عدد الأعمدة والصفوف بأنفسنا.',
@@ -215,7 +215,7 @@ const HOUSE_TASK={t:'تطبيق: إعادة رسم جدول المبنى',kind:'
   R('إطار الباب مزدوج',()=>{const p=purpleRow(),l=lastRow();return !!p&&!!l&&[...p.cells].some(dbl)&&[...l.cells].some(dbl)},()=>HT()?.rows[2],'«نمط الخط» ← مزدوج، ثم تحديد خلايا الباب بالسحب ← حدود ← حدود خارجية، وفي الصف الأخير حدّان أيمن وأيسر للباب','tborders'),
   R('خط مزدوج بالأسفل',()=>{const r=lastRow();return !!r&&[...r.cells].every(td=>td.style.borderBottomStyle==='double')},()=>lastRow(),'«نمط الخط» ← مزدوج، تحديد الصف الأخير ← حدود ← حد سفلي','tborders'),
   R('Bottom center alignment',()=>{const b=bigBlock();return !!b&&fuzzyHas(b.textContent,'Bottom center alignment')&&b.style.verticalAlign==='bottom'&&b.style.textAlign==='center'},()=>hcells().find(td=>td.colSpan>=2&&td.rowSpan>=2)||HT(),'كتابة العبارة في المربع الكبير ← تخطيط ← «محاذاة لأسفل الوسط»','calign'),
-  R('Hebron عمودية من الأسفل للأعلى',()=>!!hebron()&&!!hebron().style.writingMode&&/rotate/.test(hebron().style.transform||''),()=>greenRow2()?.cells[0]||HT(),'كتابة Hebron في الصف الأخضر ← تخطيط ← اتجاه النص (النقر مرتين: المرة الأولى من الأعلى للأسفل، والثانية من الأسفل للأعلى)','textDir'),
+  R('Hebron عمودية من الأسفل للأعلى',()=>!!hebron()&&tdirOf(hebron())===2,()=>greenRow2()?.cells[0]||HT(),'كتابة Hebron في الصف الأخضر ← تخطيط ← اتجاه النص (النقر مرتين: المرة الأولى من الأعلى للأسفل، والثانية من الأسفل للأعلى)','textDir'),
   R('Hebron أصفر وعريض',()=>{const td=hebron();if(!td)return false;const w=document.createTreeWalker(td,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(fuzzyHas(n.nodeValue,'Hebron')){const cs=getComputedStyle(n.parentElement);return C_YEL(cs.color)&&(+cs.fontWeight>=600||cs.fontWeight==='bold')}}return false},()=>hebron()||greenRow2()?.cells[0]||HT(),'تحديد الكلمة ← الصفحة الرئيسية ← لون الخط أصفر + غامق','fontcolor'),
   R('الصف الأخضر أعلى (1.5 سم+)',()=>{const r=greenRow2();return !!r&&parseFloat(r.cells[0].style.height)>=1.5*CM-2},()=>greenRow2()||HT(),'النقر في الصف الأخضر ← تخطيط ← الارتفاع: 1.8','rowH'),
  ]};
