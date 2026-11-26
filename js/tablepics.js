@@ -242,7 +242,7 @@ const PIC_SPLITT=PIC({t:'تقسيم الجدول وتحويله وحذفه',goal
 const TABLE_PICS=[PIC_INS,PIC_TYPE,PIC_SELECT,PIC_ADD,PIC_DEL,PIC_SORT,PIC_MERGE,PIC_SPLIT,PIC_SIZE,PIC_ALIGN,PIC_STYLE,PIC_SHADE,PIC_NOB,PIC_ALLB,PIC_OUTER,PIC_DBL,PIC_DASH,PIC_PAINT,PIC_SPLITT];
 TABLE_PICS.forEach((p,i)=>p.t=`${i+1}. ${p.t}`);
 /* the hard one: every skill, as a challenge */
-HOUSE_TASK.t='تحدٍّ: إعادة رسم جدول المبنى';delete HOUSE_TASK.level;HOUSE_TASK.skills=['كل مهارات الجداول'];delete HOUSE_TASK.g;HOUSE_TASK.intro='إعادة رسم جدول المبنى كما في الصورة. لك أن تختار الطريقة:<br>• <b>الدمج:</b> إدراج 6 أعمدة × 7 صفوف ثم دمج.<br>• <b>الممحاة:</b> نفس الجدول، ومسح الخطوط بدل الدمج.<br>• <b>التقسيم والدمج معًا:</b> إدراج 4 أعمدة × 6 صفوف، ثم تقسيم ودمج.<br><small>«▶ شاهد الحل» يعرض كل طريقة. وفي Word العربي يبدأ الجدول من اليمين، فقد يظهر معكوسًا عن الصورة — هذا طبيعي.</small>';
+HOUSE_TASK.t='تحدٍّ: إعادة رسم جدول المبنى';delete HOUSE_TASK.level;HOUSE_TASK.skills=['كل مهارات الجداول'];delete HOUSE_TASK.g;HOUSE_TASK.intro='إعادة رسم جدول المبنى كما في الصورة، بأي طريقة:<br>• <b>الدمج فقط:</b> إدراج 6 أعمدة × 7 صفوف ثم دمج الخلايا.<br>• <b>الممحاة:</b> نفس الجدول، والنقر على الخط الفاصل لمسحه.<br>• <b>تقسيم الخلايا فقط:</b> إدراج عمود واحد × 5 صفوف ثم تقسيم كل صف.<br>• <b>القلم:</b> عمود واحد × 5 صفوف ورسم خطوط التقسيم بالقلم.<br>• <b>التقسيم والدمج معًا:</b> ثلاث طرق (5-أ، 5-ب، 5-ج).<br><small>«▶ شاهد الحل» يعرض قائمة الطرق لاختيار إحداها.</small>';
 (()=>{const r=HOUSE_TASK.reqs;const set=(i,...n)=>{if(r[i])r[i].need=n};for(let i=1;i<r.length;i++)set(i,0);set(2,0,3,5);set(6,3);set(8,3,5);set(9,2);set(10,5);set(12,2);set(13,3);set(14,3);set(15,3)})();
 
 /* text formatting on a cell selection (drag over cells, then Bold / colour …) — like Word */

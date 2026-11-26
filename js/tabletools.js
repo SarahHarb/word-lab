@@ -21,12 +21,15 @@ function eraseEdge(td,side){const t=td.closest('table'),g=gridMap(t),a=g.get(td)
   if(a.r1!==b.r1||a.r2!==b.r2){simToast('لا يمكن مسح هذا الخط: الخليتان بارتفاعين مختلفين');return null}
   const first=a.c1<b.c1?td:n,second=first===td?n:td;if(second.textContent.trim()){first.innerHTML+=(first.textContent.trim()?' ':'')+second.innerHTML}first.colSpan=(first.colSpan||1)+(second.colSpan||1);second.remove();return 'merge'}
 /* pen: a line drawn through a cell splits it */
-function splitByLine(td,dir){const t=td.closest('table'),g=gridMap(t),v=g.get(td);
-  if(dir==='v'){ if(td.colSpan>1){const k=Math.floor(td.colSpan/2);td.colSpan-=k;const n=newCell();n.colSpan=k;n.rowSpan=td.rowSpan;td.after(n);return}
+/* مواضع حدود الأعمدة/الصفوف على الشاشة — ليقسم القلم عند الخط الأقرب لمكان الرسم، مثل Word */
+function colEdges(t){const g=gridMap(t),rtl=getComputedStyle(t).direction==='rtl',m={};g.forEach((v,td)=>{const R=td.getBoundingClientRect();if(m[v.c1]==null)m[v.c1]=rtl?R.right:R.left;if(m[v.c2+1]==null)m[v.c2+1]=rtl?R.left:R.right});return m}
+window.colEdges=colEdges;
+function splitByLine(td,dir,pos){const t=td.closest('table'),g=gridMap(t),v=g.get(td);
+  if(dir==='v'){ if(td.colSpan>1){let k=Math.floor(td.colSpan/2);if(pos!=null){const m=colEdges(t);let best=1e9;for(let j=v.c1+1;j<=v.c2;j++){if(m[j]!=null&&Math.abs(m[j]-pos)<best){best=Math.abs(m[j]-pos);k=td.colSpan-(j-v.c1)}}}td.colSpan-=k;const n=newCell();n.colSpan=k;n.rowSpan=td.rowSpan;td.after(n);return}
     const n=newCell();n.rowSpan=td.rowSpan;td.after(n);g.forEach((w,x)=>{if(x!==td&&w.c1<=v.c1&&w.c2>=v.c1&&!(w.r1>=v.r1&&w.r2<=v.r2))x.colSpan+=1});
     /* other rows covered by td's rows are fine; rows outside get the wider cell */ return}
   /* horizontal */
-  if(td.rowSpan>1){const k=Math.floor(td.rowSpan/2);td.rowSpan-=k;const rr=t.rows[v.r1+td.rowSpan];const n=newCell();n.colSpan=td.colSpan;n.rowSpan=k;
+  if(td.rowSpan>1){let k=Math.floor(td.rowSpan/2);if(pos!=null){let best=1e9;for(let i=v.r1+1;i<=v.r2;i++){const y=t.rows[i].getBoundingClientRect().top;if(Math.abs(y-pos)<best){best=Math.abs(y-pos);k=td.rowSpan-(i-v.r1)}}}td.rowSpan-=k;const rr=t.rows[v.r1+td.rowSpan];const n=newCell();n.colSpan=td.colSpan;n.rowSpan=k;
     const g2=gridMap(t);let before=null;[...rr.cells].forEach(x=>{const w=g2.get(x);if(!before&&w.c1>v.c1)before=x});rr.insertBefore(n,before);return}
   const tr=td.parentElement,nr=document.createElement('tr');tr.after(nr);const n=newCell();n.colSpan=td.colSpan;nr.appendChild(n);
   g.forEach((w,x)=>{if(x!==td&&w.r1<=v.r1&&w.r2>=v.r1)x.rowSpan=(x.rowSpan||1)+1})}
@@ -62,7 +65,7 @@ const _aps=window.applySetup;if(_aps)window.applySetup=function(...a){setTool(nu
 document.addEventListener('mousemove',e=>{if(!toolDrag)return;showDrawLine(toolDrag.x,toolDrag.y,e.clientX,e.clientY)},true);
 document.addEventListener('mouseup',e=>{if(!toolDrag)return;const {td,x,y}=toolDrag;toolDrag=null;hideDrawLine();const dx=e.clientX-x,dy=e.clientY-y;snap();
   if(Math.max(Math.abs(dx),Math.abs(dy))<8){const [side]=nearestSide(td,x,y);paintEdge(td,side,penBd());logAct('paint:'+side)}
-  else{splitByLine(td,Math.abs(dx)>Math.abs(dy)?'h':'v');logAct('draw:'+(Math.abs(dx)>Math.abs(dy)?'h':'v'))}
+  else{const hz=Math.abs(dx)>Math.abs(dy);splitByLine(td,hz?'h':'v',hz?(y+e.clientY)/2:(x+e.clientX)/2);logAct('draw:'+(Math.abs(dx)>Math.abs(dy)?'h':'v'))}
   SIM.emit&&SIM.emit('change')},true);
 function showDrawLine(x1,y1,x2,y2){let l=$('#drawline');if(!l){l=document.createElement('div');l.id='drawline';document.body.appendChild(l)}const hz=Math.abs(x2-x1)>Math.abs(y2-y1);
   Object.assign(l.style,hz?{left:Math.min(x1,x2)+'px',top:y1+'px',width:Math.abs(x2-x1)+'px',height:'0',borderTop:'1.5px dashed #333',borderLeft:'0'}:{left:x1+'px',top:Math.min(y1,y2)+'px',height:Math.abs(y2-y1)+'px',width:'0',borderLeft:'1.5px dashed #333',borderTop:'0'});l.style.display='block'}

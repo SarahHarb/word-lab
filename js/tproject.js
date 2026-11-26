@@ -183,7 +183,7 @@ const greenRow=()=>{const t=HT();if(!t)return null;return [...t.rows].find(r=>r.
 function hsl(c){const m=(c||'').match(/\d+(\.\d+)?/g);if(!m||m.length<3)return null;let [r,g,b]=m.slice(0,3).map(x=>+x/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return {h,s,l}}
 const FAM=(test)=>c=>{const x=hsl(c);return !!x&&test(x)};
 const C_DARK=FAM(x=>x.s>.12&&x.h>=165&&x.h<255&&x.l<.72),C_BLUE=FAM(x=>x.s>.12&&x.h>=165&&x.h<255),C_PUR=FAM(x=>x.s>.12&&x.h>=255&&x.h<340),C_GRN=FAM(x=>x.s>.12&&x.h>=65&&x.h<165),
- C_RED=FAM(x=>x.s>.12&&(x.h<15||x.h>=340)&&x.l<.75),C_GOLD=FAM(x=>x.s>.3&&x.h>=30&&x.h<70&&x.l>.3),C_YEL=FAM(x=>x.s>.3&&x.h>=45&&x.h<75&&x.l>.35),C_LIGHT=FAM(x=>x.l>=.72&&(x.s<=.12||(x.h>=165&&x.h<255)));
+ C_RED=FAM(x=>x.s>.12&&(x.h<28||x.h>=340)&&x.l<.75),C_GOLD=FAM(x=>x.s>.3&&x.h>=30&&x.h<70&&x.l>.3),C_YEL=FAM(x=>x.s>.3&&x.h>=45&&x.h<75&&x.l>.35),C_LIGHT=FAM(x=>x.l>=.72&&(x.s<=.12||(x.h>=165&&x.h<255)));
 const hebron=()=>hcells().find(td=>fuzzyHas(td.textContent,'Hebron'));
 const allCols=()=>HT()?cols(HT()):0;
 const rowsArr=()=>HT()?[...HT().rows]:[];

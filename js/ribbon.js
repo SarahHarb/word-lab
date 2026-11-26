@@ -252,4 +252,4 @@ function renderRibbon(){
 }
 /* map command -> tab (first occurrence, normal tabs preferred) */
 const POSN=p=>'الموضع '+({t:'في الأعلى',m:'في المنتصف',b:'في الأسفل'})[p[0]]+' '+({r:'إلى اليمين',c:'في الوسط',l:'إلى اليسار'})[p[1]]+' مع التفاف نص مربع';window.POSN=POSN;
-function tabOfCmd(id){for(const t of CTX_ORDER){const tb=$(`#wtabs [data-tab="${t}"]`);if(tb&&tb.offsetParent&&$(`[data-panel="${t}"] [data-hid="${id}"]`))return t}for(const t of [...TAB_ORDER,...CTX_ORDER]){if($(`[data-panel="${t}"] [data-hid="${id}"]`))return t}return null}
+function tabOfCmd(id){const Q=t=>$(`[data-panel="${t}"] [data-hid="${id}"]`)||$(`[data-panel="${t}"] [data-hid^="${id}-"]`);for(const t of CTX_ORDER){const tb=$(`#wtabs [data-tab="${t}"]`);if(tb&&tb.offsetParent&&Q(t))return t}for(const t of [...TAB_ORDER,...CTX_ORDER]){if(Q(t))return t}return null}

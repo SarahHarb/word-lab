@@ -55,7 +55,7 @@ function setSel(r){const s=getSelection();s.removeAllRanges();s.addRange(r);S.ra
 async function showAt(el){if(!el)return;await moveTo(el,600);clickFx();await W(200)}
 async function typeText(t){for(const ch of t){document.execCommand('insertText',false,ch);await W(t.length>40?15:55)}S.range=curRange()||S.range;try{SIM.emit('change')}catch(e){}}
 async function ribbonCmd(cmd,arg,say){bar(say||'');const tab=tabOfCmd(cmd);if(tab){const t=$(`#wtabs [data-tab="${tab}"]`);if(t&&!t.classList.contains('on')){await showAt(t);realClick(t);await W(300)}}
-  const b=tab&&$(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}"]`);if(b){await ensureHVis(b);try{placeCoach(b,say||'')}catch(e){}await showAt(b)}
+  const b=tab&&((arg!=null&&($(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}-${arg}"]`)||$(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}"][data-arg="${arg}"]`)))||$(`#ribbon [data-panel="${tab}"] [data-hid="${cmd}"]`));if(b){await ensureHVis(b);try{placeCoach(b,say||'')}catch(e){}await showAt(b)}
   const r0=S.range;
   /* أمر له قائمة منسدلة: افتح القائمة وأرِ الخيار ثم اختره (مثل Word) */
   const w=b&&b.dataset.dd&&b.closest('.ddw');if(w&&arg!=null&&!PL.stop){try{hideCoach()}catch(e){}try{openMenu(w)}catch(e){}await W(450);
