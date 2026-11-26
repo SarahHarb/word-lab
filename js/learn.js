@@ -210,7 +210,7 @@ function initApp(){
   if(window.ONLY_TOPICS){const keep=TOPICS.filter(t=>ONLY_TOPICS.includes(t.id));if(keep.length)TOPICS.splice(0,TOPICS.length,...keep)}
   TOPICS.forEach((t,i)=>{t.num=String(i+1)});
   /* الجداول: تجميع المهام حسب الفكرة (الحدود معًا…) */
-  {const t5=TOPICS.find(t=>t.id==='t5');if(t5){const G=[['إنشاء الجدول والكتابة','',['l0','l1','l2']],['الصفوف والأعمدة','',['l3','l4','l5']],['الدمج والحجم والمحاذاة','',['l6','l7','l8','l9']],['الأنماط والتظليل','',['l10','l11']],
+  {const t5=TOPICS.find(t=>t.id==='t5');if(t5){const G=[['إنشاء الجدول والتحديد','',['l0','l1','l2']],['الصفوف والأعمدة والفرز','',['l3','l4','l5']],['دمج الخلايا وتقسيمها','',['l6','l7']],['حجم الصفوف والأعمدة','',['l8']],['النص داخل الجدول','محاذاة الكتابة داخل الخلية واتجاهها.',['l9']],['أنماط الجداول','',['l10']],['التظليل والنقش','',['l11']],
      ['🖊️ الحدود','نفس الفكرة بتطبيقات مختلفة: اختر القلم (النمط، السُّمك، اللون) ثم طبّقه على الحدود المطلوبة.',['l12','l13','l14','l15','l16','l17']],['تقسيم الجدول وتحويله','',['l18']]];
     try{L(t5).forEach(l=>{const g=G.find(x=>x[2].includes(l.key));if(g){l.g=g[0];l.gd=g[1]}})}catch(e){}}}
   buildTips();if(window.applyTableTips)applyTableTips();if(typeof applyMoreTips==='function')applyMoreTips();$('#stopDemo').onclick=stopDemo;$('#scrim').onclick=()=>document.body.classList.remove('drawer');
